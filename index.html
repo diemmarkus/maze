@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#FFD93B">
+<title>Irrgarten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Kalam:wght@400;700&display=swap">
+<style>
+/* Layout: one-screen comic panel — inked HUD strip on top, the hedge maze on a lawn fills the rest. */
+:root{
+  --paper:#FFD93B;      /* comic yellow */
+  --dot:#F2A81D;        /* halftone dots */
+  --ink:#16120F;        /* outlines */
+  --lawn:#6CC24A;       /* lawn around the maze */
+  --hedge:#2E9A4B;      /* bushes */
+  --leaf:#8FDB6A;       /* bush highlights / grass */
+  --path:#F4D9A0;       /* gravel paths */
+  --pop:#E8322E;        /* ball / flag / danger */
+  --soda:#7FE3F0;
+  --white:#FFFDF6;
+  --display:"Bangers","Impact","Arial Black",sans-serif;
+  --hand:"Kalam","Comic Sans MS","Chalkboard SE",cursive;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{height:100%;overflow:hidden;margin:0}
+html{background:linear-gradient(to bottom,var(--paper) 50%,var(--lawn) 50%)}
+body{background:var(--paper);color:var(--ink);font-family:var(--hand);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.app{height:100%;display:flex;flex-direction:column;gap:8px;padding-block:10px 0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box}
+.hud{display:flex;align-items:center;gap:12px;font-family:var(--display);letter-spacing:.04em}
+.chip{background:var(--white);border:3px solid var(--ink);border-radius:6px;padding:2px 10px;font-size:20px;box-shadow:3px 3px 0 var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.restart{flex:none;width:40px;height:34px;display:grid;place-items:center;background:var(--leaf);color:var(--ink);border:3px solid var(--ink);border-radius:6px;box-shadow:3px 3px 0 var(--ink);padding:0;cursor:pointer}
+.restart svg{width:22px;height:22px;display:block}
+.restart:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.restart:focus-visible{outline:3px dashed var(--pop);outline-offset:3px}
+.meter{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.meter span{font-size:13px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:16px;background:var(--white);border:3px solid var(--ink);border-radius:6px;box-shadow:3px 3px 0 var(--ink);overflow:hidden}
+.fill{height:100%;width:0;background:var(--hedge);background-image:radial-gradient(rgba(0,0,0,.2) 1.5px,transparent 2px);background-size:6px 6px}
+.fill.danger{background-color:var(--pop);animation:blink .3s steps(2) infinite}
+@keyframes blink{50%{background-color:var(--paper)}}
+.stage{position:relative;flex:1;min-height:0;margin-left:calc(-1*max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1*max(16px,env(safe-area-inset-right,0px)));touch-action:none}
+canvas{display:block;width:100%;height:100%}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px}
+.card{box-sizing:border-box;width:min(340px,100%);background:var(--white);border:4px solid var(--ink);border-radius:10px;box-shadow:7px 7px 0 var(--ink);padding:20px 22px;text-align:center;transform:rotate(-1.5deg)}
+.card h1{font-family:var(--display);font-size:56px;line-height:.9;margin:0 0 6px;letter-spacing:.03em;color:var(--hedge);-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--ink);text-wrap:balance}
+#overOv h1{color:var(--pop)}
+.card p{margin:6px 0;font-size:16px;line-height:1.35}
+.card ul{list-style:none;padding:0;margin:10px 0;text-align:left;font-size:15px;display:grid;gap:4px}
+.card li::before{content:"★ ";color:var(--pop)}
+.btn{font-family:var(--display);font-size:28px;letter-spacing:.06em;background:var(--leaf);color:var(--ink);border:4px solid var(--ink);border-radius:10px;padding:8px 26px;box-shadow:5px 5px 0 var(--ink);cursor:pointer;margin-top:8px}
+.btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.btn:focus-visible{outline:3px dashed var(--pop);outline-offset:4px}
+.big{font-family:var(--display);font-size:22px;letter-spacing:.04em}
+.hint{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));background:var(--white);border:3px solid var(--ink);border-radius:6px;box-shadow:3px 3px 0 var(--ink);padding:2px 10px;font-family:var(--display);letter-spacing:.05em;font-size:14px;white-space:nowrap;pointer-events:none}
+.langs{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:14px}
+.langs button{font-family:var(--display);font-size:15px;letter-spacing:.06em;background:var(--white);color:var(--ink);border:2px solid var(--ink);border-radius:6px;padding:2px 8px;box-shadow:2px 2px 0 var(--ink);cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--paper)}
+.langs button:focus-visible{outline:3px dashed var(--pop);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.fill.danger{animation:none}}
+</style>
+<style>:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}body{font-size:14px}</style>
+</head>
+<body>
+<div class="app">
+  <div class="hud">
+    <div class="chip" id="lvl">LVL 1</div>
+    <div class="chip" id="score">0 PTS</div>
+    <div class="meter"><span data-i18n="grow">OVERGROWN</span><div class="bar"><div class="fill" id="fill"></div></div></div>
+    <button type="button" class="restart" id="restartBtn" aria-label="Restart" title="Restart" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+  </div>
+  <div class="stage" id="stage">
+    <canvas id="c"></canvas>
+    <div class="hint" id="hint" hidden data-i18n="tilt">DRAG TO TILT</div>
+    <div class="overlay" id="startOv">
+      <div class="card">
+        <h1 data-i18n="title">HEDGE MAZE!</h1>
+        <p data-i18n="intro">The hedges are growing. Fast.</p>
+        <ul id="rules"></ul>
+        <button class="btn" id="startBtn" data-i18n="start">ROLL!</button>
+        <div class="langs" id="langs" role="group" aria-label="Language"></div>
+      </div>
+    </div>
+    <div class="overlay" id="overOv" hidden>
+      <div class="card">
+        <h1 data-i18n="over">OVERGROWN!</h1>
+        <p data-i18n="stuck">The paths are shut.</p>
+        <p class="big" id="final">0 PTS · LEVEL 1</p>
+        <p id="best">Best: 0</p>
+        <button class="btn" id="againBtn" data-i18n="again">AGAIN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const cv=$('c'),ctx=cv.getContext('2d');
+const css=getComputedStyle(document.documentElement);
+const V=n=>css.getPropertyValue(n).trim();
+const C={paper:V('--paper'),dot:V('--dot'),ink:V('--ink'),lawn:V('--lawn'),hedge:V('--hedge'),leaf:V('--leaf'),path:V('--path'),pop:V('--pop'),white:V('--white'),soda:V('--soda')};
+
+// All game geometry is in maze-cell units (1 = one corridor cell), so a resize only changes the pixel scale S.
+const BALL_R=.2;            // ball radius
+const HOLE_R=.3;            // hole radius
+const T0=.14;               // hedge thickness at level start
+const T_END=1-2*BALL_R;     // thickness at which corridors are exactly as wide as the ball: shut
+const ACC=24;               // cells/s² at full tilt
+const MAX_V=7;              // cells/s
+const PAD=14;               // px around the maze
+
+// ---------- i18n ----------
+const NB=' ';
+const I18N={
+  en:{name:'EN',title:'HEDGE MAZE!',intro:'The hedges are growing. Fast.',
+    rules:['Tilt your phone to roll the ball.','Find the hole before the hedges close the paths.','The longer you take, the thicker the bushes get.','Hold the phone comfortably when you start: that counts as level.'],
+    start:'ROLL!',over:'OVERGROWN!',stuck:'The paths are shut.',again:'AGAIN',restart:'Restart',grow:'OVERGROWN',tilt:'DRAG TO TILT (NO MOTION SENSOR)',
+    pts:n=>n+' PTS',lvl:n=>'LVL '+n,final:(p,l)=>p+' · LEVEL '+l,best:n=>'Best: '+n+' pts',
+    level:n=>'LEVEL '+n+'!',find:'FIND THE HOLE!',sink:['PLOP!','IN!','HOLE!'],hurry:'HURRY!',rustle:['RUSTLE!','SWISH!']},
+  de:{name:'DE',title:'IRRGARTEN!',intro:'Die Hecken wachsen. Schnell.',
+    rules:['Kipp das Handy, um die Kugel zu rollen.','Finde das Loch, bevor die Hecken die Wege zumachen.','Je länger du brauchst, desto dicker werden die Büsche.','Halt das Handy beim Start bequem – so gilt es als waagrecht.'],
+    start:'LOSROLLEN!',over:'ZUGEWACHSEN!',stuck:'Die Wege sind zu.',again:'NOCHMAL',restart:'Neu starten',grow:'ZUGEWACHSEN',tilt:'ZIEHEN ZUM KIPPEN (KEIN SENSOR)',
+    pts:n=>n+' PKT',lvl:n=>'LVL '+n,final:(p,l)=>p+' · LEVEL '+l,best:n=>'Rekord: '+n+' Punkte',
+    level:n=>'LEVEL '+n+'!',find:'FINDE DAS LOCH!',sink:['PLOPP!','DRIN!','LOCH!'],hurry:'SCHNELL!',rustle:['RASCHEL!','KNISTER!']},
+  fr:{name:'FR',title:'LABYRINTHE'+NB+'!',intro:'Les haies poussent. Vite.',
+    rules:['Incline le téléphone pour faire rouler la bille.','Trouve le trou avant que les haies ne bouchent les chemins.','Plus tu traînes, plus les buissons grossissent.','Tiens le téléphone confortablement au départ'+NB+': ce sera l’horizontale.'],
+    start:'ROULE'+NB+'!',over:'ENVAHI'+NB+'!',stuck:'Les chemins sont bouchés.',again:'ENCORE',restart:'Recommencer',grow:'ENVAHI',tilt:'GLISSE POUR INCLINER (PAS DE CAPTEUR)',
+    pts:n=>n+' PTS',lvl:n=>'NIV. '+n,final:(p,l)=>p+' · NIVEAU '+l,best:n=>'Record'+NB+': '+n+' pts',
+    level:n=>'NIVEAU '+n+NB+'!',find:'TROUVE LE TROU'+NB+'!',sink:['PLOP'+NB+'!','DEDANS'+NB+'!'],hurry:'VITE'+NB+'!',rustle:['FROUFROU'+NB+'!','FRRR'+NB+'!']},
+  es:{name:'ES',title:'¡LABERINTO!',intro:'Los setos crecen. Rápido.',
+    rules:['Inclina el móvil para rodar la bola.','Encuentra el hoyo antes de que los setos cierren los caminos.','Cuanto más tardes, más crecen los arbustos.','Sujeta el móvil cómodo al empezar: esa será la posición recta.'],
+    start:'¡RUEDA!',over:'¡INVADIDO!',stuck:'Los caminos están cerrados.',again:'OTRA VEZ',restart:'Reiniciar',grow:'INVADIDO',tilt:'ARRASTRA PARA INCLINAR (SIN SENSOR)',
+    pts:n=>n+' PTS',lvl:n=>'NIV. '+n,final:(p,l)=>p+' · NIVEL '+l,best:n=>'Récord: '+n+' pts',
+    level:n=>'¡NIVEL '+n+'!',find:'¡ENCUENTRA EL HOYO!',sink:['¡PLOP!','¡DENTRO!'],hurry:'¡RÁPIDO!',rustle:['¡FRUFRÚ!','¡SHHH!']},
+  it:{name:'IT',title:'LABIRINTO!',intro:'Le siepi crescono. Svelto.',
+    rules:['Inclina il telefono per far rotolare la pallina.','Trova la buca prima che le siepi chiudano i sentieri.','Più ci metti, più i cespugli si ingrossano.','Tieni il telefono comodo alla partenza: quello conta come dritto.'],
+    start:'ROTOLA!',over:'INVASO!',stuck:'I sentieri sono chiusi.',again:'ANCORA',restart:'Ricomincia',grow:'INVASO',tilt:'TRASCINA PER INCLINARE (NESSUN SENSORE)',
+    pts:n=>n+' PT',lvl:n=>'LIV. '+n,final:(p,l)=>p+' · LIVELLO '+l,best:n=>'Record: '+n+' pt',
+    level:n=>'LIVELLO '+n+'!',find:'TROVA LA BUCA!',sink:['PLOP!','DENTRO!'],hurry:'SVELTO!',rustle:['FRUSC!','SHHH!']},
+  pt:{name:'PT',title:'LABIRINTO!',intro:'As sebes estão crescendo. Rápido.',
+    rules:['Incline o celular para rolar a bola.','Ache o buraco antes que as sebes fechem os caminhos.','Quanto mais demorar, mais grossos ficam os arbustos.','Segure o celular confortável ao começar: isso conta como reto.'],
+    start:'ROLA!',over:'TOMADO!',stuck:'Os caminhos fecharam.',again:'DE NOVO',restart:'Reiniciar',grow:'TOMADO',tilt:'ARRASTE PARA INCLINAR (SEM SENSOR)',
+    pts:n=>n+' PTS',lvl:n=>'NÍV. '+n,final:(p,l)=>p+' · NÍVEL '+l,best:n=>'Recorde: '+n+' pts',
+    level:n=>'NÍVEL '+n+'!',find:'ACHE O BURACO!',sink:['PLOP!','DENTRO!'],hurry:'RÁPIDO!',rustle:['FRUFRU!','SHHH!']},
+};
+function pickLang(){
+  const want=[];
+  try{const q=new URLSearchParams(location.search).get('lang');if(q)want.push(q)}catch(_){}
+  try{const s=localStorage.getItem('irrgarten.lang');if(s)want.push(s)}catch(_){}
+  want.push(...(navigator.languages||[navigator.language||'']));
+  for(const w of want){const k=String(w).toLowerCase().slice(0,2);if(I18N[k])return k}
+  return 'en';
+}
+let lang=pickLang(),T=I18N[lang],lastResult=null;
+function applyLang(k,save){
+  lang=k;T=I18N[k];document.documentElement.lang=k;
+  if(save)try{localStorage.setItem('irrgarten.lang',k)}catch(_){}
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=T[el.dataset.i18n]});
+  $('restartBtn').setAttribute('aria-label',T.restart);$('restartBtn').title=T.restart;
+  $('rules').replaceChildren(...T.rules.map(r=>{const li=document.createElement('li');li.textContent=r;return li}));
+  $('langs').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===k));
+  if(lastResult)showResult();
+  hudCache='';fitTitles();
+}
+function fitTitles(){
+  document.querySelectorAll('.card h1').forEach(h=>{
+    h.style.fontSize='';const ov=h.closest('.overlay');const hid=ov.hidden;ov.hidden=false;
+    let fs=parseFloat(getComputedStyle(h).fontSize);
+    while(h.scrollWidth>h.clientWidth+1&&fs>24){fs-=2;h.style.fontSize=fs+'px'}
+    ov.hidden=hid;
+  });
+}
+addEventListener('resize',()=>fitTitles());
+document.fonts&&document.fonts.ready.then(()=>{fitTitles();hedgeDirty=true});
+for(const k of Object.keys(I18N)){
+  const b=document.createElement('button');b.type='button';b.dataset.lang=k;b.textContent=I18N[k].name;b.lang=k;
+  b.addEventListener('click',()=>applyLang(k,true));$('langs').append(b);
+}
+
+// ---------- canvas setup ----------
+let W=0,H=0,dpr=1,S=30,mx=0,my=0,lawnPat,pathPat,hedgePat;
+const hcv=document.createElement('canvas'),hctx=hcv.getContext('2d');
+let hedgeDirty=true,drawnT=-1;
+function mkPattern(bg,dot,size,rad){
+  const o=document.createElement('canvas');o.width=o.height=Math.round(size*dpr);const c=o.getContext('2d');c.scale(dpr,dpr);
+  c.fillStyle=bg;c.fillRect(0,0,size,size);c.fillStyle=dot;
+  for(const[x,y]of[[size/4,size/4],[size*3/4,size*3/4]]){c.beginPath();c.arc(x,y,rad,0,7);c.fill()}
+  const p=ctx.createPattern(o,'repeat');p.setTransform&&p.setTransform(new DOMMatrix().scale(1/dpr));return p;
+}
+function resize(){
+  const r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);
+  W=r.width;H=r.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+  lawnPat=mkPattern(C.lawn,'rgba(22,18,15,.13)',12,2);
+  pathPat=mkPattern(C.path,'rgba(160,110,40,.28)',9,1.5);
+  hedgePat=mkPattern(C.hedge,'rgba(10,50,20,.35)',8,1.6);
+  layout();hedgeDirty=true;
+}
+function layout(){
+  const m=st&&st.maze;if(!m)return;
+  // room above the maze for the flag, and below it for the drag hint
+  const FLAG=.75,bot=$('hint').hidden?PAD:44;
+  S=Math.max(8,Math.min((W-2*PAD)/m.cols,(H-PAD-bot)/(m.rows+FLAG)));
+  mx=(W-m.cols*S)/2;my=PAD+FLAG*S+(H-PAD-bot-(m.rows+FLAG)*S)/2;
+}
+addEventListener('resize',resize);
+const X=x=>mx+x*S,Y=y=>my+y*S;
+
+// ---------- maze ----------
+// Recursive backtracker: a perfect maze (exactly one route between any two cells).
+// h[r*cols+c] = wall on top of cell (c,r), r in 0..rows; v[r*(cols+1)+c] = wall left of cell (c,r), c in 0..cols.
+function genMaze(cols,rows){
+  const h=new Uint8Array((rows+1)*cols).fill(1),v=new Uint8Array(rows*(cols+1)).fill(1),seen=new Uint8Array(cols*rows);
+  const stack=[[0,0]];seen[0]=1;
+  while(stack.length){
+    const[c,r]=stack[stack.length-1],nb=[];
+    if(r>0&&!seen[(r-1)*cols+c])nb.push([c,r-1,0]);
+    if(r<rows-1&&!seen[(r+1)*cols+c])nb.push([c,r+1,1]);
+    if(c>0&&!seen[r*cols+c-1])nb.push([c-1,r,2]);
+    if(c<cols-1&&!seen[r*cols+c+1])nb.push([c+1,r,3]);
+    if(!nb.length){stack.pop();continue}
+    const[nc,nr,d]=nb[Math.random()*nb.length|0];
+    if(d===0)h[r*cols+c]=0;else if(d===1)h[(r+1)*cols+c]=0;else if(d===2)v[r*(cols+1)+c]=0;else v[r*(cols+1)+c+1]=0;
+    seen[nr*cols+nc]=1;stack.push([nc,nr]);
+  }
+  // merge wall runs into long segments: fewer capsules to collide with and to draw
+  const segs=[];
+  for(let r=0;r<=rows;r++){let s=-1;for(let c=0;c<=cols;c++){const on=c<cols&&h[r*cols+c];if(on&&s<0)s=c;if(!on&&s>=0){segs.push({x1:s,y1:r,x2:c,y2:r});s=-1}}}
+  for(let c=0;c<=cols;c++){let s=-1;for(let r=0;r<=rows;r++){const on=r<rows&&v[r*(cols+1)+c];if(on&&s<0)s=r;if(!on&&s>=0){segs.push({x1:c,y1:s,x2:c,y2:r});s=-1}}}
+  // bushes: round blobs strung along every wall, each with its own size, highlight, flower or grass tuft
+  const blobs=[],FL=[C.pop,C.white,C.paper,'#F59AC2'];
+  for(const s of segs){
+    const L=Math.hypot(s.x2-s.x1,s.y2-s.y1),n=Math.max(1,Math.round(L*4.5)),nx=(s.y2-s.y1)/L,ny=-(s.x2-s.x1)/L;
+    for(let i=0;i<=n;i++){
+      const t=i/n;
+      blobs.push({x:s.x1+(s.x2-s.x1)*t,y:s.y1+(s.y2-s.y1)*t,nx,ny,o:(Math.random()-.5)*.45,k:.92+Math.random()*.32,
+        hl:Math.random()<.7,fl:Math.random()<.13?FL[Math.random()*FL.length|0]:null,fa:Math.random()*7,
+        gr:Math.random()<.4?(Math.random()<.5?1:-1):0,ga:(Math.random()-.5)*.9});
+    }
+  }
+  return{cols,rows,h,v,segs,blobs};
+}
+function open(m,c,r,d){ // can you walk from cell (c,r) in direction d?
+  if(d===0)return r>0&&!m.h[r*m.cols+c];
+  if(d===1)return r<m.rows-1&&!m.h[(r+1)*m.cols+c];
+  if(d===2)return c>0&&!m.v[r*(m.cols+1)+c];
+  return c<m.cols-1&&!m.v[r*(m.cols+1)+c+1];
+}
+function bfs(m,sc,sr){
+  const dist=new Int16Array(m.cols*m.rows).fill(-1),q=[[sc,sr]];dist[sr*m.cols+sc]=0;
+  const D=[[0,-1],[0,1],[-1,0],[1,0]];
+  while(q.length){const[c,r]=q.shift();for(let d=0;d<4;d++)if(open(m,c,r,d)){const nc=c+D[d][0],nr=r+D[d][1],i=nr*m.cols+nc;if(dist[i]<0){dist[i]=dist[r*m.cols+c]+1;q.push([nc,nr])}}}
+  return dist;
+}
+
+// ---------- state ----------
+let st=null,sensor=false,last=performance.now(),paused=false;
+let gdev={x:0,y:0},cal=null,needCal=true;
+const joy={on:false,x:0,y:0,ox:0,oy:0,px:0,py:0},keys={};
+const colsFor=l=>Math.min(12,4+l);
+const secPerStep=l=>Math.max(.42,.95-.05*(l-1));
+function fresh(){return{mode:'play',level:1,score:0,parts:[],banner:null}}
+function newLevel(l){
+  st.level=l;
+  const cols=colsFor(l),aspect=W>0?(H-2*PAD)/(W-2*PAD):1.6;
+  const rows=Math.max(cols,Math.min(20,Math.round(cols*aspect)));
+  const m=genMaze(cols,rows);
+  // start in a random corner, hole in the cell farthest away along the paths
+  const corners=[[0,0],[cols-1,0],[0,rows-1],[cols-1,rows-1]],[sc,sr]=corners[Math.random()*4|0];
+  const dist=bfs(m,sc,sr);let best=0;for(let i=1;i<dist.length;i++)if(dist[i]>dist[best])best=i;
+  st.maze=m;st.hole={x:best%cols+.5,y:(best/cols|0)+.5};
+  st.ball={x:sc+.5,y:sr+.5,vx:0,vy:0,ru:0,rv:0,scale:1};
+  st.levelT=0;st.dur=6+dist[best]*secPerStep(l);st.p=0;st.t=T0;st.hurried=false;st.sunk=false;st.rustleCD=0;
+  st.banner={text:T.level(l),sub:T.find,t:1.8,max:1.8};
+  layout();hedgeDirty=true;
+}
+
+// ---------- input ----------
+// Gravity in the screen plane. From beta/gamma the "down" vector in device coordinates is
+// (cosβ·sinγ, -sinβ, …); x = right, y = toward the bottom edge. Calibrated to how the phone
+// was held when the round started, then rotated by the screen orientation.
+function onOri(e){
+  if(e.gamma==null||e.beta==null)return;
+  if(!sensor){sensor=true;$('hint').hidden=true;layout();hedgeDirty=true}
+  const R=Math.PI/180,b=e.beta*R,g=e.gamma*R;
+  const x=Math.cos(b)*Math.sin(g),y=Math.sin(b);
+  if(needCal||!cal){cal={x:Math.max(-.3,Math.min(.3,x)),y:Math.max(-.2,Math.min(.85,y))};needCal=false}
+  let dx=x-cal.x,dy=y-cal.y;
+  const a=((screen.orientation&&screen.orientation.angle)??window.orientation??0)*R;
+  gdev={x:dx*Math.cos(a)+dy*Math.sin(a),y:-dx*Math.sin(a)+dy*Math.cos(a)};
+}
+addEventListener('deviceorientation',onOri);
+function gravity(){
+  let x,y;
+  if(sensor){x=gdev.x;y=gdev.y}
+  else{
+    const kx=(keys.ArrowRight||keys.d?1:0)-(keys.ArrowLeft||keys.a?1:0),ky=(keys.ArrowDown||keys.s?1:0)-(keys.ArrowUp||keys.w?1:0);
+    x=joy.x*.5+kx*.4;y=joy.y*.5+ky*.4;
+  }
+  const L=Math.hypot(x,y);
+  if(L<.03)return{x:0,y:0};
+  if(L>.6){x*=.6/L;y*=.6/L}
+  return{x,y};
+}
+const stage=$('stage');
+function local(e){const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]}
+stage.addEventListener('pointerdown',e=>{
+  if(sensor||!st||st.mode!=='play')return;
+  const[x,y]=local(e);joy.on=true;joy.ox=joy.px=x;joy.oy=joy.py=y;joy.x=joy.y=0;
+  try{stage.setPointerCapture(e.pointerId)}catch(_){}
+});
+stage.addEventListener('pointermove',e=>{
+  if(!joy.on)return;const[x,y]=local(e);
+  let dx=(x-joy.ox)/60,dy=(y-joy.oy)/60;const L=Math.hypot(dx,dy);if(L>1){dx/=L;dy/=L}
+  joy.x=dx;joy.y=dy;joy.px=joy.ox+dx*60;joy.py=joy.oy+dy*60;
+});
+const joyOff=()=>{joy.on=false;joy.x=joy.y=0};
+stage.addEventListener('pointerup',joyOff);stage.addEventListener('pointercancel',joyOff);
+addEventListener('keydown',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;if(/^Arrow|^[wasd]$/.test(k)){keys[k]=true;e.preventDefault()}});
+addEventListener('keyup',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false});
+addEventListener('blur',()=>{for(const k in keys)keys[k]=false;joyOff()});
+document.addEventListener('visibilitychange',()=>{paused=document.hidden;last=performance.now()});
+
+// ---------- update ----------
+function popText(x,y,text,col){st.parts.push({type:'pop',x,y,t:0,life:.7,rot:(Math.random()-.5)*.5,text,col})}
+function leaves(x,y,n,spd){
+  for(let i=0;i<n;i++){const a=Math.random()*7,v=(.6+Math.random())*spd;
+    st.parts.push({type:'leaf',x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-.6,rot:Math.random()*7,vr:(Math.random()-.5)*12,t:0,life:.6+Math.random()*.4})}
+}
+function collide(b){
+  const hr=st.t/2,R=BALL_R+hr;
+  for(let it=0;it<3;it++){
+    for(const s of st.maze.segs){
+      if(b.x<Math.min(s.x1,s.x2)-R||b.x>Math.max(s.x1,s.x2)+R||b.y<Math.min(s.y1,s.y2)-R||b.y>Math.max(s.y1,s.y2)+R)continue;
+      const sx=s.x2-s.x1,sy=s.y2-s.y1,L2=sx*sx+sy*sy;
+      const u=Math.max(0,Math.min(1,((b.x-s.x1)*sx+(b.y-s.y1)*sy)/L2));
+      const qx=s.x1+sx*u,qy=s.y1+sy*u,dx=b.x-qx,dy=b.y-qy,d2=dx*dx+dy*dy;
+      if(d2>=R*R||d2<1e-10)continue;
+      const d=Math.sqrt(d2),nx=dx/d,ny=dy/d;
+      b.x=qx+nx*R;b.y=qy+ny*R;
+      const vn=b.vx*nx+b.vy*ny;
+      if(vn<0){
+        if(-vn>2.2&&st.rustleCD<=0){
+          st.rustleCD=.35;leaves(qx+nx*hr,qy+ny*hr,4,1.4);
+          if(-vn>4)popText(qx+nx*hr,qy+ny*hr,T.rustle[Math.random()*T.rustle.length|0],C.leaf);
+        }
+        b.vx-=1.3*vn*nx;b.vy-=1.3*vn*ny;     // a soft bounce off the leaves
+      }
+    }
+  }
+}
+function update(dt){
+  if(!st)return;
+  for(const p of st.parts){p.t+=dt;if(p.type==='leaf'){p.vy+=3*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot+=p.vr*dt}}
+  st.parts=st.parts.filter(p=>p.t<p.life);
+  if(st.banner){st.banner.t-=dt;if(st.banner.t<=0)st.banner=null}
+  if(!st.maze)return;
+  const b=st.ball;
+  if(st.mode==='play'){
+    st.levelT+=dt;st.p=Math.min(1,st.levelT/st.dur);
+    st.t=T0+(T_END-T0)*Math.pow(st.p,1.25);
+    if(st.p>=.8&&!st.hurried){st.hurried=true;st.banner={text:T.hurry,t:1.1,max:1.1}}
+    st.rustleCD-=dt;
+    const g=gravity();
+    let ax=g.x*ACC,ay=g.y*ACC;
+    const hx=st.hole.x-b.x,hy=st.hole.y-b.y,hd=Math.hypot(hx,hy);
+    if(hd<HOLE_R){ax+=hx*60;ay+=hy*60}   // the rim pulls the ball in
+    b.vx+=ax*dt;b.vy+=ay*dt;
+    const fr=Math.exp(-.9*dt);b.vx*=fr;b.vy*=fr;
+    const sp=Math.hypot(b.vx,b.vy);if(sp>MAX_V){b.vx*=MAX_V/sp;b.vy*=MAX_V/sp}
+    const n=Math.max(1,Math.ceil(Math.hypot(b.vx,b.vy)*dt/.05));
+    for(let i=0;i<n;i++){b.x+=b.vx*dt/n;b.y+=b.vy*dt/n;collide(b)}
+    b.ru+=b.vx*dt/BALL_R;b.rv+=b.vy*dt/BALL_R;
+    if(Math.hypot(st.hole.x-b.x,st.hole.y-b.y)<HOLE_R*.75){st.mode='sink';st.sinkT=0}
+    else if(st.p>=1)gameOver();
+  }else if(st.mode==='sink'){
+    st.sinkT+=dt;const k=Math.min(1,st.sinkT/.35);
+    b.x+=(st.hole.x-b.x)*Math.min(1,dt*16);b.y+=(st.hole.y-b.y)*Math.min(1,dt*16);b.scale=1-.7*k;
+    if(k>=1&&!st.sunk){
+      st.sunk=true;const left=Math.max(0,st.dur-st.levelT),gain=100*st.level+Math.round(left)*10;st.score+=gain;
+      popText(st.hole.x,st.hole.y,T.sink[Math.random()*T.sink.length|0],C.white);
+      st.parts.push({type:'gain',x:st.hole.x,y:st.hole.y,t:0,life:1.1,text:'+'+gain});
+    }
+    if(st.sinkT>1.3){newLevel(st.level+1);st.mode='play'}
+  }else if(st.mode==='over'){
+    st.t=Math.min(T_END+.12,st.t+dt*.15);   // keep closing in on the ball
+  }
+}
+
+// ---------- draw ----------
+function star(x,y,R,r,n){ctx.beginPath();for(let i=0;i<n*2;i++){const a=i/(n*2)*Math.PI*2-Math.PI/2,rr=i%2?r:R;ctx.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr)}ctx.closePath()}
+function inkText(txt,x,y,size,fill,rot=0){
+  ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.font=`${size}px ${V('--display')}`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.lineJoin='round';ctx.lineWidth=size*.16;ctx.strokeStyle=C.ink;ctx.fillStyle=C.ink;ctx.fillText(txt,size*.06,size*.06);ctx.strokeText(txt,0,0);ctx.fillStyle=fill;ctx.fillText(txt,0,0);ctx.restore();
+}
+// The hedges are drawn into an offscreen canvas and only redrawn when they have grown visibly.
+function renderHedges(){
+  const m=st.maze;hcv.width=cv.width;hcv.height=cv.height;
+  const h=hctx;h.setTransform(dpr,0,0,dpr,0,0);h.clearRect(0,0,W,H);
+  const R=st.t*S/2,ink=Math.max(2,Math.min(4,S*.06)),sh=Math.max(2,S*.07);
+  const bx=b=>X(b.x)+b.nx*R*b.o,by=b=>Y(b.y)+b.ny*R*b.o;
+  const body=(extra,fill,dx,dy)=>{
+    h.lineCap='round';h.lineWidth=2*(R+extra);h.strokeStyle=fill;h.beginPath();
+    for(const s of m.segs){h.moveTo(X(s.x1)+dx,Y(s.y1)+dy);h.lineTo(X(s.x2)+dx,Y(s.y2)+dy)}h.stroke();
+    h.fillStyle=fill;h.beginPath();
+    for(const b of m.blobs){const r=R*b.k+extra,x=bx(b)+dx,y=by(b)+dy;h.moveTo(x+r,y);h.arc(x,y,r,0,7)}h.fill();
+  };
+  // drop shadow on the gravel
+  body(ink,'rgba(22,18,15,.3)',sh*.7,sh);
+  // grass tufts sticking out of the bushes; drawn first so the bush outline covers their roots
+  const blade=(x,y,a,len,lw,col)=>{h.strokeStyle=col;h.lineWidth=lw;h.lineCap='round';h.beginPath();h.moveTo(x,y);h.quadraticCurveTo(x+Math.cos(a)*len*.6+Math.cos(a+1.4)*len*.15,y+Math.sin(a)*len*.6+Math.sin(a+1.4)*len*.15,x+Math.cos(a)*len,y+Math.sin(a)*len);h.stroke()};
+  for(const pass of[0,1])for(const b of m.blobs){
+    if(!b.gr)continue;
+    const base=Math.atan2(b.ny*b.gr,b.nx*b.gr)+b.ga,r=R*b.k,len=r*.7+S*.12;
+    for(const da of[-.45,0,.45]){
+      const a=base+da,x=bx(b)+Math.cos(a)*r*.6,y=by(b)+Math.sin(a)*r*.6,l=len*(da?0.8:1);
+      if(pass===0)blade(x,y,a,l,ink*2.3,C.ink);else blade(x,y,a,l,ink*.9,C.leaf);
+    }
+  }
+  body(ink,C.ink,0,0);
+  body(0,hedgePat,0,0);
+  // leafy highlights and little leaf marks
+  h.fillStyle=C.leaf;h.beginPath();
+  for(const b of m.blobs){if(!b.hl)continue;const r=R*b.k,x=bx(b)-r*.3,y=by(b)-r*.32,rr=r*.42;h.moveTo(x+rr,y);h.arc(x,y,rr,0,7)}h.fill();
+  h.strokeStyle='rgba(10,50,20,.55)';h.lineWidth=Math.max(1,ink*.55);h.lineCap='round';h.beginPath();
+  for(const b of m.blobs){if(b.hl||R<S*.12)continue;const r=R*b.k,x=bx(b)+r*.15,y=by(b)+r*.2;h.moveTo(x-r*.28,y-r*.12);h.quadraticCurveTo(x,y+r*.12,x+r*.28,y-r*.12)}h.stroke();
+  // flowers open up as the bushes grow
+  for(const b of m.blobs){
+    if(!b.fl)continue;const r=R*b.k,fr=Math.min(S*.09,r*.32);if(fr<1.5)continue;
+    const x=bx(b)+Math.cos(b.fa)*r*.45,y=by(b)+Math.sin(b.fa)*r*.45;
+    h.fillStyle=b.fl;h.strokeStyle=C.ink;h.lineWidth=Math.max(1,ink*.45);
+    for(let i=0;i<5;i++){const a=b.fa+i/5*Math.PI*2;h.beginPath();h.arc(x+Math.cos(a)*fr*.75,y+Math.sin(a)*fr*.75,fr*.55,0,7);h.fill();h.stroke()}
+    h.beginPath();h.arc(x,y,fr*.4,0,7);h.fillStyle=b.fl===C.paper?C.pop:C.paper;h.fill();h.stroke();
+  }
+  drawnT=st.t;hedgeDirty=false;
+}
+function drawHole(){
+  const x=X(st.hole.x),y=Y(st.hole.y),r=HOLE_R*S;
+  ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle=C.ink;ctx.fill();
+  ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.clip();
+  ctx.beginPath();ctx.arc(x+r*.25,y+r*.3,r*.95,0,7);ctx.fillStyle='#4a3a2a';ctx.fill();   // lit inner wall
+  ctx.beginPath();ctx.arc(x+r*.08,y+r*.12,r*.78,0,7);ctx.fillStyle=C.ink;ctx.fill();
+  ctx.restore();
+  ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.lineWidth=Math.max(2.5,S*.06);ctx.strokeStyle=C.ink;ctx.stroke();
+}
+function drawFlag(){
+  const x=X(st.hole.x),y=Y(st.hole.y),len=S*.95,tx=x+S*.12,ty=y-len,now=performance.now()/1000;
+  const lw=Math.max(2,S*.05);
+  ctx.lineCap='round';ctx.strokeStyle=C.ink;ctx.lineWidth=lw+3;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(tx,ty);ctx.stroke();
+  ctx.strokeStyle=C.white;ctx.lineWidth=lw;ctx.stroke();
+  const fw=S*.55,fh=S*.32,wv=Math.sin(now*6)*S*.05;
+  ctx.beginPath();ctx.moveTo(tx,ty);ctx.quadraticCurveTo(tx+fw*.5,ty+wv,tx+fw,ty+fh*.5+wv*.5);ctx.quadraticCurveTo(tx+fw*.5,ty+fh*.5-wv,tx+lw*.2,ty+fh);ctx.closePath();
+  ctx.fillStyle=C.pop;ctx.fill();ctx.lineWidth=Math.max(2,S*.045);ctx.lineJoin='round';ctx.strokeStyle=C.ink;ctx.stroke();
+}
+function drawBall(){
+  const b=st.ball,x=X(b.x),y=Y(b.y),r=BALL_R*S*b.scale;if(r<.5)return;
+  if(st.mode!=='sink'){ctx.beginPath();ctx.ellipse(x+r*.3,y+r*.45,r*.95,r*.8,0,0,7);ctx.fillStyle='rgba(22,18,15,.3)';ctx.fill()}
+  ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle=C.pop;ctx.fill();ctx.clip();
+  // white spots on the marble roll along with it
+  for(const[ou,ov]of[[0,0],[Math.PI,Math.PI*.6]]){
+    const u=b.ru+ou,v=b.rv+ov,cu=Math.cos(u),cvv=Math.cos(v);
+    if(cu<=0||cvv<=0)continue;
+    ctx.beginPath();ctx.ellipse(x+Math.sin(u)*r*.75,y+Math.sin(v)*r*.75,r*.32*cu,r*.32*cvv,0,0,7);ctx.fillStyle=C.white;ctx.fill();
+  }
+  ctx.beginPath();ctx.arc(x+r*.35,y+r*.4,r*.9,0,7);ctx.arc(x+r*1.6,y+r*1.6,r*2.2,0,7,true);ctx.fillStyle='rgba(22,18,15,.25)';ctx.fill('evenodd');
+  ctx.restore();
+  ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.lineWidth=Math.max(2,S*.055)*Math.max(.4,b.scale);ctx.strokeStyle=C.ink;ctx.stroke();
+  ctx.beginPath();ctx.ellipse(x-r*.38,y-r*.4,r*.24,r*.16,-.7,0,7);ctx.fillStyle=C.white;ctx.fill();
+}
+function draw(){
+  ctx.fillStyle=lawnPat;ctx.fillRect(0,0,W,H);
+  if(!st||!st.maze)return;
+  const m=st.maze,w=m.cols*S,hh=m.rows*S;
+  ctx.fillStyle='rgba(22,18,15,.25)';ctx.fillRect(mx+5,my+7,w,hh);
+  ctx.fillStyle=pathPat;ctx.fillRect(mx,my,w,hh);
+  drawHole();
+  if(hedgeDirty||Math.abs(st.t-drawnT)*S>.5)renderHedges();
+  // the bushes rustle when time is nearly up
+  let jx=0,jy=0;
+  if(st.mode==='play'&&st.p>.8){const a=(st.p-.8)*5*1.2;jx=(Math.random()-.5)*a;jy=(Math.random()-.5)*a}
+  if(st.mode==='sink')drawBall();
+  ctx.drawImage(hcv,jx,jy,W,H);
+  if(st.mode!=='sink')drawBall();
+  drawFlag();
+  for(const p of st.parts){
+    const k=p.t/p.life,px=X(p.x),py=Y(p.y);
+    if(p.type==='leaf'){
+      ctx.save();ctx.translate(px,py);ctx.rotate(p.rot);ctx.globalAlpha=1-Math.max(0,k-.6)/.4;
+      ctx.beginPath();ctx.ellipse(0,0,S*.09,S*.045,0,0,7);ctx.fillStyle=C.leaf;ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle=C.ink;ctx.stroke();ctx.restore();continue;
+    }
+    if(p.type==='gain'){ctx.save();ctx.globalAlpha=1-Math.max(0,k-.7)/.3;inkText(p.text,px,py-S*.6-k*S*.8,Math.max(16,S*.5),C.paper,.05);ctx.restore();continue}
+    const sc=Math.min(1,k*5)*(1-k*.3),R=Math.max(22,S*.8)*sc,yy=py-S*.4-k*S*.4;
+    ctx.save();ctx.globalAlpha=1-Math.max(0,k-.7)/.3;
+    star(px,yy,R,R*.62,10);ctx.fillStyle=p.col===C.white?C.paper:C.white;ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=C.ink;ctx.stroke();
+    inkText(p.text,px,yy,R*.5+1,p.col===C.white?C.pop:C.hedge,p.rot);ctx.restore();
+  }
+  if(st.banner){
+    const bn=st.banner,k=Math.min(1,(bn.max-bn.t)*6),sz=Math.min(54,W*.12);
+    inkText(bn.text,W/2,H*.4,sz*k+1,bn.text===T.hurry?C.pop:C.paper,-.06);
+    if(bn.sub)inkText(bn.sub,W/2+8,H*.4+sz*.85,sz*.5*k+1,C.white,.04);
+  }
+  if(joy.on){
+    ctx.beginPath();ctx.arc(joy.ox,joy.oy,60,0,7);ctx.lineWidth=3;ctx.strokeStyle='rgba(22,18,15,.5)';ctx.stroke();
+    ctx.beginPath();ctx.arc(joy.px,joy.py,18,0,7);ctx.fillStyle='rgba(255,253,246,.85)';ctx.fill();ctx.strokeStyle=C.ink;ctx.stroke();
+  }
+}
+
+// ---------- HUD ----------
+const lvlEl=$('lvl'),scoreEl=$('score'),fillEl=$('fill');let hudCache='';
+function hud(){
+  if(!st)return;const p=st.mode==='start'?0:st.mode==='over'?1:st.p||0;
+  const s=st.level+'|'+st.score+'|'+Math.round(p*200);if(s===hudCache)return;hudCache=s;
+  lvlEl.textContent=T.lvl(st.level);scoreEl.textContent=T.pts(st.score);
+  fillEl.style.width=(p*100).toFixed(1)+'%';fillEl.classList.toggle('danger',p>=.8&&st.mode==='play');
+}
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(!paused)update(dt);draw();hud();requestAnimationFrame(loop);
+}
+
+async function begin(){
+  try{if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function'){const r=await DeviceOrientationEvent.requestPermission();if(r==='granted')addEventListener('deviceorientation',onOri)}}catch(_){}
+  try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(_){}
+  needCal=true;
+  setTimeout(()=>{if(!sensor){$('hint').hidden=false;layout();hedgeDirty=true}},1200);
+  st=fresh();newLevel(1);lastResult=null;$('startOv').hidden=true;$('overOv').hidden=true;$('restartBtn').hidden=false;
+}
+function showResult(){const r=lastResult;$('final').textContent=T.final(T.pts(r.score),r.level);$('best').textContent=T.best(r.best)}
+function gameOver(){
+  st.mode='over';st.banner=null;leaves(st.ball.x,st.ball.y,14,2.5);
+  let best=0;
+  try{best=+localStorage.getItem('irrgarten.best')||0;if(st.score>best){best=st.score;localStorage.setItem('irrgarten.best',best)}}catch(_){best=Math.max(best,st.score)}
+  lastResult={score:st.score,level:st.level,best};showResult();
+  setTimeout(()=>{$('overOv').hidden=false;fitTitles();$('againBtn').focus()},900);
+}
+$('startBtn').addEventListener('click',begin);
+$('againBtn').addEventListener('click',begin);
+$('restartBtn').addEventListener('click',e=>{e.currentTarget.blur();begin()});
+
+// idle backdrop behind the start card: a half-grown maze
+st=fresh();st.mode='start';
+applyLang(lang,false);
+resize();newLevel(1);st.banner=null;st.t=T0+.12;
+requestAnimationFrame(loop);
+// test hook
+window.__irr={get st(){return st},keys};
+})();
+</script>
+</body>
+</html>
