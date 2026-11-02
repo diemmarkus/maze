@@ -124,7 +124,7 @@ const T0=.14;               // hedge thickness at level start
 const T_END=1-2*BALL_R;     // thickness at which corridors are exactly as wide as the ball: shut
 const ACC=24;               // cells/s² at full tilt
 const MAX_V=7;
-const WASP_V=[2.4,2.7,3.0],WASP_WAKE=.5,WASP_CHASE=3.2,WASP_LEASH=2.4;   // wasp speed per difficulty (cells/s), take-off delay and chase time (s), how far from the nest they fly              // cells/s
+const WASP_V=[1.8,2.2,2.6],WASP_WAKE=.6,WASP_CHASE=2.8,WASP_LEASH=2.0;   // wasp speed per difficulty (cells/s), take-off delay and chase time (s), how far from the nest they fly              // cells/s
 const PAD=14;               // px around the maze
 
 // ---------- i18n ----------
@@ -499,8 +499,11 @@ function update(dt){
     const ne=st.nest;
     if(ne){
       if(ne.cool>0)ne.cool-=dt;
-      if(!st.wasps.length&&ne.cool<=0&&Math.hypot(ne.x-b.x,ne.y-b.y)<BALL_R+.22){
-        popText(ne.x,ne.y,'BZZZ!',C.paper);
+      const nd=Math.hypot(ne.x-b.x,ne.y-b.y);
+      // rolling over the nest only stirs it up; the wasps come out once the ball has rolled off it
+      if(!st.wasps.length&&ne.cool<=0&&nd<BALL_R+.22)ne.stirred=true;
+      if(ne.stirred&&nd>BALL_R+.45){
+        ne.stirred=false;popText(ne.x,ne.y,'BZZZ!',C.paper);
         for(let k=0;k<3;k++)st.wasps.push({x:ne.x,y:ne.y,vx:(Math.random()-.5)*3,vy:(Math.random()-.5)*3,t:0,ph:Math.random()*7,home:false});
       }
       for(const w of st.wasps){
@@ -513,7 +516,7 @@ function update(dt){
         const hx=w.x-ne.x,hy=w.y-ne.y,hd=Math.hypot(hx,hy);
         if(hd>WASP_LEASH){w.x=ne.x+hx/hd*WASP_LEASH;w.y=ne.y+hy/hd*WASP_LEASH}
         if(w.home&&hd<.15)w.gone=true;
-        if(!w.home&&Math.hypot(w.x-b.x,w.y-b.y)<BALL_R+.1){
+        if(!w.home&&w.t>WASP_WAKE&&Math.hypot(w.x-b.x,w.y-b.y)<BALL_R+.1){
           popText(b.x,b.y,'AUA!',C.white);gameOver(true);return;
         }
       }
@@ -617,7 +620,8 @@ function drawWasp(x,y,sz,ph,ang){
 function drawNest(){
   const ne=st.nest;if(!ne)return;const now=performance.now()/1000,x=X(ne.x),y=Y(ne.y),r=S*.3,lw=Math.max(2,S*.05);
   ctx.beginPath();ctx.ellipse(x+S*.05,y+S*.12,r*.9,r*.35,0,0,7);ctx.fillStyle='rgba(22,18,15,.25)';ctx.fill();
-  ctx.save();ctx.translate(x,y+Math.sin(now*2)*S*.02);
+  const sh=ne.stirred?Math.sin(now*50)*S*.05:0;
+  ctx.save();ctx.translate(x+sh,y+Math.sin(now*2)*S*.02);
   ctx.beginPath();ctx.ellipse(0,0,r*.85,r,0,0,7);ctx.fillStyle='#D9B98A';ctx.fill();
   ctx.save();ctx.clip();ctx.strokeStyle='#A9875A';ctx.lineWidth=lw;
   for(let k=-3;k<=3;k++){ctx.beginPath();ctx.ellipse(0,k*r*.3,r,r*.12,0,0,Math.PI);ctx.stroke()}ctx.restore();
