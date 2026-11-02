@@ -307,6 +307,7 @@ const joy={on:false,x:0,y:0,ox:0,oy:0,px:0,py:0},keys={};
 const colsFor=l=>Math.min(12,4+l);
 const secPerStep=l=>Math.max(.42,.95-.05*(l-1));
 function fresh(){return{mode:'play',level:1,score:0,parts:[],banner:null,diff}}
+let bag=[];
 function newLevel(l){
   st.level=l;if(st.mode!=='start')setReached(l);
   const cols=colsFor(l),aspect=W>0?(H-2*PAD)/(W-2*PAD):1.6;
@@ -329,8 +330,11 @@ function newLevel(l){
     while(i<cand.length-1&&pick>cand[i].w){pick-=cand[i].w;i++}
     out.push({x:cand[i].x,y:cand[i].y,taken:false,ph:Math.random()*7});cand.splice(i,1);
   }return out};
-  st.shears=take(l>=5?2:1);
-  st.caters=take(l>=4?2:1);
+  // power-ups take turns: each run of three levels has one with shears, one with a caterpillar and one with nothing, shuffled
+  if(!bag.length)bag=['shears','cater','none'].sort(()=>Math.random()-.5);
+  const kind=bag.pop(),many=l>=6?2:1;
+  st.shears=take(kind==='shears'?many:0);
+  st.caters=take(kind==='cater'?many:0);
   st.munchers=[];st.rate=1;
   st.levelT=0;st.dur=(6+dist[best]*secPerStep(l))*DIFFS[st.diff].mul;st.cutPending=0;st.p=0;st.t=T0;st.hurried=false;st.sunk=false;st.rustleCD=0;
   st.banner={text:T.level(l),sub:T.find,t:1.8,max:1.8};
@@ -655,7 +659,7 @@ async function begin(){
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(_){}
   needCal=true;
   setTimeout(()=>{if(!sensor){$('hint').hidden=false;layout();hedgeDirty=true}},1200);
-  st=fresh();newLevel(startLvl||1);lastResult=null;$('startOv').hidden=true;$('overOv').hidden=true;$('restartBtn').hidden=false;
+  st=fresh();bag=[];newLevel(startLvl||1);lastResult=null;$('startOv').hidden=true;$('overOv').hidden=true;$('restartBtn').hidden=false;
 }
 function showResult(){const r=lastResult;$('final').textContent=T.diff[r.diff]+' · '+T.final(T.pts(r.score),r.level);$('best').textContent=T.best(r.best)}
 function gameOver(){

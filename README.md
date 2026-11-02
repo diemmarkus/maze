@@ -6,6 +6,7 @@ A comic-style tilt maze for the phone. Roll the ball through a hedge maze to the
 - No sensor (desktop)? Drag on the screen, or use the arrow keys / WASD.
 - Each level the maze gets bigger and the hedges grow faster. Time left when you sink the ball is bonus points.
 - **Difficulty:** Easy, Medium, Hard (Hard = the original speed). Best score is kept per difficulty.
+- **Power-ups:** each level has either hedge shears, a caterpillar, or nothing — every three levels you get each once, in random order.
 - **Hedge shears:** roll over them to cut the hedges back by 60 %.
 - **Caterpillars:** roll over one and it crawls into the hedge and munches — the bushes grow 35 % slower for the rest of the level.
 - **Continue:** after a loss you can restart at any level you've reached on that difficulty. The restart button retries the current level.
