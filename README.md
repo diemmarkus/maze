@@ -5,6 +5,10 @@ A comic-style tilt maze for the phone. Roll the ball through a hedge maze to the
 - **Tilt** the phone (motion sensor) to roll the ball. Wherever you hold the phone when you start counts as level.
 - No sensor (desktop)? Drag on the screen, or use the arrow keys / WASD.
 - Each level the maze gets bigger and the hedges grow faster. Time left when you sink the ball is bonus points.
+- **Difficulty:** Easy, Medium, Hard (Hard = the original speed). Best score is kept per difficulty.
+- **Hedge shears:** roll over them to cut the hedges back by 60 %.
+- **Caterpillars:** roll over one and it crawls into the hedge and munches — the bushes grow 35 % slower for the rest of the level.
+- **Continue:** after a loss you can restart at any level you've reached on that difficulty. The restart button retries the current level.
 - Languages: EN, DE, FR, ES, IT, PT.
 
 Single self-contained `index.html` — no build step. Same look and tilt handling as [Don't Spill](https://github.com/diemmarkus/dont-spill).

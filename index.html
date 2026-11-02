@@ -55,6 +55,16 @@ canvas{display:block;width:100%;height:100%}
 .btn:focus-visible{outline:3px dashed var(--pop);outline-offset:4px}
 .big{font-family:var(--display);font-size:22px;letter-spacing:.04em}
 .hint{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));background:var(--white);border:3px solid var(--ink);border-radius:6px;box-shadow:3px 3px 0 var(--ink);padding:2px 10px;font-family:var(--display);letter-spacing:.05em;font-size:14px;white-space:nowrap;pointer-events:none}
+.diffs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px}
+.diffs button{font-family:var(--display);font-size:18px;letter-spacing:.05em;background:var(--white);color:var(--ink);border:3px solid var(--ink);border-radius:8px;padding:5px 2px;box-shadow:3px 3px 0 var(--ink);cursor:pointer;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.diffs button[aria-pressed="true"]{background:var(--paper);transform:translate(-1px,-1px) rotate(-2deg);box-shadow:4px 4px 0 var(--ink)}
+.diffs button:focus-visible{outline:3px dashed var(--pop);outline-offset:2px}
+.lvls{margin:6px 0 2px}
+.lvls>span{display:block;font-family:var(--display);letter-spacing:.05em;font-size:14px;margin-bottom:4px}
+.lvlrow{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-height:84px;overflow-y:auto;padding:2px 4px 4px 2px}
+.lvlrow button{font-family:var(--display);font-size:17px;width:36px;height:32px;padding:0;background:var(--white);color:var(--ink);border:2px solid var(--ink);border-radius:6px;box-shadow:2px 2px 0 var(--ink);cursor:pointer;font-variant-numeric:tabular-nums}
+.lvlrow button[aria-pressed="true"]{background:var(--pop);color:var(--white)}
+.lvlrow button:focus-visible{outline:3px dashed var(--pop);outline-offset:2px}
 .langs{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:14px}
 .langs button{font-family:var(--display);font-size:15px;letter-spacing:.06em;background:var(--white);color:var(--ink);border:2px solid var(--ink);border-radius:6px;padding:2px 8px;box-shadow:2px 2px 0 var(--ink);cursor:pointer}
 .langs button[aria-pressed="true"]{background:var(--paper)}
@@ -79,6 +89,8 @@ canvas{display:block;width:100%;height:100%}
         <h1 data-i18n="title">HEDGE MAZE!</h1>
         <p data-i18n="intro">The hedges are growing. Fast.</p>
         <ul id="rules"></ul>
+        <div class="diffs" role="group" aria-label="Difficulty"></div>
+        <div class="lvls" hidden><span data-i18n="from">START AT LEVEL</span><div class="lvlrow" role="group"></div></div>
         <button class="btn" id="startBtn" data-i18n="start">ROLL!</button>
         <div class="langs" id="langs" role="group" aria-label="Language"></div>
       </div>
@@ -89,6 +101,8 @@ canvas{display:block;width:100%;height:100%}
         <p data-i18n="stuck">The paths are shut.</p>
         <p class="big" id="final">0 PTS · LEVEL 1</p>
         <p id="best">Best: 0</p>
+        <div class="diffs" role="group" aria-label="Difficulty"></div>
+        <div class="lvls" hidden><span data-i18n="from">START AT LEVEL</span><div class="lvlrow" role="group"></div></div>
         <button class="btn" id="againBtn" data-i18n="again">AGAIN</button>
       </div>
     </div>
@@ -115,36 +129,36 @@ const PAD=14;               // px around the maze
 // ---------- i18n ----------
 const NB=' ';
 const I18N={
-  en:{name:'EN',title:'HEDGE MAZE!',intro:'The hedges are growing. Fast.',
+  en:{name:'EN',cater:'Caterpillars munch the hedges: roll over one and the bushes grow slower.',munch:'MUNCH!',from:'START AT LEVEL',title:'HEDGE MAZE!',intro:'The hedges are growing. Fast.',
     rules:['Tilt your phone to roll the ball.','Find the hole before the hedges close the paths.','The longer you take, the thicker the bushes get.','Hold the phone comfortably when you start: that counts as level.'],
     start:'ROLL!',over:'OVERGROWN!',stuck:'The paths are shut.',again:'AGAIN',restart:'Restart',grow:'OVERGROWN',tilt:'DRAG TO TILT (NO MOTION SENSOR)',
     pts:n=>n+' PTS',lvl:n=>'LVL '+n,final:(p,l)=>p+' · LEVEL '+l,best:n=>'Best: '+n+' pts',
-    level:n=>'LEVEL '+n+'!',find:'FIND THE HOLE!',sink:['PLOP!','IN!','HOLE!'],hurry:'HURRY!',rustle:['RUSTLE!','SWISH!']},
-  de:{name:'DE',title:'IRRGARTEN!',intro:'Die Hecken wachsen. Schnell.',
+    level:n=>'LEVEL '+n+'!',find:'FIND THE HOLE!',sink:['PLOP!','IN!','HOLE!'],diff:['EASY','MEDIUM','HARD'],shears:'Roll over the hedge shears to cut the bushes back.',snip:'SNIP!',hurry:'HURRY!',rustle:['RUSTLE!','SWISH!']},
+  de:{name:'DE',cater:'Raupen fressen an den Hecken: fahr über eine, dann wächst alles langsamer.',munch:'MAMPF!',from:'STARTEN BEI LEVEL',title:'IRRGARTEN!',intro:'Die Hecken wachsen. Schnell.',
     rules:['Kipp das Handy, um die Kugel zu rollen.','Finde das Loch, bevor die Hecken die Wege zumachen.','Je länger du brauchst, desto dicker werden die Büsche.','Halt das Handy beim Start bequem – so gilt es als waagrecht.'],
     start:'LOSROLLEN!',over:'ZUGEWACHSEN!',stuck:'Die Wege sind zu.',again:'NOCHMAL',restart:'Neu starten',grow:'ZUGEWACHSEN',tilt:'ZIEHEN ZUM KIPPEN (KEIN SENSOR)',
     pts:n=>n+' PKT',lvl:n=>'LVL '+n,final:(p,l)=>p+' · LEVEL '+l,best:n=>'Rekord: '+n+' Punkte',
-    level:n=>'LEVEL '+n+'!',find:'FINDE DAS LOCH!',sink:['PLOPP!','DRIN!','LOCH!'],hurry:'SCHNELL!',rustle:['RASCHEL!','KNISTER!']},
-  fr:{name:'FR',title:'LABYRINTHE'+NB+'!',intro:'Les haies poussent. Vite.',
+    level:n=>'LEVEL '+n+'!',find:'FINDE DAS LOCH!',sink:['PLOPP!','DRIN!','LOCH!'],diff:['LEICHT','MITTEL','SCHWER'],shears:'Fahr über die Heckenschere – dann werden die Büsche zurückgeschnitten.',snip:'SCHNIPP!',hurry:'SCHNELL!',rustle:['RASCHEL!','KNISTER!']},
+  fr:{name:'FR',cater:'Les chenilles grignotent les haies'+NB+': passe sur l\u2019une d\u2019elles et les buissons poussent moins vite.',munch:'MIAM'+NB+'!',from:'COMMENCER AU NIVEAU',title:'LABYRINTHE'+NB+'!',intro:'Les haies poussent. Vite.',
     rules:['Incline le téléphone pour faire rouler la bille.','Trouve le trou avant que les haies ne bouchent les chemins.','Plus tu traînes, plus les buissons grossissent.','Tiens le téléphone confortablement au départ'+NB+': ce sera l’horizontale.'],
     start:'ROULE'+NB+'!',over:'ENVAHI'+NB+'!',stuck:'Les chemins sont bouchés.',again:'ENCORE',restart:'Recommencer',grow:'ENVAHI',tilt:'GLISSE POUR INCLINER (PAS DE CAPTEUR)',
     pts:n=>n+' PTS',lvl:n=>'NIV. '+n,final:(p,l)=>p+' · NIVEAU '+l,best:n=>'Record'+NB+': '+n+' pts',
-    level:n=>'NIVEAU '+n+NB+'!',find:'TROUVE LE TROU'+NB+'!',sink:['PLOP'+NB+'!','DEDANS'+NB+'!'],hurry:'VITE'+NB+'!',rustle:['FROUFROU'+NB+'!','FRRR'+NB+'!']},
-  es:{name:'ES',title:'¡LABERINTO!',intro:'Los setos crecen. Rápido.',
+    level:n=>'NIVEAU '+n+NB+'!',find:'TROUVE LE TROU'+NB+'!',sink:['PLOP'+NB+'!','DEDANS'+NB+'!'],diff:['FACILE','MOYEN','DIFFICILE'],shears:'Passe sur le taille-haie pour tailler les buissons.',snip:'CLAC'+NB+'!',hurry:'VITE'+NB+'!',rustle:['FROUFROU'+NB+'!','FRRR'+NB+'!']},
+  es:{name:'ES',cater:'Las orugas se comen los setos: pasa por una y los arbustos crecen más despacio.',munch:'¡ÑAM!',from:'EMPEZAR EN EL NIVEL',title:'¡LABERINTO!',intro:'Los setos crecen. Rápido.',
     rules:['Inclina el móvil para rodar la bola.','Encuentra el hoyo antes de que los setos cierren los caminos.','Cuanto más tardes, más crecen los arbustos.','Sujeta el móvil cómodo al empezar: esa será la posición recta.'],
     start:'¡RUEDA!',over:'¡INVADIDO!',stuck:'Los caminos están cerrados.',again:'OTRA VEZ',restart:'Reiniciar',grow:'INVADIDO',tilt:'ARRASTRA PARA INCLINAR (SIN SENSOR)',
     pts:n=>n+' PTS',lvl:n=>'NIV. '+n,final:(p,l)=>p+' · NIVEL '+l,best:n=>'Récord: '+n+' pts',
-    level:n=>'¡NIVEL '+n+'!',find:'¡ENCUENTRA EL HOYO!',sink:['¡PLOP!','¡DENTRO!'],hurry:'¡RÁPIDO!',rustle:['¡FRUFRÚ!','¡SHHH!']},
-  it:{name:'IT',title:'LABIRINTO!',intro:'Le siepi crescono. Svelto.',
+    level:n=>'¡NIVEL '+n+'!',find:'¡ENCUENTRA EL HOYO!',sink:['¡PLOP!','¡DENTRO!'],diff:['FÁCIL','MEDIO','DIFÍCIL'],shears:'Pasa por las tijeras de podar para recortar los setos.',snip:'¡CHAS!',hurry:'¡RÁPIDO!',rustle:['¡FRUFRÚ!','¡SHHH!']},
+  it:{name:'IT',cater:'I bruchi mangiano le siepi: passaci sopra e i cespugli crescono più piano.',munch:'GNAM!',from:'INIZIA DAL LIVELLO',title:'LABIRINTO!',intro:'Le siepi crescono. Svelto.',
     rules:['Inclina il telefono per far rotolare la pallina.','Trova la buca prima che le siepi chiudano i sentieri.','Più ci metti, più i cespugli si ingrossano.','Tieni il telefono comodo alla partenza: quello conta come dritto.'],
     start:'ROTOLA!',over:'INVASO!',stuck:'I sentieri sono chiusi.',again:'ANCORA',restart:'Ricomincia',grow:'INVASO',tilt:'TRASCINA PER INCLINARE (NESSUN SENSORE)',
     pts:n=>n+' PT',lvl:n=>'LIV. '+n,final:(p,l)=>p+' · LIVELLO '+l,best:n=>'Record: '+n+' pt',
-    level:n=>'LIVELLO '+n+'!',find:'TROVA LA BUCA!',sink:['PLOP!','DENTRO!'],hurry:'SVELTO!',rustle:['FRUSC!','SHHH!']},
-  pt:{name:'PT',title:'LABIRINTO!',intro:'As sebes estão crescendo. Rápido.',
+    level:n=>'LIVELLO '+n+'!',find:'TROVA LA BUCA!',sink:['PLOP!','DENTRO!'],diff:['FACILE','MEDIO','DIFFICILE'],shears:'Passa sulle cesoie per potare i cespugli.',snip:'ZAC!',hurry:'SVELTO!',rustle:['FRUSC!','SHHH!']},
+  pt:{name:'PT',cater:'As lagartas comem as sebes: passe por uma e os arbustos crescem mais devagar.',munch:'NHAC!',from:'COMEÇAR NO NÍVEL',title:'LABIRINTO!',intro:'As sebes estão crescendo. Rápido.',
     rules:['Incline o celular para rolar a bola.','Ache o buraco antes que as sebes fechem os caminhos.','Quanto mais demorar, mais grossos ficam os arbustos.','Segure o celular confortável ao começar: isso conta como reto.'],
     start:'ROLA!',over:'TOMADO!',stuck:'Os caminhos fecharam.',again:'DE NOVO',restart:'Reiniciar',grow:'TOMADO',tilt:'ARRASTE PARA INCLINAR (SEM SENSOR)',
     pts:n=>n+' PTS',lvl:n=>'NÍV. '+n,final:(p,l)=>p+' · NÍVEL '+l,best:n=>'Recorde: '+n+' pts',
-    level:n=>'NÍVEL '+n+'!',find:'ACHE O BURACO!',sink:['PLOP!','DENTRO!'],hurry:'RÁPIDO!',rustle:['FRUFRU!','SHHH!']},
+    level:n=>'NÍVEL '+n+'!',find:'ACHE O BURACO!',sink:['PLOP!','DENTRO!'],diff:['FÁCIL','MÉDIO','DIFÍCIL'],shears:'Passe pela tesoura de poda para aparar as sebes.',snip:'TEC!',hurry:'RÁPIDO!',rustle:['FRUFRU!','SHHH!']},
 };
 function pickLang(){
   const want=[];
@@ -160,8 +174,9 @@ function applyLang(k,save){
   if(save)try{localStorage.setItem('irrgarten.lang',k)}catch(_){}
   document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=T[el.dataset.i18n]});
   $('restartBtn').setAttribute('aria-label',T.restart);$('restartBtn').title=T.restart;
-  $('rules').replaceChildren(...T.rules.map(r=>{const li=document.createElement('li');li.textContent=r;return li}));
+  $('rules').replaceChildren(...[...T.rules.slice(0,3),T.shears,T.cater,...T.rules.slice(3)].map(r=>{const li=document.createElement('li');li.textContent=r;return li}));
   $('langs').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===k));
+  paintDiffs();
   if(lastResult)showResult();
   hudCache='';fitTitles();
 }
@@ -179,6 +194,36 @@ for(const k of Object.keys(I18N)){
   const b=document.createElement('button');b.type='button';b.dataset.lang=k;b.textContent=I18N[k].name;b.lang=k;
   b.addEventListener('click',()=>applyLang(k,true));$('langs').append(b);
 }
+
+// ---------- difficulty ----------
+// How much longer the hedges take to close, relative to "hard" (the original speed).
+const DIFFS=[{k:'easy',mul:2.2},{k:'medium',mul:1.5},{k:'hard',mul:1}];
+let diff=1;
+try{const d=+localStorage.getItem('irrgarten.diff');if(d>=0&&d<3)diff=d}catch(_){}
+function paintDiffs(){
+  document.querySelectorAll('.diffs').forEach(g=>{
+    if(!g.children.length)DIFFS.forEach((_,i)=>{const b=document.createElement('button');b.type='button';b.dataset.i=i;
+      b.addEventListener('click',()=>{diff=i;try{localStorage.setItem('irrgarten.diff',i)}catch(_){}startLvl=null;paintDiffs()});g.append(b)});
+    [...g.children].forEach((b,i)=>{b.textContent=T.diff[i];b.setAttribute('aria-pressed',i===diff)});
+  });
+  paintLevels();
+}
+const reachKey=()=>'irrgarten.reached.'+DIFFS[diff].k;
+function reached(){try{return Math.max(1,+localStorage.getItem(reachKey())||1)}catch(_){return memReach[diff]||1}}
+const memReach=[1,1,1];
+function setReached(l){memReach[diff]=Math.max(memReach[diff],l);try{if(l>reached())localStorage.setItem(reachKey(),l)}catch(_){}}
+let startLvl=null;   // level the next round starts at; null = highest reached
+function paintLevels(){
+  const top=reached();if(startLvl==null||startLvl>top)startLvl=top;
+  document.querySelectorAll('.lvls').forEach(box=>{
+    box.hidden=top<2;const row=box.querySelector('.lvlrow');
+    if(row.children.length!==top){row.replaceChildren(...Array.from({length:top},(_,i)=>{const b=document.createElement('button');b.type='button';b.textContent=i+1;
+      b.addEventListener('click',()=>{startLvl=i+1;paintLevels()});return b}))}
+    [...row.children].forEach((b,i)=>b.setAttribute('aria-pressed',i+1===startLvl));
+    const on=row.children[startLvl-1];if(on&&!box.hidden)row.scrollTop=Math.max(0,on.offsetTop-row.offsetTop-30);
+  });
+}
+const bestKey=()=>diff===2?'irrgarten.best':'irrgarten.best.'+DIFFS[diff].k;
 
 // ---------- canvas setup ----------
 let W=0,H=0,dpr=1,S=30,mx=0,my=0,lawnPat,pathPat,hedgePat;
@@ -261,9 +306,9 @@ let gdev={x:0,y:0},cal=null,needCal=true;
 const joy={on:false,x:0,y:0,ox:0,oy:0,px:0,py:0},keys={};
 const colsFor=l=>Math.min(12,4+l);
 const secPerStep=l=>Math.max(.42,.95-.05*(l-1));
-function fresh(){return{mode:'play',level:1,score:0,parts:[],banner:null}}
+function fresh(){return{mode:'play',level:1,score:0,parts:[],banner:null,diff}}
 function newLevel(l){
-  st.level=l;
+  st.level=l;if(st.mode!=='start')setReached(l);
   const cols=colsFor(l),aspect=W>0?(H-2*PAD)/(W-2*PAD):1.6;
   const rows=Math.max(cols,Math.min(20,Math.round(cols*aspect)));
   const m=genMaze(cols,rows);
@@ -272,7 +317,22 @@ function newLevel(l){
   const dist=bfs(m,sc,sr);let best=0;for(let i=1;i<dist.length;i++)if(dist[i]>dist[best])best=i;
   st.maze=m;st.hole={x:best%cols+.5,y:(best/cols|0)+.5};
   st.ball={x:sc+.5,y:sr+.5,vx:0,vy:0,ru:0,rv:0,scale:1};
-  st.levelT=0;st.dur=6+dist[best]*secPerStep(l);st.p=0;st.t=T0;st.hurried=false;st.sunk=false;st.rustleCD=0;
+  // hedge shears: somewhere in the middle third of the route, preferably in a dead end (a detour you have to choose)
+  const maxd=dist[best],cand=[];
+  for(let i=0;i<dist.length;i++){
+    if(i===best||dist[i]<maxd*.3||dist[i]>maxd*.75)continue;
+    const c=i%cols,r=i/cols|0;let exits=0;for(let d=0;d<4;d++)if(open(m,c,r,d))exits++;
+    cand.push({x:c+.5,y:r+.5,w:exits===1?3:1});
+  }
+  const take=n=>{const out=[];for(;n>0&&cand.length;n--){
+    let tot=cand.reduce((a,c)=>a+c.w,0),pick=Math.random()*tot,i=0;
+    while(i<cand.length-1&&pick>cand[i].w){pick-=cand[i].w;i++}
+    out.push({x:cand[i].x,y:cand[i].y,taken:false,ph:Math.random()*7});cand.splice(i,1);
+  }return out};
+  st.shears=take(l>=5?2:1);
+  st.caters=take(l>=4?2:1);
+  st.munchers=[];st.rate=1;
+  st.levelT=0;st.dur=(6+dist[best]*secPerStep(l))*DIFFS[st.diff].mul;st.cutPending=0;st.p=0;st.t=T0;st.hurried=false;st.sunk=false;st.rustleCD=0;
   st.banner={text:T.level(l),sub:T.find,t:1.8,max:1.8};
   layout();hedgeDirty=true;
 }
@@ -359,7 +419,10 @@ function update(dt){
   if(!st.maze)return;
   const b=st.ball;
   if(st.mode==='play'){
-    st.levelT+=dt;st.p=Math.min(1,st.levelT/st.dur);
+    st.levelT+=dt*st.rate;
+    if(st.cutPending>0){const c=Math.min(st.cutPending,dt*Math.max(3,st.cutPending*4));st.levelT=Math.max(0,st.levelT-c);st.cutPending-=c}
+    st.p=Math.min(1,st.levelT/st.dur);
+    if(st.p<.7)st.hurried=false;
     st.t=T0+(T_END-T0)*Math.pow(st.p,1.25);
     if(st.p>=.8&&!st.hurried){st.hurried=true;st.banner={text:T.hurry,t:1.1,max:1.1}}
     st.rustleCD-=dt;
@@ -373,6 +436,22 @@ function update(dt){
     const n=Math.max(1,Math.ceil(Math.hypot(b.vx,b.vy)*dt/.05));
     for(let i=0;i<n;i++){b.x+=b.vx*dt/n;b.y+=b.vy*dt/n;collide(b)}
     b.ru+=b.vx*dt/BALL_R;b.rv+=b.vy*dt/BALL_R;
+    for(const sh of st.shears){
+      if(sh.taken||Math.hypot(sh.x-b.x,sh.y-b.y)>BALL_R+.25)continue;
+      sh.taken=true;st.cutPending+=st.levelT*.6;   // cut the growth back by 60 %
+      popText(sh.x,sh.y,T.snip,C.white);
+      const bl=st.maze.blobs;for(let i=0;i<24;i++){const q=bl[Math.random()*bl.length|0];leaves(q.x,q.y,1,2)}
+      leaves(sh.x,sh.y,10,2.2);
+    }
+    for(const ca of st.caters){
+      if(ca.taken||Math.hypot(ca.x-b.x,ca.y-b.y)>BALL_R+.25)continue;
+      ca.taken=true;st.rate=Math.max(.35,st.rate*.65);   // every caterpillar: hedges grow 35 % slower from now on
+      popText(ca.x,ca.y,T.munch,C.white);
+      // it crawls into the nearest bush and keeps munching there
+      let bb=null,bd=1e9;for(const q of st.maze.blobs){const d=Math.hypot(q.x-ca.x,q.y-ca.y);if(d<bd){bd=d;bb=q}}
+      if(bb)st.munchers.push({x:ca.x,y:ca.y,tx:bb.x,ty:bb.y,ph:ca.ph});
+    }
+    for(const mu of st.munchers){mu.x+=(mu.tx-mu.x)*Math.min(1,dt*3);mu.y+=(mu.ty-mu.y)*Math.min(1,dt*3)}
     if(Math.hypot(st.hole.x-b.x,st.hole.y-b.y)<HOLE_R*.75){st.mode='sink';st.sinkT=0}
     else if(st.p>=1)gameOver();
   }else if(st.mode==='sink'){
@@ -454,6 +533,55 @@ function drawFlag(){
   ctx.beginPath();ctx.moveTo(tx,ty);ctx.quadraticCurveTo(tx+fw*.5,ty+wv,tx+fw,ty+fh*.5+wv*.5);ctx.quadraticCurveTo(tx+fw*.5,ty+fh*.5-wv,tx+lw*.2,ty+fh);ctx.closePath();
   ctx.fillStyle=C.pop;ctx.fill();ctx.lineWidth=Math.max(2,S*.045);ctx.lineJoin='round';ctx.strokeStyle=C.ink;ctx.stroke();
 }
+function drawShears(){
+  const now=performance.now()/1000;
+  for(const sh of st.shears){
+    if(sh.taken)continue;
+    const x=X(sh.x),y=Y(sh.y)+Math.sin(now*3+sh.ph)*S*.04,L=S*.44,w=S*.13,a=.22+.14*Math.max(0,Math.sin(now*7+sh.ph));
+    const lw=Math.max(1.5,S*.04);
+    ctx.save();ctx.translate(x,y);
+    ctx.save();ctx.rotate(now*.8);star(0,0,S*.48,S*.32,9);ctx.fillStyle=C.paper;ctx.fill();ctx.lineWidth=lw;ctx.strokeStyle=C.ink;ctx.lineJoin='round';ctx.stroke();ctx.restore();
+    ctx.rotate(Math.sin(now*2+sh.ph)*.15);ctx.lineJoin='round';
+    for(const sd of[-1,1]){
+      ctx.save();ctx.rotate(sd*a);
+      // blade up, handle loop down
+      ctx.beginPath();ctx.moveTo(-sd*w*.55,w*.3);ctx.lineTo(-sd*w*.15,-L);ctx.lineTo(sd*w*.55,-L*.25);ctx.lineTo(sd*w*.45,w*.3);ctx.closePath();
+      ctx.fillStyle='#DCE6EC';ctx.fill();ctx.lineWidth=lw;ctx.strokeStyle=C.ink;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-sd*w*.05,-L*.85);ctx.lineTo(sd*w*.25,-L*.3);ctx.strokeStyle=C.white;ctx.lineWidth=lw*.8;ctx.stroke();
+      ctx.beginPath();ctx.ellipse(sd*w*.9,L*.55,w*.85,w*1.1,sd*.3,0,7);ctx.ellipse(sd*w*.9,L*.55,w*.4,w*.6,sd*.3,0,7,true);
+      ctx.fillStyle=C.pop;ctx.fill('evenodd');ctx.strokeStyle=C.ink;ctx.lineWidth=lw;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(sd*w*.3,w*.2);ctx.lineTo(sd*w*.6,L*.2);ctx.lineWidth=w*.7;ctx.strokeStyle=C.ink;ctx.stroke();ctx.lineWidth=w*.35;ctx.strokeStyle=C.pop;ctx.stroke();
+      ctx.restore();
+    }
+    ctx.beginPath();ctx.arc(0,0,w*.32,0,7);ctx.fillStyle=C.paper;ctx.fill();ctx.lineWidth=lw*.8;ctx.strokeStyle=C.ink;ctx.stroke();
+    ctx.restore();
+  }
+}
+function caterpillar(x,y,sz,ph,munch){
+  const now=performance.now()/1000,r=sz*.13,lw=Math.max(1.3,sz*.05);
+  ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(ph)*.6);
+  const seg=[];for(let i=0;i<5;i++){const wave=Math.sin(now*(munch?9:5)+ph-i*.9);seg.push([(i-2)*r*1.35+(munch?0:wave*r*.25),wave*r*.45-(i===0?r*.25:0)])}
+  for(let i=4;i>=0;i--){const[sx,sy]=seg[i],rr=i===0?r*1.15:r;
+    ctx.beginPath();ctx.arc(sx,sy,rr,0,7);ctx.fillStyle=i===0?'#F28C28':(i%2?'#C8E84A':'#A8D838');ctx.fill();ctx.lineWidth=lw;ctx.strokeStyle=C.ink;ctx.stroke();
+    if(i){ctx.beginPath();ctx.arc(sx-rr*.2,sy-rr*.25,rr*.28,0,7);ctx.fillStyle='rgba(255,253,246,.7)';ctx.fill()}}
+  const[hx,hy]=seg[0],hr=r*1.15;
+  ctx.strokeStyle=C.ink;ctx.lineWidth=lw;ctx.lineCap='round';
+  for(const sd of[-1,1]){ctx.beginPath();ctx.moveTo(hx-hr*.3,hy-hr*.8);ctx.lineTo(hx-hr*.9+sd*hr*.35,hy-hr*1.7);ctx.stroke();
+    ctx.beginPath();ctx.arc(hx-hr*.9+sd*hr*.35,hy-hr*1.7,lw*1.1,0,7);ctx.fillStyle=C.ink;ctx.fill()}
+  ctx.beginPath();ctx.arc(hx-hr*.35,hy-hr*.15,hr*.32,0,7);ctx.fillStyle=C.white;ctx.fill();ctx.lineWidth=lw*.7;ctx.stroke();
+  ctx.beginPath();ctx.arc(hx-hr*.45,hy-hr*.15,hr*.14,0,7);ctx.fillStyle=C.ink;ctx.fill();
+  const mo=munch?Math.abs(Math.sin(now*9+ph)):.3;
+  ctx.beginPath();ctx.ellipse(hx-hr*.6,hy+hr*.4,hr*.22,hr*.1+hr*.2*mo,0,0,7);ctx.fillStyle=C.ink;ctx.fill();
+  ctx.restore();
+}
+function drawCaters(){
+  const now=performance.now()/1000;
+  for(const ca of st.caters){if(ca.taken)continue;
+    const x=X(ca.x)+Math.sin(now*.9+ca.ph)*S*.08,y=Y(ca.y);
+    ctx.beginPath();ctx.ellipse(x+S*.03,y+S*.1,S*.3,S*.08,0,0,7);ctx.fillStyle='rgba(22,18,15,.2)';ctx.fill();
+    caterpillar(x,y,S,ca.ph*0+Math.sin(now*.9+ca.ph)*.3,false)}
+  for(const mu of st.munchers)caterpillar(X(mu.x),Y(mu.y),S*.85,mu.ph,true);
+}
 function drawBall(){
   const b=st.ball,x=X(b.x),y=Y(b.y),r=BALL_R*S*b.scale;if(r<.5)return;
   if(st.mode!=='sink'){ctx.beginPath();ctx.ellipse(x+r*.3,y+r*.45,r*.95,r*.8,0,0,7);ctx.fillStyle='rgba(22,18,15,.3)';ctx.fill()}
@@ -482,16 +610,18 @@ function draw(){
   if(st.mode==='play'&&st.p>.8){const a=(st.p-.8)*5*1.2;jx=(Math.random()-.5)*a;jy=(Math.random()-.5)*a}
   if(st.mode==='sink')drawBall();
   ctx.drawImage(hcv,jx,jy,W,H);
+  drawShears();drawCaters();
   if(st.mode!=='sink')drawBall();
   drawFlag();
   for(const p of st.parts){
-    const k=p.t/p.life,px=X(p.x),py=Y(p.y);
+    const k=p.t/p.life,py=Y(p.y);let px=X(p.x);
     if(p.type==='leaf'){
       ctx.save();ctx.translate(px,py);ctx.rotate(p.rot);ctx.globalAlpha=1-Math.max(0,k-.6)/.4;
       ctx.beginPath();ctx.ellipse(0,0,S*.09,S*.045,0,0,7);ctx.fillStyle=C.leaf;ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle=C.ink;ctx.stroke();ctx.restore();continue;
     }
     if(p.type==='gain'){ctx.save();ctx.globalAlpha=1-Math.max(0,k-.7)/.3;inkText(p.text,px,py-S*.6-k*S*.8,Math.max(16,S*.5),C.paper,.05);ctx.restore();continue}
     const sc=Math.min(1,k*5)*(1-k*.3),R=Math.max(22,S*.8)*sc,yy=py-S*.4-k*S*.4;
+    px=Math.max(R*1.3,Math.min(W-R*1.3,px));
     ctx.save();ctx.globalAlpha=1-Math.max(0,k-.7)/.3;
     star(px,yy,R,R*.62,10);ctx.fillStyle=p.col===C.white?C.paper:C.white;ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=C.ink;ctx.stroke();
     inkText(p.text,px,yy,R*.5+1,p.col===C.white?C.pop:C.hedge,p.rot);ctx.restore();
@@ -525,19 +655,19 @@ async function begin(){
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(_){}
   needCal=true;
   setTimeout(()=>{if(!sensor){$('hint').hidden=false;layout();hedgeDirty=true}},1200);
-  st=fresh();newLevel(1);lastResult=null;$('startOv').hidden=true;$('overOv').hidden=true;$('restartBtn').hidden=false;
+  st=fresh();newLevel(startLvl||1);lastResult=null;$('startOv').hidden=true;$('overOv').hidden=true;$('restartBtn').hidden=false;
 }
-function showResult(){const r=lastResult;$('final').textContent=T.final(T.pts(r.score),r.level);$('best').textContent=T.best(r.best)}
+function showResult(){const r=lastResult;$('final').textContent=T.diff[r.diff]+' · '+T.final(T.pts(r.score),r.level);$('best').textContent=T.best(r.best)}
 function gameOver(){
   st.mode='over';st.banner=null;leaves(st.ball.x,st.ball.y,14,2.5);
   let best=0;
-  try{best=+localStorage.getItem('irrgarten.best')||0;if(st.score>best){best=st.score;localStorage.setItem('irrgarten.best',best)}}catch(_){best=Math.max(best,st.score)}
-  lastResult={score:st.score,level:st.level,best};showResult();
+  try{best=+localStorage.getItem(bestKey())||0;if(st.score>best){best=st.score;localStorage.setItem(bestKey(),best)}}catch(_){best=Math.max(best,st.score)}
+  lastResult={score:st.score,level:st.level,best,diff:st.diff};showResult();startLvl=st.level;paintLevels();
   setTimeout(()=>{$('overOv').hidden=false;fitTitles();$('againBtn').focus()},900);
 }
 $('startBtn').addEventListener('click',begin);
 $('againBtn').addEventListener('click',begin);
-$('restartBtn').addEventListener('click',e=>{e.currentTarget.blur();begin()});
+$('restartBtn').addEventListener('click',e=>{e.currentTarget.blur();if(st&&st.maze&&st.mode!=='start')startLvl=st.level;begin()});
 
 // idle backdrop behind the start card: a half-grown maze
 st=fresh();st.mode='start';
