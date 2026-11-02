@@ -319,13 +319,14 @@ function newLevel(l){
   const dist=bfs(m,sc,sr);let best=0;for(let i=1;i<dist.length;i++)if(dist[i]>dist[best])best=i;
   st.maze=m;st.hole={x:best%cols+.5,y:(best/cols|0)+.5};
   st.ball={x:sc+.5,y:sr+.5,vx:0,vy:0,ru:0,rv:0,scale:1};
-  // hedge shears: somewhere in the middle third of the route, preferably in a dead end (a detour you have to choose)
-  const maxd=dist[best],cand=[];
+  // power-ups always sit in a dead end (a detour you have to choose), preferably in the middle part of the route
+  const maxd=dist[best],deadEnds=[];
   for(let i=0;i<dist.length;i++){
-    if(i===best||dist[i]<maxd*.3||dist[i]>maxd*.75)continue;
+    if(i===best||dist[i]===0)continue;
     const c=i%cols,r=i/cols|0;let exits=0;for(let d=0;d<4;d++)if(open(m,c,r,d))exits++;
-    cand.push({x:c+.5,y:r+.5,w:exits===1?3:1});
+    if(exits===1)deadEnds.push({x:c+.5,y:r+.5,w:dist[i]>=maxd*.25&&dist[i]<=maxd*.8?4:1});
   }
+  const cand=deadEnds;
   const take=n=>{const out=[];for(;n>0&&cand.length;n--){
     let tot=cand.reduce((a,c)=>a+c.w,0),pick=Math.random()*tot,i=0;
     while(i<cand.length-1&&pick>cand[i].w){pick-=cand[i].w;i++}
