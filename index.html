@@ -386,18 +386,27 @@ function newLevel(l){
 }
 
 // ---------- input ----------
-// Gravity in the screen plane. From beta/gamma the "down" vector in device coordinates is
-// (cosβ·sinγ, -sinβ, …); x = right, y = toward the bottom edge. Calibrated to how the phone
-// was held when the round started, then rotated by the screen orientation.
+// Gravity in the screen plane, calibrated to how the phone was held when the round started,
+// then rotated by the screen orientation.
 function onOri(e){
   if(e.gamma==null||e.beta==null)return;
   if(!sensor){sensor=true;$('hint').hidden=true;layout();hedgeDirty=true}
   const R=Math.PI/180,b=e.beta*R,g=e.gamma*R;
-  const x=Math.cos(b)*Math.sin(g),y=Math.sin(b);
-  if(needCal||!cal){cal={x:Math.max(-.3,Math.min(.3,x)),y:Math.max(-.2,Math.min(.85,y))};needCal=false}
-  let dx=x-cal.x,dy=y-cal.y;
-  const a=((screen.orientation&&screen.orientation.angle)??window.orientation??0)*R;
-  gdev={x:dx*Math.cos(a)+dy*Math.sin(a),y:-dx*Math.sin(a)+dy*Math.cos(a)};
+  // gravity in device coordinates (x right, y toward the top edge, z out of the screen)
+  let v=[Math.cos(b)*Math.sin(g),-Math.sin(b),-Math.cos(b)*Math.cos(g)];
+  // calibration: the rotation that turns the start pose into "flat". Rotating the full 3D vector
+  // (instead of subtracting) keeps all four tilt directions equally strong, whatever angle you hold the phone at.
+  if(needCal||!cal){cal=v;needCal=false}
+  const a=cal,c=-a[2];                       // a·(0,0,-1)
+  if(c>-.95){
+    const w=[-a[1],a[0],0],k=1/(1+c);        // w = a × (0,0,-1)
+    const cr=[w[1]*v[2]-w[2]*v[1],w[2]*v[0]-w[0]*v[2],w[0]*v[1]-w[1]*v[0]];
+    const cc=[w[1]*cr[2]-w[2]*cr[1],w[2]*cr[0]-w[0]*cr[2],w[0]*cr[1]-w[1]*cr[0]];
+    v=[v[0]+cr[0]+cc[0]*k,v[1]+cr[1]+cc[1]*k,v[2]+cr[2]+cc[2]*k];
+  }
+  const dx=v[0],dy=-v[1];                    // screen: y points down
+  const o=((screen.orientation&&screen.orientation.angle)??window.orientation??0)*R;
+  gdev={x:dx*Math.cos(o)+dy*Math.sin(o),y:-dx*Math.sin(o)+dy*Math.cos(o)};
 }
 addEventListener('deviceorientation',onOri);
 function gravity(){
@@ -823,7 +832,7 @@ applyLang(lang,false);
 resize();newLevel(1);st.banner=null;st.t=T0+.12;
 requestAnimationFrame(loop);
 // test hook
-window.__irr={get st(){return st},keys};
+window.__irr={get st(){return st},keys,get g(){return gdev},ori:onOri,recal(){needCal=true}};
 })();
 </script>
 </body>
