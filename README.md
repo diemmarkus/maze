@@ -10,6 +10,7 @@ A comic-style tilt maze for the phone. Roll the ball through a hedge maze to the
 - **Hedge shears:** roll over them to cut the hedges back by 60 %.
 - **Caterpillars:** roll over one and it crawls into the hedge and munches — the bushes grow 35 % slower for the rest of the level.
 - **Teleporter:** from level 2, every other level (shuffled) has a pair of portals — roll into one and you come out of the other with your speed.
+- **Wasps:** from level 3, every other level (shuffled) has a wasp nest. Roll into it and three wasps chase you for a few seconds, up to about 2.4 cells from the nest. If they catch the ball, the level is lost.
 - **Continue:** after a loss you can restart at any level you've reached on that difficulty. The restart button retries the current level.
 - Languages: EN, DE, FR, ES, IT, PT.
 
