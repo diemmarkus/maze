@@ -495,9 +495,11 @@ function update(dt){
       if(ca.taken||Math.hypot(ca.x-b.x,ca.y-b.y)>BALL_R+.25)continue;
       ca.taken=true;st.rate=Math.max(.35,st.rate*.65);   // every caterpillar: hedges grow 35 % slower from now on
       popText(ca.x,ca.y,T.munch,C.white);
-      // it crawls into the nearest bush and keeps munching there
-      let bb=null,bd=1e9;for(const q of st.maze.blobs){const d=Math.hypot(q.x-ca.x,q.y-ca.y);if(d<bd){bd=d;bb=q}}
-      if(bb)st.munchers.push({x:ca.x,y:ca.y,tx:bb.x,ty:bb.y,ph:ca.ph});
+      // it bursts into a swarm of tiny caterpillars that crawl off into the hedges all over the maze and munch there
+      const bl=st.maze.blobs,n=Math.min(28,Math.max(16,bl.length/8|0)),step=bl.length/n;
+      for(let k=0;k<n;k++){const q=bl[(k*step+Math.random()*step)|0]||bl[0];
+        const jx=(Math.random()-.5)*st.t*.6,jy=(Math.random()-.5)*st.t*.6;
+        st.munchers.push({x:ca.x,y:ca.y,tx:q.x+jx,ty:q.y+jy,ph:Math.random()*7,delay:k*.03,spd:1.5+Math.random()*1.5,sz:.3+Math.random()*.12})}
     }
     if(st.tele){
       if(st.tpLock>=0&&Math.hypot(st.tele[st.tpLock].x-b.x,st.tele[st.tpLock].y-b.y)>.42)st.tpLock=-1;   // left the exit: armed again
@@ -538,7 +540,7 @@ function update(dt){
       }
       if(st.wasps.length&&st.wasps.every(w=>w.gone)){st.wasps=[];ne.cool=1.5}
     }
-    for(const mu of st.munchers){mu.x+=(mu.tx-mu.x)*Math.min(1,dt*3);mu.y+=(mu.ty-mu.y)*Math.min(1,dt*3)}
+    for(const mu of st.munchers){if(mu.delay>0){mu.delay-=dt;continue}mu.x+=(mu.tx-mu.x)*Math.min(1,dt*mu.spd);mu.y+=(mu.ty-mu.y)*Math.min(1,dt*mu.spd)}
     if(Math.hypot(st.hole.x-b.x,st.hole.y-b.y)<HOLE_R*.75){st.mode='sink';st.sinkT=0}
     else if(st.p>=1)gameOver();
   }else if(st.mode==='sink'){
@@ -691,7 +693,7 @@ function drawShears(){
   }
 }
 function caterpillar(x,y,sz,ph,munch){
-  const now=performance.now()/1000,r=sz*.13,lw=Math.max(1.3,sz*.05);
+  const now=performance.now()/1000,r=sz*.13,lw=Math.max(sz<S*.5?.8:1.3,sz*.05);
   ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(ph)*.6);
   const seg=[];for(let i=0;i<5;i++){const wave=Math.sin(now*(munch?9:5)+ph-i*.9);seg.push([(i-2)*r*1.35+(munch?0:wave*r*.25),wave*r*.45-(i===0?r*.25:0)])}
   for(let i=4;i>=0;i--){const[sx,sy]=seg[i],rr=i===0?r*1.15:r;
@@ -713,7 +715,7 @@ function drawCaters(){
     const x=X(ca.x)+Math.sin(now*.9+ca.ph)*S*.08,y=Y(ca.y);
     ctx.beginPath();ctx.ellipse(x+S*.03,y+S*.1,S*.3,S*.08,0,0,7);ctx.fillStyle='rgba(22,18,15,.2)';ctx.fill();
     caterpillar(x,y,S,ca.ph*0+Math.sin(now*.9+ca.ph)*.3,false)}
-  for(const mu of st.munchers)caterpillar(X(mu.x),Y(mu.y),S*.85,mu.ph,true);
+  for(const mu of st.munchers)if(!(mu.delay>0))caterpillar(X(mu.x),Y(mu.y),S*mu.sz,mu.ph,true);
 }
 function drawBall(){
   const b=st.ball,x=X(b.x),y=Y(b.y),r=BALL_R*S*b.scale;if(r<.5)return;

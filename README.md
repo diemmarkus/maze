@@ -8,7 +8,7 @@ A comic-style tilt maze for the phone. Roll the ball through a hedge maze to the
 - **Difficulty:** Easy, Medium, Hard (Hard = the original speed). Best score is kept per difficulty.
 - **Power-ups:** always in a dead end. Each level has either hedge shears, a caterpillar, or nothing — every three levels you get each once, in random order. At most 2 extras (power-up, wasp nest, teleporter) per level.
 - **Hedge shears:** roll over them to cut the hedges back by 60 %.
-- **Caterpillars:** roll over one and it crawls into the hedge and munches — the bushes grow 35 % slower for the rest of the level.
+- **Caterpillars:** roll over one and it bursts into a swarm of tiny caterpillars that crawl into the hedges all over the maze and munch — the bushes grow 35 % slower for the rest of the level.
 - **Teleporter:** from level 2, every other level (shuffled) has a pair of portals — roll into one and you come out of the other with your speed.
 - **Wasps:** from level 3, every other level (shuffled) has a wasp nest. Rolling over it stirs it up; once the ball has rolled off, three wasps come out and chase it for about 3 seconds, up to about 2 cells from the nest. If they catch the ball, the level is lost.
 - **Level select:** tap the LVL chip at the top to pause and pick difficulty and level.
