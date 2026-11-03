@@ -5,9 +5,23 @@ Comic-style phone games by Jonas. The start page (`index.html`) lets you pick a 
 | Game | Folder | Status |
 |---|---|---|
 | Irrgarten | [`irrgarten/`](irrgarten/) | playable |
-| Skiing | — | coming soon |
+| Skiing | [`skiing/`](skiing/) | playable |
 
 Play: https://diemmarkus.github.io/maze/
+
+---
+
+## Skiing
+
+A pixel-art ski race against the computer on a mogul run.
+
+- **Tap** while going down a bump (yellow snow) to speed up. Perfect timing (early on the downslope) gives the biggest boost.
+- **Tap uphill** and you slow down and wobble. Tap wrong again while wobbly and you fall — race over. Three good taps in a row get rid of the wobble.
+- **Ramps:** tap on the orange part of the ramp to jump high. Not tapping gives only a small hop; tapping too early counts as a wrong tap.
+- **Backflip:** keep your finger down in the air. Let go in time — the skier finishes the turn on its own — so you land straight, or it's a crash. Every flip gives a speed boost.
+- **The computer** is the pale skier in the background. Reach the finish before it does. Each level the course gets longer and the computer gets better.
+- Level select for every level you've reached. Keyboard: Space / arrow keys.
+- Languages: EN, DE, FR, ES, IT, PT (shared with Irrgarten).
 
 ---
 

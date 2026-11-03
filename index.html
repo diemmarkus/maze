@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#FFD93B">
+<meta name="theme-color" content="#8E5BD9">
 <title>Jonas' Spiele</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Kalam:wght@400;700&display=swap">
 <style>
 /* Game picker: comic panel cards on the halftone yellow, same look as the games. */
 :root{
-  --paper:#FFD93B;--dot:#F2A81D;--ink:#16120F;--lawn:#6CC24A;--hedge:#2E9A4B;--leaf:#8FDB6A;
+  --paper:#8E5BD9;--dot:#7A45C7;--ink:#16120F;--lawn:#6CC24A;--hedge:#2E9A4B;--leaf:#8FDB6A;
   --path:#F4D9A0;--pop:#E8322E;--snow:#EAF6FF;--sky:#7FC8F0;--white:#FFFDF6;
   --display:"Bangers","Impact","Arial Black",sans-serif;
   --hand:"Kalam","Comic Sans MS","Chalkboard SE",cursive;
@@ -24,7 +24,7 @@ main{box-sizing:border-box;max-width:460px;margin:0 auto;
   padding:calc(24px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
 h1{font-family:var(--display);font-size:clamp(46px,14vw,68px);line-height:.9;letter-spacing:.03em;margin:4px 0 4px;text-align:center;
   color:var(--pop);-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--ink);transform:rotate(-2deg)}
-.sub{text-align:center;font-size:18px;margin:10px 0 22px}
+.sub{text-align:center;font-size:20px;font-weight:700;margin:10px 0 22px;color:var(--white);text-shadow:2px 2px 0 var(--ink)}
 .games{display:grid;gap:20px}
 .game{display:flex;align-items:center;gap:14px;background:var(--white);border:4px solid var(--ink);border-radius:10px;
   box-shadow:7px 7px 0 var(--ink);padding:14px;color:inherit;text-decoration:none;transform:rotate(-1deg)}
@@ -39,8 +39,6 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
 .ski h2{color:var(--sky)}
 .txt p{margin:0;font-size:15px;line-height:1.3}
 .tag{display:inline-block;margin-top:8px;font-family:var(--display);letter-spacing:.06em;font-size:17px;background:var(--leaf);border:3px solid var(--ink);border-radius:6px;box-shadow:3px 3px 0 var(--ink);padding:1px 10px}
-.soon{opacity:.85}
-.soon .tag{background:var(--paper)}
 .langs{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:30px}
 .langs button{font-family:var(--display);font-size:15px;letter-spacing:.06em;background:var(--white);color:var(--ink);border:2px solid var(--ink);border-radius:6px;padding:2px 8px;box-shadow:2px 2px 0 var(--ink);cursor:pointer}
 .langs button[aria-pressed="true"]{background:var(--pop);color:var(--white)}
@@ -72,7 +70,7 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
         <span class="tag" data-i18n="play">SPIELEN!</span>
       </div>
     </a>
-    <div class="game ski soon" aria-disabled="true">
+    <a class="game ski" href="skiing/">
       <div class="pic" aria-hidden="true">
         <svg viewBox="0 0 92 92">
           <rect width="92" height="92" fill="#7FC8F0"/>
@@ -91,21 +89,21 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
       </div>
       <div class="txt">
         <h2>SKIING</h2>
-        <p data-i18n="skiT">Ab auf die Piste! Dieses Spiel ist noch in Arbeit.</p>
-        <span class="tag" data-i18n="soon">KOMMT BALD</span>
+        <p data-i18n="skiT">Tippe zur richtigen Zeit auf der Buckelpiste, spring über Schanzen und schlag den Computer.</p>
+        <span class="tag" data-i18n="play">SPIELEN!</span>
       </div>
-    </div>
+    </a>
   </div>
   <div class="langs" id="langs" role="group" aria-label="Language"></div>
 </main>
 <script>
 const L={
-  de:{doc:"Jonas' Spiele",title:"JONAS' SPIELE",sub:'Such dir ein Spiel aus!',mazeT:'Kipp das Handy und roll die Kugel ins Loch, bevor die Hecken zuwachsen.',skiT:'Ab auf die Piste! Dieses Spiel ist noch in Arbeit.',play:'SPIELEN!',soon:'KOMMT BALD'},
-  en:{doc:"Jonas's Games",title:"JONAS'S GAMES",sub:'Pick a game!',mazeT:'Tilt the phone and roll the ball into the hole before the hedges grow shut.',skiT:'Hit the slopes! This game is still in the works.',play:'PLAY!',soon:'COMING SOON'},
-  fr:{doc:"Les jeux de Jonas",title:'LES JEUX DE JONAS',sub:'Choisis un jeu !',mazeT:'Incline le téléphone et fais rouler la bille dans le trou avant que les haies ne se referment.',skiT:'En piste ! Ce jeu est encore en préparation.',play:'JOUER !',soon:'BIENTÔT'},
-  es:{doc:"Los juegos de Jonas",title:'LOS JUEGOS DE JONAS',sub:'¡Elige un juego!',mazeT:'Inclina el móvil y mete la bola en el hoyo antes de que los setos lo cierren.',skiT:'¡A la pista! Este juego todavía está en marcha.',play:'¡JUGAR!',soon:'MUY PRONTO'},
-  it:{doc:"I giochi di Jonas",title:'I GIOCHI DI JONAS',sub:'Scegli un gioco!',mazeT:'Inclina il telefono e porta la pallina nella buca prima che le siepi chiudano i sentieri.',skiT:'Tutti in pista! Questo gioco è ancora in lavorazione.',play:'GIOCA!',soon:'IN ARRIVO'},
-  pt:{doc:"Os jogos do Jonas",title:'OS JOGOS DO JONAS',sub:'Escolha um jogo!',mazeT:'Incline o celular e leve a bola até o buraco antes que as sebes fechem os caminhos.',skiT:'Para a pista! Este jogo ainda está em construção.',play:'JOGAR!',soon:'EM BREVE'}
+  de:{doc:"Jonas' Spiele",title:"JONAS' SPIELE",sub:'Such dir ein Spiel aus!',mazeT:'Kipp das Handy und roll die Kugel ins Loch, bevor die Hecken zuwachsen.',skiT:'Tippe zur richtigen Zeit auf der Buckelpiste, spring über Schanzen und schlag den Computer.',play:'SPIELEN!',soon:'KOMMT BALD'},
+  en:{doc:"Jonas's Games",title:"JONAS'S GAMES",sub:'Pick a game!',mazeT:'Tilt the phone and roll the ball into the hole before the hedges grow shut.',skiT:'Tap at the right moment on the bumps, fly off ramps and beat the computer.',play:'PLAY!',soon:'COMING SOON'},
+  fr:{doc:"Les jeux de Jonas",title:'LES JEUX DE JONAS',sub:'Choisis un jeu !',mazeT:'Incline le téléphone et fais rouler la bille dans le trou avant que les haies ne se referment.',skiT:'Tape au bon moment sur les bosses, saute des tremplins et bats l’ordinateur.',play:'JOUER !',soon:'BIENTÔT'},
+  es:{doc:"Los juegos de Jonas",title:'LOS JUEGOS DE JONAS',sub:'¡Elige un juego!',mazeT:'Inclina el móvil y mete la bola en el hoyo antes de que los setos lo cierren.',skiT:'Toca en el momento justo en los baches, salta en los trampolines y gana al ordenador.',play:'¡JUGAR!',soon:'MUY PRONTO'},
+  it:{doc:"I giochi di Jonas",title:'I GIOCHI DI JONAS',sub:'Scegli un gioco!',mazeT:'Inclina il telefono e porta la pallina nella buca prima che le siepi chiudano i sentieri.',skiT:'Tocca al momento giusto sulle gobbe, salta dai trampolini e batti il computer.',play:'GIOCA!',soon:'IN ARRIVO'},
+  pt:{doc:"Os jogos do Jonas",title:'OS JOGOS DO JONAS',sub:'Escolha um jogo!',mazeT:'Incline o celular e leve a bola até o buraco antes que as sebes fechem os caminhos.',skiT:'Toque na hora certa nas lombadas, salte das rampas e vença o computador.',play:'JOGAR!',soon:'EM BREVE'}
 };
 // Shares the language choice with Irrgarten (same origin, same key).
 const KEY='irrgarten.lang';
