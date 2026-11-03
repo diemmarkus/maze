@@ -1,4 +1,17 @@
-# Irrgarten
+# Jonas' Spiele
+
+Comic-style phone games by Jonas. The start page (`index.html`) lets you pick a game:
+
+| Game | Folder | Status |
+|---|---|---|
+| Irrgarten | [`irrgarten/`](irrgarten/) | playable |
+| Skiing | — | coming soon |
+
+Play: https://diemmarkus.github.io/maze/
+
+---
+
+## Irrgarten
 
 A comic-style tilt maze for the phone. Roll the ball through a hedge maze to the hole — but the bushes keep growing, and once the paths are as narrow as the ball, it's over.
 
@@ -15,6 +28,6 @@ A comic-style tilt maze for the phone. Roll the ball through a hedge maze to the
 - **Continue:** after a loss you can restart at any level you've reached on that difficulty. The restart button retries the current level.
 - Languages: EN, DE, FR, ES, IT, PT.
 
-Single self-contained `index.html` — no build step. Same look and tilt handling as [Don't Spill](https://github.com/diemmarkus/dont-spill).
+Single self-contained `irrgarten/index.html` — no build step. Same look and tilt handling as [Don't Spill](https://github.com/diemmarkus/dont-spill).
 
 Play: enable GitHub Pages (Settings → Pages → deploy from `main`) and open it on your phone. iOS asks for motion permission when you tap the start button.
