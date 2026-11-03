@@ -24,6 +24,8 @@ A comic-style tilt maze for the phone. Roll the ball through a hedge maze to the
 - **Caterpillars:** roll over one and it bursts into a swarm of tiny caterpillars that crawl into the hedges all over the maze and munch — the bushes grow 35 % slower for the rest of the level.
 - **Teleporter:** from level 2, every other level (shuffled) has a pair of portals — roll into one and you come out of the other with your speed.
 - **Wasps:** from level 3, every other level (shuffled) has a wasp nest. Rolling over it stirs it up; once the ball has rolled off, three wasps come out and chase it for about 3 seconds, up to about 2 cells from the nest. If they catch the ball, the level is lost.
+- **Green dot:** from level 2, every other level (shuffled, if there is room for an extra) has a green dot. Roll over it and the hole flies off to another spot far from the ball.
+- **Black hole:** from level 2, every other level (shuffled, if there is room) has a hole without a flag. Fall in and the level is lost. It never lies on the real route to the goal — only off to the side, preferably in a dead end — also after a green dot has moved the goal.
 - **Level select:** tap the LVL chip at the top to pause and pick difficulty and level.
 - **Continue:** after a loss you can restart at any level you've reached on that difficulty. The restart button retries the current level.
 - Languages: EN, DE, FR, ES, IT, PT.
