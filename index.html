@@ -43,6 +43,18 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
 .langs button{font-family:var(--display);font-size:15px;letter-spacing:.06em;background:var(--white);color:var(--ink);border:2px solid var(--ink);border-radius:6px;padding:2px 8px;box-shadow:2px 2px 0 var(--ink);cursor:pointer}
 .langs button[aria-pressed="true"]{background:var(--pop);color:var(--white)}
 .langs button:focus-visible{outline:3px dashed var(--pop);outline-offset:2px}
+.more{margin-top:34px}
+.more .lbl{display:block;text-align:center;font-family:var(--display);font-size:22px;letter-spacing:.06em;color:var(--white);-webkit-text-stroke:1px var(--ink);text-shadow:2px 2px 0 var(--ink);margin:0 0 12px}
+.friend{display:flex;align-items:center;gap:12px;border:4px solid var(--ink);border-radius:10px;box-shadow:6px 6px 0 var(--ink);padding:10px 12px;color:inherit;text-decoration:none;transform:rotate(.6deg);background:var(--white)}
+.friend:active{transform:translate(4px,4px);box-shadow:2px 2px 0 var(--ink)}
+.friend:focus-visible{outline:3px dashed var(--white);outline-offset:5px}
+.friend .pic{width:64px;height:64px}
+.friend h2{font-family:var(--display);font-size:26px;line-height:.95;letter-spacing:.03em;margin:0 0 2px;-webkit-text-stroke:1.2px var(--ink);text-shadow:2px 2px 0 var(--ink)}
+.friend p{margin:0;font-size:14px;line-height:1.25}
+.friend .go{flex:none;width:42px;height:42px;border:3px solid var(--ink);border-radius:50%;display:grid;place-items:center;box-shadow:2px 2px 0 var(--ink)}
+.friend .go svg{width:22px;height:22px}
+.anna h2{color:#FF4FB8}
+.anna .go{background:#FFD93B}
 </style>
 </head>
 <body>
@@ -94,16 +106,36 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
       </div>
     </a>
   </div>
+  <div class="more">
+    <span class="lbl" data-i18n="more">MEHR SPIELE</span>
+    <a class="friend anna" href="../danger-in-the-jungle/">
+      <div class="pic" aria-hidden="true">
+        <svg viewBox="0 0 64 64"><defs><radialGradient id="mg" cx="50%" cy="0%" r="110%"><stop offset="0" stop-color="#FF4FB8"/><stop offset=".5" stop-color="#D3168A"/><stop offset="1" stop-color="#9E0A63"/></radialGradient></defs>
+            <rect width="64" height="64" fill="url(#mg)"/>
+            <g fill="#fff"><path d="M14 8l2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/><path d="M50 40l1.5 4.5 4.5 1.5-4.5 1.5L50 52l-1.5-4.5L44 46l4.5-1.5Z"/></g>
+            <path d="M46 10l1.4 4 4 1.4-4 1.4-1.4 4-1.4-4-4-1.4 4-1.4Z" fill="#FFD93B"/>
+            <g transform="translate(28 38) rotate(-12)" stroke="#16120F" stroke-width="2" stroke-linejoin="round">
+              <path d="M-4 5l-9 10 3 2 10-9Z" fill="#1F5FC0"/><ellipse cx="0" cy="0" rx="10" ry="8.5" fill="#2F86F0"/>
+              <circle cx="7" cy="-6" r="6" fill="#2F86F0"/><path d="M12 -8c4.5 0 6 3 4.5 6l-4.5-1.5Z" fill="#FFC53D"/>
+              <circle cx="8" cy="-7.5" r="1.3" fill="#16120F" stroke="none"/></g></svg>
+      </div>
+      <div class="txt">
+        <h2 data-i18n="annaH">ANNAS ABENTEUER</h2>
+        <p data-i18n="annaT">Danger in the Jungle und mehr.</p>
+      </div>
+      <span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="#16120F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </a>
+  </div>
   <div class="langs" id="langs" role="group" aria-label="Language"></div>
 </main>
 <script>
 const L={
-  de:{doc:"Jonas' Spiele",title:"JONAS' SPIELE",sub:'Such dir ein Spiel aus!',mazeT:'Kipp das Handy und roll die Kugel ins Loch, bevor die Hecken zuwachsen.',skiT:'Tippe zur richtigen Zeit auf der Buckelpiste, spring über Schanzen und schlag den Computer.',play:'SPIELEN!',soon:'KOMMT BALD'},
-  en:{doc:"Jonas's Games",title:"JONAS'S GAMES",sub:'Pick a game!',mazeT:'Tilt the phone and roll the ball into the hole before the hedges grow shut.',skiT:'Tap at the right moment on the bumps, fly off ramps and beat the computer.',play:'PLAY!',soon:'COMING SOON'},
-  fr:{doc:"Les jeux de Jonas",title:'LES JEUX DE JONAS',sub:'Choisis un jeu !',mazeT:'Incline le téléphone et fais rouler la bille dans le trou avant que les haies ne se referment.',skiT:'Tape au bon moment sur les bosses, saute des tremplins et bats l’ordinateur.',play:'JOUER !',soon:'BIENTÔT'},
-  es:{doc:"Los juegos de Jonas",title:'LOS JUEGOS DE JONAS',sub:'¡Elige un juego!',mazeT:'Inclina el móvil y mete la bola en el hoyo antes de que los setos lo cierren.',skiT:'Toca en el momento justo en los baches, salta en los trampolines y gana al ordenador.',play:'¡JUGAR!',soon:'MUY PRONTO'},
-  it:{doc:"I giochi di Jonas",title:'I GIOCHI DI JONAS',sub:'Scegli un gioco!',mazeT:'Inclina il telefono e porta la pallina nella buca prima che le siepi chiudano i sentieri.',skiT:'Tocca al momento giusto sulle gobbe, salta dai trampolini e batti il computer.',play:'GIOCA!',soon:'IN ARRIVO'},
-  pt:{doc:"Os jogos do Jonas",title:'OS JOGOS DO JONAS',sub:'Escolha um jogo!',mazeT:'Incline o celular e leve a bola até o buraco antes que as sebes fechem os caminhos.',skiT:'Toque na hora certa nas lombadas, salte das rampas e vença o computador.',play:'JOGAR!',soon:'EM BREVE'}
+  de:{doc:"Jonas' Spiele",title:"JONAS' SPIELE",sub:'Such dir ein Spiel aus!',mazeT:'Kipp das Handy und roll die Kugel ins Loch, bevor die Hecken zuwachsen.',skiT:'Tippe zur richtigen Zeit auf der Buckelpiste, spring über Schanzen und schlag den Computer.',play:'SPIELEN!',soon:'KOMMT BALD',more:'MEHR SPIELE',annaH:'ANNAS ABENTEUER',annaT:'Danger in the Jungle und mehr.'},
+  en:{doc:"Jonas's Games",title:"JONAS'S GAMES",sub:'Pick a game!',mazeT:'Tilt the phone and roll the ball into the hole before the hedges grow shut.',skiT:'Tap at the right moment on the bumps, fly off ramps and beat the computer.',play:'PLAY!',soon:'COMING SOON',more:'MORE GAMES',annaH:"ANNA'S ADVENTURES",annaT:'Danger in the Jungle and more.'},
+  fr:{doc:"Les jeux de Jonas",title:'LES JEUX DE JONAS',sub:'Choisis un jeu !',mazeT:'Incline le téléphone et fais rouler la bille dans le trou avant que les haies ne se referment.',skiT:'Tape au bon moment sur les bosses, saute des tremplins et bats l’ordinateur.',play:'JOUER !',soon:'BIENTÔT',more:'PLUS DE JEUX',annaH:"LES AVENTURES D'ANNA",annaT:'Danger in the Jungle et plus.'},
+  es:{doc:"Los juegos de Jonas",title:'LOS JUEGOS DE JONAS',sub:'¡Elige un juego!',mazeT:'Inclina el móvil y mete la bola en el hoyo antes de que los setos lo cierren.',skiT:'Toca en el momento justo en los baches, salta en los trampolines y gana al ordenador.',play:'¡JUGAR!',soon:'MUY PRONTO',more:'MÁS JUEGOS',annaH:'LAS AVENTURAS DE ANNA',annaT:'Danger in the Jungle y más.'},
+  it:{doc:"I giochi di Jonas",title:'I GIOCHI DI JONAS',sub:'Scegli un gioco!',mazeT:'Inclina il telefono e porta la pallina nella buca prima che le siepi chiudano i sentieri.',skiT:'Tocca al momento giusto sulle gobbe, salta dai trampolini e batti il computer.',play:'GIOCA!',soon:'IN ARRIVO',more:'ALTRI GIOCHI',annaH:'LE AVVENTURE DI ANNA',annaT:'Danger in the Jungle e altro.'},
+  pt:{doc:"Os jogos do Jonas",title:'OS JOGOS DO JONAS',sub:'Escolha um jogo!',mazeT:'Incline o celular e leve a bola até o buraco antes que as sebes fechem os caminhos.',skiT:'Toque na hora certa nas lombadas, salte das rampas e vença o computador.',play:'JOGAR!',soon:'EM BREVE',more:'MAIS JOGOS',annaH:'AS AVENTURAS DA ANNA',annaT:'Danger in the Jungle e mais.'}
 };
 // Shares the language choice with Irrgarten (same origin, same key).
 const KEY='irrgarten.lang';

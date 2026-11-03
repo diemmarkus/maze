@@ -7,6 +7,8 @@ Comic-style phone games by Jonas. The start page (`index.html`) lets you pick a 
 | Irrgarten | [`irrgarten/`](irrgarten/) | playable |
 | Skiing | [`skiing/`](skiing/) | playable |
 
+At the bottom, **Mehr Spiele** links to Anna's start page ([Abenteuer](https://diemmarkus.github.io/danger-in-the-jungle/)).
+
 Play: https://diemmarkus.github.io/maze/
 
 ---
