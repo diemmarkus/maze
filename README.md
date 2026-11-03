@@ -21,7 +21,9 @@ A pixel-art ski race against the computer on a mogul run.
 - **Tap uphill** and you slow down and wobble. Tap wrong again while wobbly and you fall — race over. Three good taps in a row get rid of the wobble.
 - **Ramps:** tap on the orange part of the ramp to jump high. Not tapping gives only a small hop; tapping too early counts as a wrong tap.
 - **Backflip:** keep your finger down in the air. Let go in time — the skier finishes the turn on its own — so you land straight, or it's a crash. Every flip gives a speed boost.
-- **The computer** is the pale skier in the background. Reach the finish before it does. Each level the course gets longer and the computer gets better.
+- **Hurdles (from level 3):** fences, snowmen, log piles and barriers on blue snow. Tap on the blue snow to jump off the ground and clear them — each clean jump gives a little boost. Hitting one slows you down and makes you wobble; hitting another while wobbly is a fall.
+- **The computer** is the pale skier on its own lane, shifted up behind yours, so you see both racing side by side. Reach the finish before it does.
+- **Levels look different:** level 1 is short, then every level gets longer. Level types rotate — more bumps, more ramps, more hurdles, or a mix — and so does the scenery: day, sunset, forest, night. The computer gets better every level.
 - Level select for every level you've reached. Keyboard: Space / arrow keys.
 - Languages: EN, DE, FR, ES, IT, PT (shared with Irrgarten).
 
