@@ -25,6 +25,7 @@ A pixel-art ski race against the computer on a mogul run.
 - **The computer** is the pale skier on its own lane, shifted up behind yours, so you see both racing side by side. Reach the finish before it does.
 - **Levels look different:** level 1 is short, then every level gets longer. Level types rotate — more bumps, more ramps, more hurdles, or a mix — and so does the scenery: day, sunset, forest, night. The computer gets better every level.
 - Level select for every level you've reached. Keyboard: Space / arrow keys.
+- **2-player mode** (optional, pick it in the menu): two players on one phone, no computer. Tap on the left half to steer Blue (back lane), on the right half to steer Red (front lane) — both can tap at the same time. First at the finish wins; a fall only ends your own race. Keyboard: A = Blue, L = Red.
 - Languages: EN, DE, FR, ES, IT, PT (shared with Irrgarten).
 
 ---
