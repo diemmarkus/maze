@@ -223,21 +223,21 @@ function rng(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^
 /* ---------- sprites ---------- */
 const SKIER=[
 "................",
-"......KKKK......",
-".....KHHHHK.....",
-".....KHHGGGK....",
-".....KSSSSK.....",
-"......KJJK......",
-"....KJJJJJK.....",
-"...KJJJJJJJK....",
-"...KJJKJJJJSK...",
-"....KKJJJJKKL...",
-"....KPPPPPK..L..",
-"...KPPK.KPPK..L.",
-"...KPK...KPPK...",
-"..KBBK....KBBK.W",
-"WWWWWWWWWWWWWWW.",
-"................"];
+".........KKK....",
+"........KHHHK...",
+".L......KHHGGK..",
+".LL......KSSK...",
+".L.LLL.KJJJK....",
+"......LKJJJJK...",
+".....KJJJJJJK...",
+".....KJJJJKLSK..",
+"....KPPPPPK.....",
+".....KPPPPPK....",
+"......KKPPPK....",
+".......KPPK.....",
+"......KBBBBK...W",
+"..WWWWWWWWWWWWW.",
+".VVVVVVVVVVVVVV."]
 const PINE=[
 "...G...",
 "..GGG..",
@@ -249,7 +249,8 @@ const PINE=[
 "GGGGGGG",
 "...T...",
 "...T..."];
-function sprite(rows,pal){const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const g=c.getContext('2d');
+function shade(hex,f){const n=parseInt(hex.slice(1),16);return'#'+[16,8,0].map(b=>Math.round(((n>>b)&255)*f).toString(16).padStart(2,'0')).join('')}
+function sprite(rows,pal){if(pal.W&&!pal.V)pal=Object.assign({},pal,{V:shade(pal.W,0.72)});const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const g=c.getContext('2d');
   rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(pal[ch]){g.fillStyle=pal[ch];g.fillRect(x,y,1,1)}}));return c}
 /* Character picker: colours for helmet (H), sweater (J), pants (P) and skis (W). Index 0 = the original look. */
 const OUTFIT={
@@ -426,7 +427,9 @@ function updRider(r,dt){
 }
 
 /* ---------- computer brain ---------- */
-function aiSkill(lv){const l=lv-1;return{ph:Math.min(0.97,0.78+0.03*l),boost:Math.min(1.6,1+0.05*l),p:Math.min(0.96,0.62+0.05*l),q:Math.min(0.85,0.2+0.07*l),w:Math.max(0.02,0.1-0.012*l),pj:Math.min(0.96,0.62+0.05*l),pf:Math.min(0.85,0.2+0.08*l)}}
+/* Computer strength: grows gently each level so later levels stay winnable for a good player. */
+function aiSkill(lv){const l=lv-1;
+  return{ph:Math.min(0.95,0.8+0.02*l),boost:Math.min(1.3,1+0.02*l),p:Math.min(0.9,0.62+0.03*l),q:Math.min(0.65,0.2+0.035*l),w:Math.max(0.03,0.1-0.008*l),pj:Math.min(0.92,0.62+0.04*l),pf:Math.min(0.6,0.2+0.05*l)}}
 let SK=aiSkill(1);
 function aiThink(a){
   if(a.crashed||a.fin)return;
