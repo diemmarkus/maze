@@ -133,7 +133,7 @@ body.two .charBtn{display:none}
 /* ---------- texts ---------- */
 const NB=' ';
 const LANG={
-  de:{name:'DE',done:'FERTIG',you2:'DEIN SKIFAHRER',cHelm:'HELM',cTop:'PULLOVER',cPants:'HOSE',cSkis:'SKI',p1:'1 SPIELER',p2:'2 SPIELER',rule2:'Zwei Spieler auf einem Handy: Links tippen steuert Blau (hinten), rechts tippen steuert Rot (vorne).',red:'ROT',blue:'BLAU',redWin:'ROT GEWINNT!',redWinP:'Rot war zuerst im Ziel.',blueWin:'BLAU GEWINNT!',blueWinP:'Blau war zuerst im Ziel.',bothOut:'BEIDE GESTÜRZT!',bothOutP:'Diesmal ist keiner angekommen.',hint2:'◀ LINKS = BLAU · RECHTS = ROT ▶',hurdleP:'Über die Hürden musst du springen – tippe kurz vor der Hürde.',ouch:'AUTSCH!',newH:'NEU: HÜRDEN! TIPPEN = DRÜBERSPRINGEN',title:'SKIING!',intro:'Wer ist zuerst im Ziel – du oder der Computer?',
+  de:{name:'DE',done:'FERTIG',you2:'DEIN SKIFAHRER',cHelm:'HELM',cTop:'PULLOVER',cPants:'HOSE',cSkis:'SKI',p1:'1 SPIELER',p2:'2 SPIELER',rule2:'Zwei Spieler, zwei Fenster: Blau tippt ins obere Fenster, Rot ins untere. Hältst du das Handy quer, ist Blau links und Rot rechts.',tapHere:'HIER TIPPEN',red:'ROT',blue:'BLAU',redWin:'ROT GEWINNT!',redWinP:'Rot war zuerst im Ziel.',blueWin:'BLAU GEWINNT!',blueWinP:'Blau war zuerst im Ziel.',bothOut:'BEIDE GESTÜRZT!',bothOutP:'Diesmal ist keiner angekommen.',hint2:'◀ LINKS = BLAU · RECHTS = ROT ▶',hurdleP:'Über die Hürden musst du springen – tippe kurz vor der Hürde.',ouch:'AUTSCH!',newH:'NEU: HÜRDEN! TIPPEN = DRÜBERSPRINGEN',title:'SKIING!',intro:'Wer ist zuerst im Ziel – du oder der Computer?',
     rules:[['g','Tippe, wenn es den Buckel hinuntergeht (gelber Schnee) – dann wirst du schneller.'],
       ['o','Tippe oben auf der Schanze, kurz vor der Kante – dann springst du ganz hoch.'],
       ['o','Bleib in der Luft mit dem Finger drauf, dann machst du einen Salto. Lass los, damit du gerade landest.']],
@@ -142,7 +142,7 @@ const LANG={
     land:'BRUCHLANDUNG!',landP:'Lass nach dem Salto rechtzeitig los, damit du gerade landest.',slow:'ZU LANGSAM!',slowP:'Der Computer war zuerst im Ziel.',
     time:'ZEIT',flips:'SALTOS',you:'DU',cpu:'CPU',wob:'WACKELIG!',hint:'TIPPEN, WENN GELB · HALTEN = SALTO',go:'LOS!',
     super:'SUPER!',good:'GUT!',oops:'HOPPLA!',jump:'SPRUNG!',flip:'SALTO!',flip2:'DOPPELSALTO!',flip3:'DREIFACH!',finish:'ZIEL',startT:'START'},
-  en:{name:'EN',done:'DONE',you2:'YOUR SKIER',cHelm:'HELMET',cTop:'SWEATER',cPants:'PANTS',cSkis:'SKIS',p1:'1 PLAYER',p2:'2 PLAYERS',rule2:'Two players on one phone: tapping on the left steers Blue (back), tapping on the right steers Red (front).',red:'RED',blue:'BLUE',redWin:'RED WINS!',redWinP:'Red reached the finish first.',blueWin:'BLUE WINS!',blueWinP:'Blue reached the finish first.',bothOut:'BOTH FELL!',bothOutP:'Nobody made it this time.',hint2:'◀ LEFT = BLUE · RIGHT = RED ▶',hurdleP:'Jump over the hurdles – tap just before the hurdle.',ouch:'OUCH!',newH:'NEW: HURDLES! TAP = JUMP OVER',title:'SKIING!',intro:'Who reaches the finish first – you or the computer?',
+  en:{name:'EN',done:'DONE',you2:'YOUR SKIER',cHelm:'HELMET',cTop:'SWEATER',cPants:'PANTS',cSkis:'SKIS',p1:'1 PLAYER',p2:'2 PLAYERS',rule2:'Two players, two windows: Blue taps in the top window, Red in the bottom one. Hold the phone sideways and Blue is left, Red is right.',tapHere:'TAP HERE',red:'RED',blue:'BLUE',redWin:'RED WINS!',redWinP:'Red reached the finish first.',blueWin:'BLUE WINS!',blueWinP:'Blue reached the finish first.',bothOut:'BOTH FELL!',bothOutP:'Nobody made it this time.',hint2:'◀ LEFT = BLUE · RIGHT = RED ▶',hurdleP:'Jump over the hurdles – tap just before the hurdle.',ouch:'OUCH!',newH:'NEW: HURDLES! TAP = JUMP OVER',title:'SKIING!',intro:'Who reaches the finish first – you or the computer?',
     rules:[['g','Tap when you are going down a bump (yellow snow) to speed up.'],
       ['o','Tap at the top of the ramp, just before the edge, to jump really high.'],
       ['o','Keep your finger down in the air to do a backflip. Let go so you land straight.']],
@@ -151,7 +151,7 @@ const LANG={
     land:'CRASH!',landP:'Let go after the flip in time so you land straight.',slow:'TOO SLOW!',slowP:'The computer got there first.',
     time:'TIME',flips:'FLIPS',you:'YOU',cpu:'CPU',wob:'WOBBLY!',hint:'TAP ON YELLOW · HOLD = FLIP',go:'GO!',
     super:'SUPER!',good:'GOOD!',oops:'OOPS!',jump:'JUMP!',flip:'FLIP!',flip2:'DOUBLE FLIP!',flip3:'TRIPLE!',finish:'FINISH',startT:'START'},
-  fr:{name:'FR',done:'OK',you2:'TON SKIEUR',cHelm:'CASQUE',cTop:'PULL',cPants:'PANTALON',cSkis:'SKIS',p1:'1 JOUEUR',p2:'2 JOUEURS',rule2:'Deux joueurs sur un téléphone'+NB+': à gauche tu diriges Bleu (derrière), à droite Rouge (devant).',red:'ROUGE',blue:'BLEU',redWin:'ROUGE GAGNE'+NB+'!',redWinP:'Rouge est arrivé le premier.',blueWin:'BLEU GAGNE'+NB+'!',blueWinP:'Bleu est arrivé le premier.',bothOut:'TOUS À TERRE'+NB+'!',bothOutP:'Personne n’est arrivé cette fois.',hint2:'◀ GAUCHE = BLEU · DROITE = ROUGE ▶',hurdleP:'Saute par-dessus les obstacles'+NB+': tape juste avant l’obstacle.',ouch:'AÏE'+NB+'!',newH:'NOUVEAU'+NB+': OBSTACLES'+NB+'! TAPE = SAUTE',title:'SKIING'+NB+'!',intro:'Qui arrive le premier'+NB+': toi ou l’ordinateur'+NB+'?',
+  fr:{name:'FR',done:'OK',you2:'TON SKIEUR',cHelm:'CASQUE',cTop:'PULL',cPants:'PANTALON',cSkis:'SKIS',p1:'1 JOUEUR',p2:'2 JOUEURS',rule2:'Deux joueurs, deux fenêtres'+NB+': Bleu tape dans celle du haut, Rouge dans celle du bas. Téléphone à l’horizontale'+NB+': Bleu à gauche, Rouge à droite.',tapHere:'TAPE ICI',red:'ROUGE',blue:'BLEU',redWin:'ROUGE GAGNE'+NB+'!',redWinP:'Rouge est arrivé le premier.',blueWin:'BLEU GAGNE'+NB+'!',blueWinP:'Bleu est arrivé le premier.',bothOut:'TOUS À TERRE'+NB+'!',bothOutP:'Personne n’est arrivé cette fois.',hint2:'◀ GAUCHE = BLEU · DROITE = ROUGE ▶',hurdleP:'Saute par-dessus les obstacles'+NB+': tape juste avant l’obstacle.',ouch:'AÏE'+NB+'!',newH:'NOUVEAU'+NB+': OBSTACLES'+NB+'! TAPE = SAUTE',title:'SKIING'+NB+'!',intro:'Qui arrive le premier'+NB+': toi ou l’ordinateur'+NB+'?',
     rules:[['g','Tape quand tu descends une bosse (neige jaune) pour accélérer.'],
       ['o','Tape en haut du tremplin, juste avant le bord, pour sauter très haut.'],
       ['o','Garde le doigt appuyé en l’air pour faire un salto. Lâche pour atterrir droit.']],
@@ -160,7 +160,7 @@ const LANG={
     land:'AÏE'+NB+'!',landP:'Lâche à temps après le salto pour atterrir droit.',slow:'TROP LENT'+NB+'!',slowP:'L’ordinateur est arrivé le premier.',
     time:'TEMPS',flips:'SALTOS',you:'TOI',cpu:'CPU',wob:'ÇA VACILLE'+NB+'!',hint:'TAPE SUR LE JAUNE · MAINTIENS = SALTO',go:'GO'+NB+'!',
     super:'SUPER'+NB+'!',good:'BIEN'+NB+'!',oops:'OUPS'+NB+'!',jump:'SAUT'+NB+'!',flip:'SALTO'+NB+'!',flip2:'DOUBLE'+NB+'!',flip3:'TRIPLE'+NB+'!',finish:'ARRIVÉE',startT:'DÉPART'},
-  es:{name:'ES',done:'LISTO',you2:'TU ESQUIADOR',cHelm:'CASCO',cTop:'JERSEY',cPants:'PANTALÓN',cSkis:'ESQUÍS',p1:'1 JUGADOR',p2:'2 JUGADORES',rule2:'Dos jugadores en un móvil: tocando a la izquierda manejas Azul (detrás), a la derecha Rojo (delante).',red:'ROJO',blue:'AZUL',redWin:'¡GANA ROJO!',redWinP:'Rojo llegó primero a la meta.',blueWin:'¡GANA AZUL!',blueWinP:'Azul llegó primero a la meta.',bothOut:'¡LOS DOS AL SUELO!',bothOutP:'Esta vez nadie llegó.',hint2:'◀ IZQUIERDA = AZUL · DERECHA = ROJO ▶',hurdleP:'Salta las vallas: toca justo antes de la valla.',ouch:'¡AY!',newH:'¡NUEVO: VALLAS! TOCA = SALTA',title:'¡SKIING!',intro:'¿Quién llega antes a la meta: tú o el ordenador?',
+  es:{name:'ES',done:'LISTO',you2:'TU ESQUIADOR',cHelm:'CASCO',cTop:'JERSEY',cPants:'PANTALÓN',cSkis:'ESQUÍS',p1:'1 JUGADOR',p2:'2 JUGADORES',rule2:'Dos jugadores, dos ventanas: Azul toca en la de arriba, Rojo en la de abajo. Con el móvil en horizontal, Azul a la izquierda y Rojo a la derecha.',tapHere:'TOCA AQUÍ',red:'ROJO',blue:'AZUL',redWin:'¡GANA ROJO!',redWinP:'Rojo llegó primero a la meta.',blueWin:'¡GANA AZUL!',blueWinP:'Azul llegó primero a la meta.',bothOut:'¡LOS DOS AL SUELO!',bothOutP:'Esta vez nadie llegó.',hint2:'◀ IZQUIERDA = AZUL · DERECHA = ROJO ▶',hurdleP:'Salta las vallas: toca justo antes de la valla.',ouch:'¡AY!',newH:'¡NUEVO: VALLAS! TOCA = SALTA',title:'¡SKIING!',intro:'¿Quién llega antes a la meta: tú o el ordenador?',
     rules:[['g','Toca cuando bajes un bache (nieve amarilla) para ir más rápido.'],
       ['o','Toca arriba del trampolín, justo antes del borde, para saltar muy alto.'],
       ['o','Mantén el dedo en el aire para dar una voltereta. Suelta para aterrizar recto.']],
@@ -169,7 +169,7 @@ const LANG={
     land:'¡PLAF!',landP:'Suelta a tiempo tras la voltereta para aterrizar recto.',slow:'¡MUY LENTO!',slowP:'El ordenador llegó primero.',
     time:'TIEMPO',flips:'VUELTAS',you:'TÚ',cpu:'CPU',wob:'¡TAMBALEO!',hint:'TOCA EN AMARILLO · MANTÉN = VOLTERETA',go:'¡YA!',
     super:'¡SUPER!',good:'¡BIEN!',oops:'¡UPS!',jump:'¡SALTO!',flip:'¡VUELTA!',flip2:'¡DOBLE!',flip3:'¡TRIPLE!',finish:'META',startT:'SALIDA'},
-  it:{name:'IT',done:'FATTO',you2:'IL TUO SCIATORE',cHelm:'CASCO',cTop:'MAGLIONE',cPants:'PANTALONI',cSkis:'SCI',p1:'1 GIOCATORE',p2:'2 GIOCATORI',rule2:'Due giocatori su un telefono: tocca a sinistra per Blu (dietro), a destra per Rosso (davanti).',red:'ROSSO',blue:'BLU',redWin:'VINCE ROSSO!',redWinP:'Rosso è arrivato per primo.',blueWin:'VINCE BLU!',blueWinP:'Blu è arrivato per primo.',bothOut:'TUTTI A TERRA!',bothOutP:'Stavolta non è arrivato nessuno.',hint2:'◀ SINISTRA = BLU · DESTRA = ROSSO ▶',hurdleP:'Salta gli ostacoli: tocca poco prima dell’ostacolo.',ouch:'AHI!',newH:'NUOVO: OSTACOLI! TOCCA = SALTA',title:'SKIING!',intro:'Chi arriva prima al traguardo: tu o il computer?',
+  it:{name:'IT',done:'FATTO',you2:'IL TUO SCIATORE',cHelm:'CASCO',cTop:'MAGLIONE',cPants:'PANTALONI',cSkis:'SCI',p1:'1 GIOCATORE',p2:'2 GIOCATORI',rule2:'Due giocatori, due finestre: Blu tocca in quella in alto, Rosso in quella in basso. Col telefono in orizzontale Blu è a sinistra, Rosso a destra.',tapHere:'TOCCA QUI',red:'ROSSO',blue:'BLU',redWin:'VINCE ROSSO!',redWinP:'Rosso è arrivato per primo.',blueWin:'VINCE BLU!',blueWinP:'Blu è arrivato per primo.',bothOut:'TUTTI A TERRA!',bothOutP:'Stavolta non è arrivato nessuno.',hint2:'◀ SINISTRA = BLU · DESTRA = ROSSO ▶',hurdleP:'Salta gli ostacoli: tocca poco prima dell’ostacolo.',ouch:'AHI!',newH:'NUOVO: OSTACOLI! TOCCA = SALTA',title:'SKIING!',intro:'Chi arriva prima al traguardo: tu o il computer?',
     rules:[['g','Tocca quando scendi da una gobba (neve gialla) per andare più veloce.'],
       ['o','Tocca in cima al trampolino, poco prima del bordo, per saltare altissimo.'],
       ['o','Tieni il dito premuto in aria per fare un salto mortale. Lascia per atterrare dritto.']],
@@ -178,7 +178,7 @@ const LANG={
     land:'OUCH!',landP:'Lascia in tempo dopo il salto per atterrare dritto.',slow:'TROPPO LENTO!',slowP:'Il computer è arrivato prima.',
     time:'TEMPO',flips:'SALTI',you:'TU',cpu:'CPU',wob:'TRABALLI!',hint:'TOCCA SUL GIALLO · TIENI = SALTO',go:'VIA!',
     super:'SUPER!',good:'BENE!',oops:'OPS!',jump:'SALTO!',flip:'MORTALE!',flip2:'DOPPIO!',flip3:'TRIPLO!',finish:'ARRIVO',startT:'PARTENZA'},
-  pt:{name:'PT',done:'PRONTO',you2:'SEU ESQUIADOR',cHelm:'CAPACETE',cTop:'BLUSA',cPants:'CALÇA',cSkis:'ESQUIS',p1:'1 JOGADOR',p2:'2 JOGADORES',rule2:'Dois jogadores num celular: toque à esquerda para o Azul (atrás) e à direita para o Vermelho (frente).',red:'VERMELHO',blue:'AZUL',redWin:'VERMELHO VENCE!',redWinP:'O Vermelho chegou primeiro.',blueWin:'AZUL VENCE!',blueWinP:'O Azul chegou primeiro.',bothOut:'OS DOIS CAÍRAM!',bothOutP:'Ninguém chegou desta vez.',hint2:'◀ ESQUERDA = AZUL · DIREITA = VERMELHO ▶',hurdleP:'Pule os obstáculos: toque logo antes do obstáculo.',ouch:'AI!',newH:'NOVO: OBSTÁCULOS! TOQUE = PULE',title:'SKIING!',intro:'Quem chega primeiro: você ou o computador?',
+  pt:{name:'PT',done:'PRONTO',you2:'SEU ESQUIADOR',cHelm:'CAPACETE',cTop:'BLUSA',cPants:'CALÇA',cSkis:'ESQUIS',p1:'1 JOGADOR',p2:'2 JOGADORES',rule2:'Dois jogadores, duas janelas: o Azul toca na de cima, o Vermelho na de baixo. Com o celular deitado, Azul fica à esquerda e Vermelho à direita.',tapHere:'TOQUE AQUI',red:'VERMELHO',blue:'AZUL',redWin:'VERMELHO VENCE!',redWinP:'O Vermelho chegou primeiro.',blueWin:'AZUL VENCE!',blueWinP:'O Azul chegou primeiro.',bothOut:'OS DOIS CAÍRAM!',bothOutP:'Ninguém chegou desta vez.',hint2:'◀ ESQUERDA = AZUL · DIREITA = VERMELHO ▶',hurdleP:'Pule os obstáculos: toque logo antes do obstáculo.',ouch:'AI!',newH:'NOVO: OBSTÁCULOS! TOQUE = PULE',title:'SKIING!',intro:'Quem chega primeiro: você ou o computador?',
     rules:[['g','Toque quando descer uma lombada (neve amarela) para ganhar velocidade.'],
       ['o','Toque no alto da rampa, logo antes da borda, para pular bem alto.'],
       ['o','Segure o dedo no ar para dar um mortal. Solte para pousar reto.']],
@@ -204,11 +204,13 @@ Object.keys(LANG).forEach(k=>{const b=document.createElement('button');b.type='b
 
 /* ---------- canvas ---------- */
 const cv=$('#c'),ctx=cv.getContext('2d');
-let W=200,H=400;
+let W=200,H=400,SW=200,SH=400,FRONT=null;
+/* lane of a rider in the window being drawn: the window's own rider rides in front, the other one on the back lane */
+function lane(r){return r===FRONT?0:LANE}
 function resize(){
   const dpr=window.devicePixelRatio||1,dw=Math.round(innerWidth*dpr),dh=Math.round(innerHeight*dpr);
   const sc=Math.max(1,Math.round(Math.max(dw,dh)/330));
-  W=Math.ceil(dw/sc);H=Math.ceil(dh/sc);cv.width=W;cv.height=H;ctx.imageSmoothingEnabled=false;
+  SW=W=Math.ceil(dw/sc);SH=H=Math.ceil(dh/sc);cv.width=W;cv.height=H;ctx.imageSmoothingEnabled=false;
 }
 addEventListener('resize',resize);resize();
 
@@ -263,7 +265,7 @@ const SPR_PINE=sprite(PINE,{G:'#2F7D4A',g:'#4FA36A',T:'#6B4A2B'});
 const SPR_PINE_FAR=sprite(PINE,{G:'#5E8FB5',g:'#7EA8C8',T:'#5E8FB5'});
 
 /* ---------- course ---------- */
-const SLOPE=0.3, G=330, SPIN=620, VMIN=36;
+const SLOPE=0.3, G=330, SPIN=720, VMIN=36;
 let TY_=null,KIND=null,MID=null,mogs=[],ramps=[],trees=[],hurdles=[],finishX=0,LEN=0,level=1,theme=null,LANE=22;
 /* Level types: how often each kind of section shows up, and how long mogul groups and bumps are. */
 const PROFILES={
@@ -293,13 +295,17 @@ function build(lv){
     if(r()<theme.trees)trees.push(x0+Math.floor(r()*P));
     for(let u=0;u<P;u++){const t=u/P;const k=t>=0.03&&t<=0.45?1:(t>=0.52&&t<=0.97?2:0);put(y0+SLOPE*u+A*(1-Math.cos(2*Math.PI*t))/2,k,id)}
     y=y0+SLOPE*P}};
+  /* ramp sizes: small (1 flip), medium (double), big (triple) */
+  let nRamps=0;
   const ramp=()=>{
+    const roll=r(),sz=(lv===1&&nRamps===0)?1:lv<=2?(roll<0.6?1:1.5):(roll<0.4?1:roll<0.72?1.5:2.1);nRamps++;
     for(let i=0;i<26;i++)put(y+=0.22,0);
-    const L=58,x0=x,y0=y;
-    for(let i=0;i<L;i++){const t=i/L;put(y0+0.1*i-22*t*t,t<0.5?3:4)}
-    const lip=x;y=y0+0.1*L-22;ramps.push({x0,L,lip});trees.push(x0-14);
-    y+=24;
-    for(let i=0;i<300;i++){const sl=i<220?0.62:0.62-(0.32*(i-220)/80);put(y+=sl,5)}
+    const L=Math.round(58*sz),hgt=22*sz,x0=x,y0=y;
+    for(let i=0;i<L;i++){const t=i/L;put(y0+0.1*i-hgt*t*t,t<0.5?3:4)}
+    const lip=x;y=y0+0.1*L-hgt;ramps.push({x0,L,lip,sz});trees.push(x0-14);
+    y+=24*sz;
+    const land=Math.round(300*sz),bend=land-80;
+    for(let i=0;i<land;i++){const sl=i<bend?0.62:0.62-(0.32*(i-bend)/80);put(y+=sl,5)}
     for(let i=0;i<20;i++)put(y+=SLOPE,0)};
   const hurdleRun=()=>{
     const n=2+Math.floor(r()*(lv>=6?3:2));
@@ -339,7 +345,8 @@ function mkRider(ai,back){return{ai,back:!!back,x:40,y:0,v:VMIN,vy:0,air:false,b
 let P=mkRider(false,false),A=mkRider(true,true),two=false;
 
 function launch(r,big){
-  r.air=true;r.big=big;r.vy=big?-(118+0.28*r.v):-r.v*0.5;r.rot=0;
+  const rp=ramps[r.ramp],sz=rp?rp.sz:1;
+  r.air=true;r.big=big;r.vy=big?-(150+0.2*r.v)*(0.6+0.4*sz):-r.v*0.5;r.rot=0;
   if(big){r.v+=6;if(!r.ai){pop('jump','#FF9A2E',r);beep('jump')}}
 }
 function press(r){
@@ -371,10 +378,10 @@ function hitHurdle(r){
 }
 function checkHurdles(r){
   while(r.hi<hurdles.length&&hurdles[r.hi].x+hurdles[r.hi].w<r.x-2){
-    if(!hurdles[r.hi]['hit'+(r.back?1:0)]&&!r.crashed){r.v+=14;if(!r.ai){pop('good','#5CC8EA',r);beep('good')}}
+    if(!hurdles[r.hi]['hit'+(r===A?1:0)]&&!r.crashed){r.v+=14;if(!r.ai){pop('good','#5CC8EA',r);beep('good')}}
     r.hi++}
   const h=hurdles[r.hi];
-  if(h&&!h['hit'+(r.back?1:0)]&&r.x>=h.x+1&&r.x<=h.x+h.w-1&&r.y>TY(h.x+h.w/2)-h.h+1){h['hit'+(r.back?1:0)]=1;hitHurdle(r)}
+  if(h&&!h['hit'+(r===A?1:0)]&&r.x>=h.x+1&&r.x<=h.x+h.w-1&&r.y>TY(h.x+h.w/2)-h.h+1){h['hit'+(r===A?1:0)]=1;hitHurdle(r)}
 }
 function crash(r,why){
   if(r.crashed)return;r.crashed=true;r.crashT=0;r.crashWhy=why;r.spin=false;
@@ -399,7 +406,7 @@ function updRider(r,dt){
   }
   if(!r.air){
     const s=slopeAt(r.x);
-    r.v+=80*(s-SLOPE)*dt;
+    const kk=kindAt(r.x);r.v+=(kk===3||kk===4?25:80)*(s-SLOPE)*dt;
     r.v-=(0.0025*r.v*r.v+4)*dt;
     r.v=Math.min(Math.max(r.v,VMIN),r.wob?125:198);
     const nx=r.x+r.v*dt;
@@ -437,7 +444,7 @@ function aiThink(a){
   if(a.plan&&!a.plan.done&&a.plan.at!=null&&a.x>=a.plan.at&&!a.air){a.plan.done=true;press(a);release(a)}
   const rp=ramps[a.ramp];
   if(rp&&!a.air&&a.x>=rp.x0-30&&(!a.rplan||a.rplan.lip!==rp.lip)){
-    const j=Math.random()<SK.pj;a.rplan={lip:rp.lip,at:j?rp.x0+rp.L*(0.55+Math.random()*0.4):null,flips:j&&Math.random()<SK.pf?(Math.random()<0.25?2:1):0,done:false};
+    const j=Math.random()<SK.pj;a.rplan={lip:rp.lip,at:j?rp.x0+rp.L*(0.55+Math.random()*0.4):null,flips:j&&Math.random()<SK.pf?Math.min(rp.sz>=2?3:rp.sz>=1.4?2:1,1+(Math.random()<0.45?1:0)+(Math.random()<0.25?1:0)):0,done:false};
   }
   if(a.rplan&&!a.rplan.done&&a.rplan.at!=null&&a.x>=a.rplan.at&&!a.air){a.rplan.done=true;press(a);if(!a.rplan.flips)release(a)}
   const h=hurdles[a.hi];
@@ -448,8 +455,8 @@ function aiThink(a){
 
 /* ---------- fx ---------- */
 let parts=[],pops=[];
-function spray(r,n){for(let i=0;i<n;i++)parts.push({x:r.x-3+Math.random()*4,y:r.y-1,vx:-r.v*(0.2+Math.random()*0.4),vy:-30-Math.random()*50,t:0.5+Math.random()*0.3,ai:r.back})}
-function pop(key,col,r){pops.push({key,col,x:r.x,y:r.y-26-(r.back?LANE:0),t:0,big:key.startsWith('flip')})}
+function spray(r,n){for(let i=0;i<n;i++)parts.push({x:r.x-3+Math.random()*4,y:r.y-1,vx:-r.v*(0.2+Math.random()*0.4),vy:-30-Math.random()*50,t:0.5+Math.random()*0.3,who:r})}
+function pop(key,col,r){pops.push({key,col,who:r,x:r.x,y:r.y-26,t:0,big:key.startsWith('flip')})}
 let AC=null;
 function beep(kind){
   if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
@@ -514,7 +521,8 @@ function drawDeco(off,back){
   ramps.forEach(rp=>{const sx=Math.round(rp.lip-camX);if(sx<-20||sx>W+20)return;const y=Math.round(TY(rp.lip-1)-camY-off);
     const ly=Math.round(TY(rp.lip+1)-camY-off);rect(back?'#C9DCEE':'#BBD3EA',sx,y+3,2,Math.max(0,ly-y));
     if(back)return;
-    for(let j=0;j<10;j++)rect(j%4<2?'#E83B3B':'#FFFFFF',sx-1,y-12+j,1,1);rect('#1B1F3B',sx,y-12,1,10);
+    const ph=Math.round(10*rp.sz);for(let j=0;j<ph;j++)rect(j%4<2?'#E83B3B':'#FFFFFF',sx-1,y-ph-2+j,1,1);rect('#1B1F3B',sx,y-ph-2,1,ph);
+    if(rp.sz>1)for(let k=0;k<(rp.sz>=2?3:2);k++)rect('#FFD23F',sx-2+k*3,y-ph-6,2,2);
     const ax=Math.round(rp.x0-camX);rect('#1B1F3B',ax,Math.round(TY(rp.x0)-camY)-12,1,12);rect('#FF9A2E',ax+1,Math.round(TY(rp.x0)-camY)-12,6,4);
   });
   if(back){ctx.save();ctx.globalAlpha=0.55;hurdles.forEach(h=>drawHurdle(h,off));ctx.restore();
@@ -531,23 +539,43 @@ function gate(x,label,col,checker){
   if(checker)for(let i=0;i<4;i++)rect(i%2?'#1B1F3B':'#FFFFFF',sx+i*6,g-1,6,2);
 }
 function drawRider(r){
-  const off=r.back?LANE:0,sx=r.x-camX,sy=r.y-camY-off;if(sx<-20||sx>W+20)return;
-  if(r.air){const gy=Math.round(TY(r.x)-camY-off);rect(r.back?'#C3D9EE':'#A9C6E0',Math.round(sx)-5,gy,10,1)}
-  ctx.save();ctx.globalAlpha=r.ai?0.8:1;
+  const off=lane(r),sx=r.x-camX,sy=r.y-camY-off;if(sx<-20||sx>W+20)return;
+  if(r.air){const gy=Math.round(TY(r.x)-camY-off);rect(off?'#C3D9EE':'#A9C6E0',Math.round(sx)-5,gy,10,1)}
+  ctx.save();ctx.globalAlpha=r.ai?0.8:off?0.75:1;
   let ang=r.ang,rot=r.rot*Math.PI/180;
   if(r.wob&&!r.crashed&&!r.air)ang+=Math.sin(r.wobT*22)*0.16;
   if(r.crashed&&!r.ai){rot=Math.min(1,r.crashT*3)*1.6+(r.air?r.rot*Math.PI/180:0)}
   ctx.translate(Math.round(sx),Math.round(sy)+(r.push>0?1:0));ctx.rotate(ang);ctx.translate(0,-7);ctx.rotate(rot);
-  ctx.drawImage(r.ai?SPR_AI:r.back?SPR_P2:two?SPR_RED:SPR_ME,-8,-8);ctx.restore();
+  ctx.drawImage(r.ai?SPR_AI:r===A?SPR_P2:two?SPR_RED:SPR_ME,-8,-8);ctx.restore();
 }
-function drawFx(dt){
-  parts=parts.filter(p=>(p.t-=dt)>0);parts.forEach(p=>{p.x+=p.vx*dt;p.vy+=200*dt;p.y+=p.vy*dt;rect(p.ai?'#EAF4FD':'#FFFFFF',p.x-camX,p.y-camY-(p.ai?LANE:0),1,1)});
-  pops=pops.filter(p=>(p.t+=dt)<0.9);pops.forEach(p=>{const s=T[p.key];txt(s,p.x-camX,p.y-camY-p.t*18,p.col,8)});
+function updFx(dt){
+  parts=parts.filter(p=>(p.t-=dt)>0);parts.forEach(p=>{p.x+=p.vx*dt;p.vy+=200*dt;p.y+=p.vy*dt});
+  pops=pops.filter(p=>(p.t+=dt)<0.9);
 }
-function drawAiMarker(){marker(A,P,two?T.blue:T.cpu,two?'#6FB3FF':'#A9D4F5');if(two)marker(P,A,T.red,'#FF7A7A')}
+function drawFx(){
+  parts.forEach(p=>{const o=lane(p.who);rect(o?'#EAF4FD':'#FFFFFF',p.x-camX,p.y-camY-o,1,1)});
+  pops.forEach(p=>{if(p.who!==FRONT)return;txt(T[p.key],p.x-camX,p.y-camY-p.t*18,p.col,8)});
+}
+const cams=[{x:0,y:0},{x:0,y:0}];
+/* 2 players: two windows, stacked in portrait, side by side in landscape. Blue (A) gets the first one. */
+function splitViews(){
+  if(SH>=SW){const h=Math.floor(SH/2);return[{x:0,y:0,w:SW,h:h-1,r:A,cam:cams[0]},{x:0,y:h+1,w:SW,h:SH-h-1,r:P,cam:cams[1]}]}
+  const w=Math.floor(SW/2);return[{x:0,y:0,w:w-1,h:SH,r:A,cam:cams[0]},{x:w+1,y:0,w:SW-w-1,h:SH,r:P,cam:cams[1]}]
+}
+function viewHud(v){
+  const me=v.r,blue=me===A,col=blue?'#2F7FE0':'#E83B3B',name=blue?T.blue:T.red;
+  ctx.font='8px "Press Start 2P"';const tw=Math.ceil(ctx.measureText(name).width);
+  rect('#1B1F3B',4,4,tw+8,13);rect(col,5,5,tw+6,11);ctx.fillStyle='#FFFFFF';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(name,8,11);
+  const bx=tw+18,bw=W-bx-6;rect('#1B1F3B',bx,8,bw,5);rect('#FFFFFF',bx+1,9,bw-2,3);
+  const f=x=>bx+1+Math.round(Math.max(0,Math.min(1,(x-40)/(finishX-40)))*(bw-4));
+  const o=blue?P:A;rect(blue?'#E83B3B':'#2F7FE0',f(o.x),7,3,7);rect(col,f(me.x),6,3,9);rect('#1B1F3B',bx+bw-2,6,2,9);
+  if(me.wob&&!me.crashed&&Math.floor(clock*5)%2)txt(T.wob,W/2,26,'#E83B3B',8);
+  if(state==='count'||(state==='run'&&hintT>0))txt(T.tapHere,W/2,H-14,'#FFFFFF',8);
+}
+function drawAiMarker(){if(!two){marker(A,P,T.cpu,'#A9D4F5');return}const o=FRONT===A?P:A;marker(o,FRONT,o===A?T.blue:T.red,o===A?'#6FB3FF':'#FF7A7A')}
 function marker(Q,O,label,col){
   const sx=Q.x-camX;if(sx>=-6&&sx<=W+6)return;
-  const d=Math.round(Math.abs(Q.x-O.x)/10)+'m',right=sx>W,y=Math.max(30,Math.min(H-30,Math.round(TY(Math.max(camX,Math.min(camX+W,Q.x)))-camY)-24-(Q.back?LANE:0)));
+  const d=Math.round(Math.abs(Q.x-O.x)/10)+'m',right=sx>W,y=Math.max(30,Math.min(H-30,Math.round(TY(Math.max(camX,Math.min(camX+W,Q.x)))-camY)-24-lane(Q)));
   const x=right?W-16:16;txt(label,x,y-6,col,8);txt((right?'+':'-')+d,x,y+6,'#FFFFFF',8);
   for(let i=0;i<4;i++)rect('#1B1F3B',right?W-4+i-4:4-i+3,y-i,1,i*2+1);
 }
@@ -568,11 +596,11 @@ function startRace(lv){
   P=mkRider(false,false);A=mkRider(!two,true);P.y=A.y=TY(40);A.x=40;
   document.body.classList.toggle('two',two);document.body.style.setProperty('--me',two?'':meColor());
   parts=[];pops=[];raceT=0;hurdles.forEach(h=>{h.hit0=h.hit1=0});endWhy=null;lastEnd=null;
-  camX=P.x-W*0.3;camY=P.y-H*0.6;
-  $('#startOv').hidden=true;$('#endOv').hidden=true;$('#hud').hidden=false;
+  cams.forEach(c=>{c.x=P.x-SW*0.3;c.y=P.y-SH*0.3});
+  $('#startOv').hidden=true;$('#endOv').hidden=true;$('#hud').hidden=two;
   $('#lvlChip').textContent='LVL '+lv;
   state='count';count=3.0;$('#count').hidden=false;$('#count').textContent='3';beep('tick');
-  hintT=lv<=2?7:lv===3?7:3;$('#hint').textContent=two?T.hint2:lv===3?T.newH:T.hint;if(two)hintT=6;
+  hintT=lv<=2?7:lv===3?7:3;$('#hint').textContent=lv===3?T.newH:T.hint;if(two){hintT=5;$('#hint').hidden=true}
 }
 function showEnd(why,refresh){
   lastEnd=why;state='end';$('#endOv').hidden=false;$('#hud').hidden=true;$('#hint').hidden=true;
@@ -620,9 +648,9 @@ $('#againBtn').onclick=()=>startRace(pick);
 $('#menuBtn').onclick=()=>{lastEnd=null;state='menu';$('#endOv').hidden=true;$('#startOv').hidden=false;paintLevels();fitTitles()};
 
 const touches=new Map();
-function riderFor(clientX){return two&&clientX<innerWidth/2?A:P}
+function riderFor(e){if(!two)return P;return innerHeight>=innerWidth?(e.clientY<innerHeight/2?A:P):(e.clientX<innerWidth/2?A:P)}
 function pressR(r){if(state==='run'&&!r.crashed&&!r.fin)press(r)}
-function down(e){if(e&&e.cancelable)e.preventDefault();const r=e&&e.clientX!=null?riderFor(e.clientX):P;if(e&&e.pointerId!=null)touches.set(e.pointerId,r);pressR(r)}
+function down(e){if(e&&e.cancelable)e.preventDefault();const r=e&&e.clientX!=null?riderFor(e):P;if(e&&e.pointerId!=null)touches.set(e.pointerId,r);pressR(r)}
 function up(e){const r=e&&touches.get(e.pointerId);if(r){touches.delete(e.pointerId);release(r)}else if(!e)release(P)}
 cv.addEventListener('pointerdown',down);
 addEventListener('pointerup',up);addEventListener('pointercancel',up);
@@ -658,17 +686,25 @@ function frame(ts){
   if(state==='run'||state==='ending'){
     const n=2;for(let i=0;i<n;i++)step(dt/n);
     if(state==='ending'){endT-=dt;if(endT<=0)showEnd(endWhy)}
-    if(hintT>0){hintT-=dt;$('#hint').hidden=hintT<=0}
+    if(hintT>0){hintT-=dt;$('#hint').hidden=hintT<=0||two}
   }
-  if(state!=='menu'){
-    let fx=P.x,fy=P.y,air=P.air;
-    if(two){const live=[P,A].filter(r=>!r.crashed),L=live.length?live:[P,A],lead=Math.max(...L.map(r=>r.x)),tail=Math.min(...L.map(r=>r.x));
-      fx=Math.max(tail,lead-W*0.42);fy=(TY(fx)+(P.y-TY(P.x))*0.5+(A.y-TY(A.x))*0.5)-LANE*0.5;air=P.air||A.air}
-    const tx=fx-W*0.3,ty=fy-H*0.56;
-    camX+=(tx-camX)*Math.min(1,dt*10);camY+=(ty-camY)*Math.min(1,dt*(air?3:6));
-  }else{camX+=dt*40;if(TY_)camY=TY(camX+W*0.3)-H*0.6}
-  drawSky();drawBg();
-  if(TY_){drawTerrain(LANE,true);drawDeco(LANE,true);drawRider(A);drawTerrain(0,false);drawDeco(0,false);drawRider(P);drawFx(dt);if(state!=='menu')drawAiMarker()}
+  updFx(dt);
+  const split=two&&state!=='menu',views=split?splitViews():[{x:0,y:0,w:SW,h:SH,r:P,cam:cams[0]}];
+  views.forEach(v=>{
+    W=v.w;H=v.h;FRONT=v.r;const c=v.cam;
+    if(state!=='menu'){
+      const tx=v.r.x-W*0.3,ty=v.r.y-H*0.56;
+      c.x+=(tx-c.x)*Math.min(1,dt*10);c.y+=(ty-c.y)*Math.min(1,dt*(v.r.air?3:6));
+    }else{c.x+=dt*40;if(TY_)c.y=TY(c.x+W*0.3)-H*0.6}
+    camX=c.x;camY=c.y;
+    ctx.save();ctx.translate(v.x,v.y);ctx.beginPath();ctx.rect(0,0,W,H);ctx.clip();
+    drawSky();drawBg();
+    if(TY_){drawTerrain(LANE,true);drawDeco(LANE,true);drawRider(FRONT===P?A:P);drawTerrain(0,false);drawDeco(0,false);drawRider(FRONT);drawFx();if(state!=='menu')drawAiMarker()}
+    if(split)viewHud(v);
+    ctx.restore();
+  });
+  W=SW;H=SH;
+  if(split){ctx.fillStyle='#1B1F3B';if(SH>=SW)ctx.fillRect(0,views[1].y-2,SW,2);else ctx.fillRect(views[1].x-2,0,2,SH)}
   if(state==='run'||state==='ending'||state==='count'){
     const f=x=>Math.max(0,Math.min(100,(x-40)/(finishX-40)*100))+'%';
     $('#dotMe').style.left=f(P.x);$('#dotAi').style.left=f(A.x);

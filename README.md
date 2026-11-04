@@ -19,14 +19,14 @@ A pixel-art ski race against the computer on a mogul run.
 
 - **Tap** while going down a bump (yellow snow) to speed up. Perfect timing (early on the downslope) gives the biggest boost.
 - **Tap uphill** and you slow down and wobble. Tap wrong again while wobbly and you fall — race over. Three good taps in a row get rid of the wobble.
-- **Ramps:** tap on the upper part of the ramp, just before the edge, to jump high (the snow is white, no colour hint). Not tapping gives only a small hop; tapping too early counts as a wrong tap.
+- **Ramps** come in three sizes — small (single flip), medium (double), big (triple, marked with three gold dots on the edge pole). Tap on the upper part of the ramp, just before the edge, to jump high (the snow is white, no colour hint). Not tapping gives only a small hop; tapping too early counts as a wrong tap.
 - **Backflip:** keep your finger down in the air. Let go in time — the skier finishes the turn on its own — so you land straight, or it's a crash. Every flip gives a speed boost.
 - **Hurdles (from level 3):** fences, snowmen, log piles and barriers on white snow. Tap just before a hurdle to jump off the ground and clear it — each clean jump gives a little boost. Hitting one slows you down and makes you wobble; hitting another while wobbly is a fall.
 - **The computer** is the pale skier on its own lane, shifted up behind yours, so you see both racing side by side. Reach the finish before it does.
 - **Levels look different:** level 1 is short, then every level gets longer. Level types rotate — more bumps, more ramps, more hurdles, or a mix — and so does the scenery: day, sunset, forest, night. The computer gets better every level.
 - **Your skier:** tap **Your skier** on the start screen to open the picker and choose the colour of helmet, sweater, pants and skis (saved on the phone). In 2-player mode the skiers stay red and blue so you can tell them apart.
 - Level select for every level you've reached. Keyboard: Space / arrow keys.
-- **2-player mode** (optional, pick it in the menu): two players on one phone, no computer. Tap on the left half to steer Blue (back lane), on the right half to steer Red (front lane) — both can tap at the same time. First at the finish wins; a fall only ends your own race. Keyboard: A = Blue, L = Red.
+- **2-player mode** (optional, pick it in the menu): two players on one phone, no computer, each in their own window — stacked in portrait, side by side in landscape. Blue taps in the top/left window, Red in the bottom/right one; both can tap at the same time. In each window your skier is in front and the other one rides on the back lane. First at the finish wins; a fall only ends your own race. Keyboard: A = Blue, L = Red.
 - Languages: EN, DE, FR, ES, IT, PT (shared with Irrgarten).
 
 ---
