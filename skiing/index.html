@@ -133,7 +133,7 @@ body.two .charBtn{display:none}
 /* ---------- texts ---------- */
 const NB=' ';
 const LANG={
-  de:{name:'DE',done:'FERTIG',you2:'DEIN SKIFAHRER',cHelm:'HELM',cTop:'PULLOVER',cPants:'HOSE',cSkis:'SKI',p1:'1 SPIELER',p2:'2 SPIELER',rule2:'Zwei Spieler, zwei Fenster: Blau tippt ins obere Fenster, Rot ins untere. Hältst du das Handy quer, ist Blau links und Rot rechts.',tapHere:'HIER TIPPEN',red:'ROT',blue:'BLAU',redWin:'ROT GEWINNT!',redWinP:'Rot war zuerst im Ziel.',blueWin:'BLAU GEWINNT!',blueWinP:'Blau war zuerst im Ziel.',bothOut:'BEIDE GESTÜRZT!',bothOutP:'Diesmal ist keiner angekommen.',hint2:'◀ LINKS = BLAU · RECHTS = ROT ▶',hurdleP:'Über die Hürden musst du springen – tippe kurz vor der Hürde.',ouch:'AUTSCH!',newH:'NEU: HÜRDEN! TIPPEN = DRÜBERSPRINGEN',title:'SKIING!',intro:'Wer ist zuerst im Ziel – du oder der Computer?',
+  de:{name:'DE',done:'FERTIG',you2:'DEIN SKIFAHRER',cGear:'HELM, SKI & STÖCKE',cTop:'PULLOVER',cPants:'HOSE',cSkin:'HAUT',p1:'1 SPIELER',p2:'2 SPIELER',rule2:'Zwei Spieler, zwei Fenster: Blau tippt ins obere Fenster, Rot ins untere. Hältst du das Handy quer, ist Blau links und Rot rechts.',tapHere:'HIER TIPPEN',red:'ROT',blue:'BLAU',redWin:'ROT GEWINNT!',redWinP:'Rot war zuerst im Ziel.',blueWin:'BLAU GEWINNT!',blueWinP:'Blau war zuerst im Ziel.',bothOut:'BEIDE GESTÜRZT!',bothOutP:'Diesmal ist keiner angekommen.',hint2:'◀ LINKS = BLAU · RECHTS = ROT ▶',hurdleP:'Über die Hürden musst du springen – tippe kurz vor der Hürde.',ouch:'AUTSCH!',newH:'NEU: HÜRDEN! TIPPEN = DRÜBERSPRINGEN',title:'SKIING!',intro:'Wer ist zuerst im Ziel – du oder der Computer?',
     rules:[['g','Tippe, wenn es den Buckel hinuntergeht (gelber Schnee) – dann wirst du schneller.'],
       ['o','Tippe oben auf der Schanze, kurz vor der Kante – dann springst du ganz hoch.'],
       ['o','Bleib in der Luft mit dem Finger drauf, dann machst du einen Salto. Lass los, damit du gerade landest.']],
@@ -142,7 +142,7 @@ const LANG={
     land:'BRUCHLANDUNG!',landP:'Lass nach dem Salto rechtzeitig los, damit du gerade landest.',slow:'ZU LANGSAM!',slowP:'Der Computer war zuerst im Ziel.',
     time:'ZEIT',flips:'SALTOS',you:'DU',cpu:'CPU',wob:'WACKELIG!',hint:'TIPPEN, WENN GELB · HALTEN = SALTO',go:'LOS!',
     super:'SUPER!',good:'GUT!',oops:'HOPPLA!',jump:'SPRUNG!',flip:'SALTO!',flip2:'DOPPELSALTO!',flip3:'DREIFACH!',finish:'ZIEL',startT:'START'},
-  en:{name:'EN',done:'DONE',you2:'YOUR SKIER',cHelm:'HELMET',cTop:'SWEATER',cPants:'PANTS',cSkis:'SKIS',p1:'1 PLAYER',p2:'2 PLAYERS',rule2:'Two players, two windows: Blue taps in the top window, Red in the bottom one. Hold the phone sideways and Blue is left, Red is right.',tapHere:'TAP HERE',red:'RED',blue:'BLUE',redWin:'RED WINS!',redWinP:'Red reached the finish first.',blueWin:'BLUE WINS!',blueWinP:'Blue reached the finish first.',bothOut:'BOTH FELL!',bothOutP:'Nobody made it this time.',hint2:'◀ LEFT = BLUE · RIGHT = RED ▶',hurdleP:'Jump over the hurdles – tap just before the hurdle.',ouch:'OUCH!',newH:'NEW: HURDLES! TAP = JUMP OVER',title:'SKIING!',intro:'Who reaches the finish first – you or the computer?',
+  en:{name:'EN',done:'DONE',you2:'YOUR SKIER',cGear:'HELMET, SKIS & POLES',cTop:'SWEATER',cPants:'PANTS',cSkin:'SKIN',p1:'1 PLAYER',p2:'2 PLAYERS',rule2:'Two players, two windows: Blue taps in the top window, Red in the bottom one. Hold the phone sideways and Blue is left, Red is right.',tapHere:'TAP HERE',red:'RED',blue:'BLUE',redWin:'RED WINS!',redWinP:'Red reached the finish first.',blueWin:'BLUE WINS!',blueWinP:'Blue reached the finish first.',bothOut:'BOTH FELL!',bothOutP:'Nobody made it this time.',hint2:'◀ LEFT = BLUE · RIGHT = RED ▶',hurdleP:'Jump over the hurdles – tap just before the hurdle.',ouch:'OUCH!',newH:'NEW: HURDLES! TAP = JUMP OVER',title:'SKIING!',intro:'Who reaches the finish first – you or the computer?',
     rules:[['g','Tap when you are going down a bump (yellow snow) to speed up.'],
       ['o','Tap at the top of the ramp, just before the edge, to jump really high.'],
       ['o','Keep your finger down in the air to do a backflip. Let go so you land straight.']],
@@ -151,7 +151,7 @@ const LANG={
     land:'CRASH!',landP:'Let go after the flip in time so you land straight.',slow:'TOO SLOW!',slowP:'The computer got there first.',
     time:'TIME',flips:'FLIPS',you:'YOU',cpu:'CPU',wob:'WOBBLY!',hint:'TAP ON YELLOW · HOLD = FLIP',go:'GO!',
     super:'SUPER!',good:'GOOD!',oops:'OOPS!',jump:'JUMP!',flip:'FLIP!',flip2:'DOUBLE FLIP!',flip3:'TRIPLE!',finish:'FINISH',startT:'START'},
-  fr:{name:'FR',done:'OK',you2:'TON SKIEUR',cHelm:'CASQUE',cTop:'PULL',cPants:'PANTALON',cSkis:'SKIS',p1:'1 JOUEUR',p2:'2 JOUEURS',rule2:'Deux joueurs, deux fenêtres'+NB+': Bleu tape dans celle du haut, Rouge dans celle du bas. Téléphone à l’horizontale'+NB+': Bleu à gauche, Rouge à droite.',tapHere:'TAPE ICI',red:'ROUGE',blue:'BLEU',redWin:'ROUGE GAGNE'+NB+'!',redWinP:'Rouge est arrivé le premier.',blueWin:'BLEU GAGNE'+NB+'!',blueWinP:'Bleu est arrivé le premier.',bothOut:'TOUS À TERRE'+NB+'!',bothOutP:'Personne n’est arrivé cette fois.',hint2:'◀ GAUCHE = BLEU · DROITE = ROUGE ▶',hurdleP:'Saute par-dessus les obstacles'+NB+': tape juste avant l’obstacle.',ouch:'AÏE'+NB+'!',newH:'NOUVEAU'+NB+': OBSTACLES'+NB+'! TAPE = SAUTE',title:'SKIING'+NB+'!',intro:'Qui arrive le premier'+NB+': toi ou l’ordinateur'+NB+'?',
+  fr:{name:'FR',done:'OK',you2:'TON SKIEUR',cGear:'CASQUE, SKIS & BÂTONS',cTop:'PULL',cPants:'PANTALON',cSkin:'PEAU',p1:'1 JOUEUR',p2:'2 JOUEURS',rule2:'Deux joueurs, deux fenêtres'+NB+': Bleu tape dans celle du haut, Rouge dans celle du bas. Téléphone à l’horizontale'+NB+': Bleu à gauche, Rouge à droite.',tapHere:'TAPE ICI',red:'ROUGE',blue:'BLEU',redWin:'ROUGE GAGNE'+NB+'!',redWinP:'Rouge est arrivé le premier.',blueWin:'BLEU GAGNE'+NB+'!',blueWinP:'Bleu est arrivé le premier.',bothOut:'TOUS À TERRE'+NB+'!',bothOutP:'Personne n’est arrivé cette fois.',hint2:'◀ GAUCHE = BLEU · DROITE = ROUGE ▶',hurdleP:'Saute par-dessus les obstacles'+NB+': tape juste avant l’obstacle.',ouch:'AÏE'+NB+'!',newH:'NOUVEAU'+NB+': OBSTACLES'+NB+'! TAPE = SAUTE',title:'SKIING'+NB+'!',intro:'Qui arrive le premier'+NB+': toi ou l’ordinateur'+NB+'?',
     rules:[['g','Tape quand tu descends une bosse (neige jaune) pour accélérer.'],
       ['o','Tape en haut du tremplin, juste avant le bord, pour sauter très haut.'],
       ['o','Garde le doigt appuyé en l’air pour faire un salto. Lâche pour atterrir droit.']],
@@ -160,7 +160,7 @@ const LANG={
     land:'AÏE'+NB+'!',landP:'Lâche à temps après le salto pour atterrir droit.',slow:'TROP LENT'+NB+'!',slowP:'L’ordinateur est arrivé le premier.',
     time:'TEMPS',flips:'SALTOS',you:'TOI',cpu:'CPU',wob:'ÇA VACILLE'+NB+'!',hint:'TAPE SUR LE JAUNE · MAINTIENS = SALTO',go:'GO'+NB+'!',
     super:'SUPER'+NB+'!',good:'BIEN'+NB+'!',oops:'OUPS'+NB+'!',jump:'SAUT'+NB+'!',flip:'SALTO'+NB+'!',flip2:'DOUBLE'+NB+'!',flip3:'TRIPLE'+NB+'!',finish:'ARRIVÉE',startT:'DÉPART'},
-  es:{name:'ES',done:'LISTO',you2:'TU ESQUIADOR',cHelm:'CASCO',cTop:'JERSEY',cPants:'PANTALÓN',cSkis:'ESQUÍS',p1:'1 JUGADOR',p2:'2 JUGADORES',rule2:'Dos jugadores, dos ventanas: Azul toca en la de arriba, Rojo en la de abajo. Con el móvil en horizontal, Azul a la izquierda y Rojo a la derecha.',tapHere:'TOCA AQUÍ',red:'ROJO',blue:'AZUL',redWin:'¡GANA ROJO!',redWinP:'Rojo llegó primero a la meta.',blueWin:'¡GANA AZUL!',blueWinP:'Azul llegó primero a la meta.',bothOut:'¡LOS DOS AL SUELO!',bothOutP:'Esta vez nadie llegó.',hint2:'◀ IZQUIERDA = AZUL · DERECHA = ROJO ▶',hurdleP:'Salta las vallas: toca justo antes de la valla.',ouch:'¡AY!',newH:'¡NUEVO: VALLAS! TOCA = SALTA',title:'¡SKIING!',intro:'¿Quién llega antes a la meta: tú o el ordenador?',
+  es:{name:'ES',done:'LISTO',you2:'TU ESQUIADOR',cGear:'CASCO, ESQUÍS Y BASTONES',cTop:'JERSEY',cPants:'PANTALÓN',cSkin:'PIEL',p1:'1 JUGADOR',p2:'2 JUGADORES',rule2:'Dos jugadores, dos ventanas: Azul toca en la de arriba, Rojo en la de abajo. Con el móvil en horizontal, Azul a la izquierda y Rojo a la derecha.',tapHere:'TOCA AQUÍ',red:'ROJO',blue:'AZUL',redWin:'¡GANA ROJO!',redWinP:'Rojo llegó primero a la meta.',blueWin:'¡GANA AZUL!',blueWinP:'Azul llegó primero a la meta.',bothOut:'¡LOS DOS AL SUELO!',bothOutP:'Esta vez nadie llegó.',hint2:'◀ IZQUIERDA = AZUL · DERECHA = ROJO ▶',hurdleP:'Salta las vallas: toca justo antes de la valla.',ouch:'¡AY!',newH:'¡NUEVO: VALLAS! TOCA = SALTA',title:'¡SKIING!',intro:'¿Quién llega antes a la meta: tú o el ordenador?',
     rules:[['g','Toca cuando bajes un bache (nieve amarilla) para ir más rápido.'],
       ['o','Toca arriba del trampolín, justo antes del borde, para saltar muy alto.'],
       ['o','Mantén el dedo en el aire para dar una voltereta. Suelta para aterrizar recto.']],
@@ -169,7 +169,7 @@ const LANG={
     land:'¡PLAF!',landP:'Suelta a tiempo tras la voltereta para aterrizar recto.',slow:'¡MUY LENTO!',slowP:'El ordenador llegó primero.',
     time:'TIEMPO',flips:'VUELTAS',you:'TÚ',cpu:'CPU',wob:'¡TAMBALEO!',hint:'TOCA EN AMARILLO · MANTÉN = VOLTERETA',go:'¡YA!',
     super:'¡SUPER!',good:'¡BIEN!',oops:'¡UPS!',jump:'¡SALTO!',flip:'¡VUELTA!',flip2:'¡DOBLE!',flip3:'¡TRIPLE!',finish:'META',startT:'SALIDA'},
-  it:{name:'IT',done:'FATTO',you2:'IL TUO SCIATORE',cHelm:'CASCO',cTop:'MAGLIONE',cPants:'PANTALONI',cSkis:'SCI',p1:'1 GIOCATORE',p2:'2 GIOCATORI',rule2:'Due giocatori, due finestre: Blu tocca in quella in alto, Rosso in quella in basso. Col telefono in orizzontale Blu è a sinistra, Rosso a destra.',tapHere:'TOCCA QUI',red:'ROSSO',blue:'BLU',redWin:'VINCE ROSSO!',redWinP:'Rosso è arrivato per primo.',blueWin:'VINCE BLU!',blueWinP:'Blu è arrivato per primo.',bothOut:'TUTTI A TERRA!',bothOutP:'Stavolta non è arrivato nessuno.',hint2:'◀ SINISTRA = BLU · DESTRA = ROSSO ▶',hurdleP:'Salta gli ostacoli: tocca poco prima dell’ostacolo.',ouch:'AHI!',newH:'NUOVO: OSTACOLI! TOCCA = SALTA',title:'SKIING!',intro:'Chi arriva prima al traguardo: tu o il computer?',
+  it:{name:'IT',done:'FATTO',you2:'IL TUO SCIATORE',cGear:'CASCO, SCI E BASTONI',cTop:'MAGLIONE',cPants:'PANTALONI',cSkin:'PELLE',p1:'1 GIOCATORE',p2:'2 GIOCATORI',rule2:'Due giocatori, due finestre: Blu tocca in quella in alto, Rosso in quella in basso. Col telefono in orizzontale Blu è a sinistra, Rosso a destra.',tapHere:'TOCCA QUI',red:'ROSSO',blue:'BLU',redWin:'VINCE ROSSO!',redWinP:'Rosso è arrivato per primo.',blueWin:'VINCE BLU!',blueWinP:'Blu è arrivato per primo.',bothOut:'TUTTI A TERRA!',bothOutP:'Stavolta non è arrivato nessuno.',hint2:'◀ SINISTRA = BLU · DESTRA = ROSSO ▶',hurdleP:'Salta gli ostacoli: tocca poco prima dell’ostacolo.',ouch:'AHI!',newH:'NUOVO: OSTACOLI! TOCCA = SALTA',title:'SKIING!',intro:'Chi arriva prima al traguardo: tu o il computer?',
     rules:[['g','Tocca quando scendi da una gobba (neve gialla) per andare più veloce.'],
       ['o','Tocca in cima al trampolino, poco prima del bordo, per saltare altissimo.'],
       ['o','Tieni il dito premuto in aria per fare un salto mortale. Lascia per atterrare dritto.']],
@@ -178,7 +178,7 @@ const LANG={
     land:'OUCH!',landP:'Lascia in tempo dopo il salto per atterrare dritto.',slow:'TROPPO LENTO!',slowP:'Il computer è arrivato prima.',
     time:'TEMPO',flips:'SALTI',you:'TU',cpu:'CPU',wob:'TRABALLI!',hint:'TOCCA SUL GIALLO · TIENI = SALTO',go:'VIA!',
     super:'SUPER!',good:'BENE!',oops:'OPS!',jump:'SALTO!',flip:'MORTALE!',flip2:'DOPPIO!',flip3:'TRIPLO!',finish:'ARRIVO',startT:'PARTENZA'},
-  pt:{name:'PT',done:'PRONTO',you2:'SEU ESQUIADOR',cHelm:'CAPACETE',cTop:'BLUSA',cPants:'CALÇA',cSkis:'ESQUIS',p1:'1 JOGADOR',p2:'2 JOGADORES',rule2:'Dois jogadores, duas janelas: o Azul toca na de cima, o Vermelho na de baixo. Com o celular deitado, Azul fica à esquerda e Vermelho à direita.',tapHere:'TOQUE AQUI',red:'VERMELHO',blue:'AZUL',redWin:'VERMELHO VENCE!',redWinP:'O Vermelho chegou primeiro.',blueWin:'AZUL VENCE!',blueWinP:'O Azul chegou primeiro.',bothOut:'OS DOIS CAÍRAM!',bothOutP:'Ninguém chegou desta vez.',hint2:'◀ ESQUERDA = AZUL · DIREITA = VERMELHO ▶',hurdleP:'Pule os obstáculos: toque logo antes do obstáculo.',ouch:'AI!',newH:'NOVO: OBSTÁCULOS! TOQUE = PULE',title:'SKIING!',intro:'Quem chega primeiro: você ou o computador?',
+  pt:{name:'PT',done:'PRONTO',you2:'SEU ESQUIADOR',cGear:'CAPACETE, ESQUIS E BASTÕES',cTop:'BLUSA',cPants:'CALÇA',cSkin:'PELE',p1:'1 JOGADOR',p2:'2 JOGADORES',rule2:'Dois jogadores, duas janelas: o Azul toca na de cima, o Vermelho na de baixo. Com o celular deitado, Azul fica à esquerda e Vermelho à direita.',tapHere:'TOQUE AQUI',red:'VERMELHO',blue:'AZUL',redWin:'VERMELHO VENCE!',redWinP:'O Vermelho chegou primeiro.',blueWin:'AZUL VENCE!',blueWinP:'O Azul chegou primeiro.',bothOut:'OS DOIS CAÍRAM!',bothOutP:'Ninguém chegou desta vez.',hint2:'◀ ESQUERDA = AZUL · DIREITA = VERMELHO ▶',hurdleP:'Pule os obstáculos: toque logo antes do obstáculo.',ouch:'AI!',newH:'NOVO: OBSTÁCULOS! TOQUE = PULE',title:'SKIING!',intro:'Quem chega primeiro: você ou o computador?',
     rules:[['g','Toque quando descer uma lombada (neve amarela) para ganhar velocidade.'],
       ['o','Toque no alto da rampa, logo antes da borda, para pular bem alto.'],
       ['o','Segure o dedo no ar para dar um mortal. Solte para pousar reto.']],
@@ -248,16 +248,17 @@ const PINE=[
 function shade(hex,f){const n=parseInt(hex.slice(1),16);return'#'+[16,8,0].map(b=>Math.round(((n>>b)&255)*f).toString(16).padStart(2,'0')).join('')}
 function sprite(rows,pal){if(pal.W&&!pal.V)pal=Object.assign({},pal,{V:shade(pal.W,0.72)});const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const g=c.getContext('2d');
   rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(pal[ch]){g.fillStyle=pal[ch];g.fillRect(x,y,1,1)}}));return c}
-/* Character picker: colours for helmet (H), sweater (J), pants (P) and skis (W). Index 0 = the original look. */
+/* Character picker: gear colour (helmet, poles, skis), sweater, pants, skin. Index 0 = the original look. */
 const OUTFIT={
-  h:['#FFD23F','#E83B3B','#FFFFFF','#6CC24A','#FF6FB5','#2F7FE0','#3A3F5C'],
+  g:['#FFD23F','#FF8C1A','#E83B3B','#6CC24A','#FF6FB5','#2F7FE0','#8B4FD8','#3A3F5C'],
   j:['#E83B3B','#FF9A2E','#FFD23F','#3FAE5A','#8B4FD8','#FF6FB5','#2F7FE0'],
   p:['#2B4C9B','#3A3F5C','#C0392B','#2E7D4F','#8A93A8','#7A4A22','#F4F4F4'],
-  w:['#FF8C1A','#E83B3B','#FFD23F','#6CC24A','#FF6FB5','#2F7FE0','#1B1F3B']};
-let look={h:0,j:0,p:0,w:0};
+  s:['#F2B58C','#FCDCC4','#E3A672','#C68642','#8D5524','#5C3A21']};
+let look={g:0,j:0,p:0,s:0};
 try{const s=JSON.parse(localStorage.getItem('skiing.char')||'{}');for(const k in look)if(OUTFIT[k][s[k]])look[k]=s[k]}catch(_){}
 const meColor=()=>OUTFIT.j[look.j];
-function makeMe(){return sprite(SKIER,{K:'#1B1F3B',H:OUTFIT.h[look.h],G:'#38D1E0',S:'#F2B58C',J:OUTFIT.j[look.j],P:OUTFIT.p[look.p],B:'#3A3F5C',L:'#9AA3B5',W:OUTFIT.w[look.w]})}
+/* Helmet (H), poles (L) and skis (W) always share one colour. */
+function makeMe(){const g=OUTFIT.g[look.g];return sprite(SKIER,{K:'#1B1F3B',H:g,G:'#38D1E0',S:OUTFIT.s[look.s],J:OUTFIT.j[look.j],P:OUTFIT.p[look.p],B:'#3A3F5C',L:g,W:g})}
 let SPR_ME=makeMe(),SPR_RED=sprite(SKIER,{K:'#1B1F3B',H:'#FFD23F',G:'#38D1E0',S:'#F2B58C',J:'#E83B3B',P:'#2B4C9B',B:'#3A3F5C',L:'#9AA3B5',W:'#FF8C1A'});
 const SPR_AI=sprite(SKIER,{K:'#6F7FA8',H:'#FFFFFF',G:'#BFEFF5',S:'#F8D9C4',J:'#9CCFF6',P:'#B3B0EA',B:'#8E97B8',L:'#D0D6E2',W:'#B8E59E'});
 const SPR_P2=sprite(SKIER,{K:'#1B1F3B',H:'#FFFFFF',G:'#FFD23F',S:'#F2B58C',J:'#2F7FE0',P:'#1B1F3B',B:'#3A3F5C',L:'#9AA3B5',W:'#6CC24A'});
@@ -623,7 +624,7 @@ function showEnd(why,refresh){
 }
 function paintChar(){
   const rows=$('#charRows');rows.innerHTML='';
-  [['h','cHelm'],['j','cTop'],['p','cPants'],['w','cSkis']].forEach(([k,lbl])=>{
+  [['g','cGear'],['j','cTop'],['p','cPants'],['s','cSkin']].forEach(([k,lbl])=>{
     const row=document.createElement('div');row.className='charRow';
     const b=document.createElement('b');b.textContent=T[lbl];row.append(b);
     const sw=document.createElement('div');sw.className='sw';sw.setAttribute('role','group');sw.setAttribute('aria-label',T[lbl]);
