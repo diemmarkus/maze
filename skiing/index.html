@@ -251,14 +251,15 @@ const PINE=[
 function shade(hex,f){const n=parseInt(hex.slice(1),16);return'#'+[16,8,0].map(b=>Math.round(((n>>b)&255)*f).toString(16).padStart(2,'0')).join('')}
 function sprite(rows,pal){if(pal.W&&!pal.V)pal=Object.assign({},pal,{V:shade(pal.W,0.72)});const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const g=c.getContext('2d');
   rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(pal[ch]){g.fillStyle=pal[ch];g.fillRect(x,y,1,1)}}));return c}
-/* Character picker: gear colour (helmet, poles, skis), sweater, pants, skin. Index 0 = the original look. */
+/* Character picker: gear colour (helmet, poles, skis), sweater, pants, skin. */
 const OUTFIT={
   g:['#FFD23F','#FF8C1A','#E83B3B','#6CC24A','#FF6FB5','#2F7FE0','#8B4FD8','#3A3F5C'],
   j:['#E83B3B','#FF9A2E','#FFD23F','#3FAE5A','#8B4FD8','#FF6FB5','#2F7FE0'],
   p:['#2B4C9B','#3A3F5C','#C0392B','#2E7D4F','#8A93A8','#7A4A22','#F4F4F4'],
-  s:['#F2B58C','#FCDCC4','#E3A672','#C68642','#8D5524','#5C3A21']};
-let look={g:0,j:0,p:0,s:0};
-try{const s=JSON.parse(localStorage.getItem('skiing.char')||'{}');for(const k in look)if(OUTFIT[k][s[k]])look[k]=s[k]}catch(_){}
+  s:['#FCDCC4','#F2B58C','#E3A672','#C68642','#8D5524','#5C3A21']};
+/* Nothing picked yet: a random skier on every visit, until the player chooses (only a choice is saved). Skin tones run light to dark. */
+const look={};for(const k in OUTFIT)look[k]=Math.floor(Math.random()*OUTFIT[k].length);
+try{const s=JSON.parse(localStorage.getItem('skiing.char')||'null');if(s)for(const k in look)if(OUTFIT[k][s[k]]!=null)look[k]=s[k]}catch(_){}
 const meColor=()=>OUTFIT.j[look.j];
 /* Helmet (H), poles (L) and skis (W) always share one colour. */
 function makeMe(){const g=OUTFIT.g[look.g];return sprite(SKIER,{K:'#1B1F3B',H:g,G:'#38D1E0',S:OUTFIT.s[look.s],J:OUTFIT.j[look.j],P:OUTFIT.p[look.p],B:'#3A3F5C',L:g,W:g})}
