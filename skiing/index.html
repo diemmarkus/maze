@@ -43,12 +43,10 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 .card li.g::before{background:var(--gold)} .card li.o::before{background:var(--orange)} .card li.r::before{background:var(--pop)} .card li.b::before{background:var(--cpu)} .card li.c::before{background:#5CC8EA}
 .btn{font-family:var(--pix);font-size:15px;line-height:1.2;background:var(--gold);color:var(--ink);border:4px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:12px 16px;cursor:pointer;margin-top:10px}
 .btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
-.btn:focus-visible,.lv button:focus-visible,.langs button:focus-visible,.home:focus-visible{outline:3px dashed var(--pop);outline-offset:3px}
+.btn:focus-visible,.lv button:focus-visible,.home:focus-visible{outline:3px dashed var(--pop);outline-offset:3px}
 .btn.alt{background:var(--white);font-size:12px;padding:9px 12px;box-shadow:3px 3px 0 var(--ink)}
-.lvls{margin:10px 0 2px}
-.lvls>span{display:block;font-family:var(--pix);font-size:10px;margin-bottom:6px}
-.lv{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-height:84px;overflow-y:auto;padding:2px 4px 4px 2px}
-.lv button{font-family:var(--pix);font-size:11px;width:34px;height:30px;padding:0;background:var(--white);color:var(--ink);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);cursor:pointer}
+.lv{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-height:min(46vh,300px);overflow-y:auto;padding:4px 6px 6px 4px;margin:4px 0 6px}
+.lv button{font-family:var(--pix);font-size:13px;width:42px;height:38px;padding:0;background:var(--white);color:var(--ink);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);cursor:pointer}
 .lv button[aria-pressed="true"]{background:var(--pop);color:var(--white)}
 .modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 2px}
 .modes button{font-family:var(--pix);font-size:11px;background:var(--white);color:var(--ink);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:8px 4px;cursor:pointer}
@@ -58,12 +56,14 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 .card p.mode2{font-size:15px;margin:8px 0 0}
 body.two #dotAi{background:#2F7FE0}
 body.two .legend .l1,body:not(.two) .legend .l2{display:none}
-.charBtn{display:flex;align-items:center;gap:10px;margin:12px auto 4px;font-family:var(--pix);font-size:11px;background:var(--white);color:var(--ink);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:5px 12px 5px 5px;cursor:pointer}
+.picks{display:grid;gap:10px;margin:12px 0 4px}
+.charBtn{box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;margin:0;text-align:left;font-family:var(--pix);font-size:11px;background:var(--white);color:var(--ink);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:5px 12px 5px 5px;cursor:pointer}
 .charBtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
 .charBtn:focus-visible{outline:3px dashed var(--pop);outline-offset:3px}
 .charBtn .mini{width:40px;height:40px;background:linear-gradient(var(--sky) 0 72%,var(--snow) 72%);border:2px solid var(--ink);display:grid;place-items:center}
 .charBtn canvas{width:32px;height:32px;image-rendering:pixelated;image-rendering:crisp-edges}
-.charBtn i{font-style:normal;color:var(--pop)}
+.charBtn i{font-style:normal;color:var(--pop);margin-left:auto}
+.charBtn .num{font-size:15px;color:var(--ink);background:var(--gold)}
 body.two .charBtn{display:none}
 .charPrev{width:120px;height:120px;margin:4px auto 14px;border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);background:linear-gradient(var(--sky) 0 72%,var(--snow) 72%);display:grid;place-items:center}
 .charPrev canvas{width:96px;height:96px;image-rendering:pixelated;image-rendering:crisp-edges}
@@ -74,10 +74,7 @@ body.two .charBtn{display:none}
 .sw button[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:2px;box-shadow:none}
 .sw button:focus-visible{outline:3px dashed var(--pop);outline-offset:2px}
 .stats{font-family:var(--pix);font-size:11px;line-height:1.8;margin:10px 0 4px}
-.langs{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:14px}
-.langs button{font-family:var(--pix);font-size:9px;background:var(--white);color:var(--ink);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);padding:5px 6px;cursor:pointer}
-.langs button[aria-pressed="true"]{background:var(--gold)}
-.home{display:inline-block;margin-top:14px;font-family:var(--pix);font-size:10px;color:var(--ink);text-decoration:none;border-bottom:3px solid var(--pop);padding-bottom:2px}
+.home{display:table;margin:14px auto 0;font-family:var(--pix);font-size:10px;color:var(--ink);text-decoration:none;border-bottom:3px solid var(--pop);padding-bottom:2px}
 .count{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;font-family:var(--pix);font-size:64px;color:var(--gold);text-shadow:5px 5px 0 var(--ink),-2px -2px 0 var(--ink),2px -2px 0 var(--ink),-2px 2px 0 var(--ink)}
 .hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));font-family:var(--pix);font-size:10px;line-height:1.4;text-align:center;background:var(--white);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:6px 8px;pointer-events:none;width:max-content;max-width:calc(100% - 40px)}
 </style>
@@ -100,13 +97,14 @@ body.two .charBtn{display:none}
   <div class="card">
     <h1 class="good" data-i18n="title">SKIING!</h1>
     <p data-i18n="intro"></p>
-    <button type="button" class="charBtn" id="charBtn"><span class="mini"><canvas id="charMini" width="16" height="16"></canvas></span><span data-i18n="you2">DEIN SKIFAHRER</span><i aria-hidden="true">▶</i></button>
+    <div class="picks">
+      <button type="button" class="charBtn" id="charBtn" aria-haspopup="dialog"><span class="mini"><canvas id="charMini" width="16" height="16"></canvas></span><span data-i18n="you2">DEIN SKIFAHRER</span><i aria-hidden="true">▶</i></button>
+      <button type="button" class="charBtn" id="lvlBtn" aria-haspopup="dialog" hidden><span class="mini num" id="lvlNum">1</span><span data-i18n="from">LEVEL</span><i aria-hidden="true">▶</i></button>
+    </div>
     <ul id="rules"></ul>
-    <div class="lvls" id="lvls" hidden><span data-i18n="from">LEVEL</span><div class="lv" id="lvRow" role="group"></div></div>
     <div class="modes" id="modes" role="group"><button type="button" data-m="1" data-i18n="p1">1 SPIELER</button><button type="button" data-m="2" data-i18n="p2">2 SPIELER</button></div>
     <p class="mode2" id="mode2" hidden data-i18n="rule2"></p>
     <button class="btn" id="startBtn" data-i18n="start">LOS!</button>
-    <div class="langs" id="langs" role="group" aria-label="Language"></div>
     <a class="home" href="../" data-i18n="home">← ALLE SPIELE</a>
   </div>
 </div>
@@ -116,6 +114,13 @@ body.two .charBtn{display:none}
     <div class="charPrev"><canvas id="charCv" width="16" height="16"></canvas></div>
     <div class="charRows" id="charRows"></div>
     <button class="btn" id="charDone" data-i18n="done">FERTIG</button>
+  </div>
+</div>
+<div class="overlay" id="lvlOv" hidden>
+  <div class="card" role="dialog" aria-labelledby="lvlTitle">
+    <h1 class="good" id="lvlTitle" data-i18n="from">LEVEL</h1>
+    <div class="lv" id="lvRow" role="group" aria-labelledby="lvlTitle"></div>
+    <button class="btn" id="lvlDone" data-i18n="done">FERTIG</button>
   </div>
 </div>
 <div class="overlay" id="endOv" hidden>
@@ -195,12 +200,10 @@ function setLang(k,save){
   lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.lang=lang;
   document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=T[el.dataset.i18n]});
   $('#rules').innerHTML='';T.rules.forEach(([c,t])=>{const li=document.createElement('li');li.className=c;li.textContent=t;$('#rules').append(li)});
-  document.querySelectorAll('#langs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===lang));
   if(save)try{localStorage.setItem('irrgarten.lang',lang)}catch(_){}
   if(lastEnd)showEnd(lastEnd,true);
   paintChar();fitTitles();
 }
-Object.keys(LANG).forEach(k=>{const b=document.createElement('button');b.type='button';b.dataset.k=k;b.textContent=LANG[k].name;b.onclick=()=>setLang(k,true);$('#langs').append(b)});
 
 /* ---------- canvas ---------- */
 const cv=$('#c'),ctx=cv.getContext('2d');
@@ -586,8 +589,9 @@ let state='menu',count=0,raceT=0,endT=0,endWhy=null,lastEnd=null,hintT=0;
 let reached=1;try{reached=Math.max(1,+localStorage.getItem('skiing.reach')||1)}catch(_){}
 let pick=Math.min(reached,(()=>{try{return +localStorage.getItem('skiing.level')||reached}catch(_){return reached}})());
 function paintLevels(){
-  const row=$('#lvRow');row.innerHTML='';$('#lvls').hidden=reached<2;
-  for(let i=1;i<=reached;i++){const b=document.createElement('button');b.type='button';b.textContent=i;b.setAttribute('aria-pressed',i===pick);b.onclick=()=>{pick=i;paintLevels()};row.append(b)}
+  const row=$('#lvRow');row.innerHTML='';$('#lvlBtn').hidden=reached<2;$('#lvlNum').textContent=pick;
+  for(let i=1;i<=reached;i++){const b=document.createElement('button');b.type='button';b.textContent=i;b.setAttribute('aria-pressed',i===pick);
+    b.onclick=()=>{pick=i;row.querySelectorAll('button').forEach((x,j)=>x.setAttribute('aria-pressed',j+1===i));$('#lvlNum').textContent=i;beep('tick')};row.append(b)}
 }
 function startRace(lv){
   level=lv;try{localStorage.setItem('skiing.level',lv)}catch(_){}
@@ -635,11 +639,14 @@ function paintChar(){
   drawPrev();
 }
 function drawPrev(){['#charCv','#charMini'].forEach(id=>{const g=$(id).getContext('2d');g.clearRect(0,0,16,16);g.drawImage(SPR_ME,0,0)})}
-function openChar(){$('#startOv').hidden=true;$('#charOv').hidden=false;fitTitles();($('#charRows button[aria-pressed="true"]')||$('#charDone')).focus()}
-function closeChar(){$('#charOv').hidden=true;$('#startOv').hidden=false;fitTitles();$('#charBtn').focus()}
-$('#charBtn').onclick=openChar;$('#charDone').onclick=closeChar;
-$('#charOv').addEventListener('click',e=>{if(e.target===e.currentTarget)closeChar()});
-addEventListener('keydown',e=>{if(e.code==='Escape'&&!$('#charOv').hidden)closeChar()});
+/* Skier and level pickers: each opens its own dialog over the start menu. */
+const DIALOGS=[['#charOv','#charBtn','#charDone','#charRows'],['#lvlOv','#lvlBtn','#lvlDone','#lvRow']];
+function openDlg(ov,btn,done,rows){$('#startOv').hidden=true;$(ov).hidden=false;fitTitles();const on=$(rows+' button[aria-pressed="true"]');
+  if(on){on.scrollIntoView({block:'nearest'});on.focus()}else $(done).focus()}
+function closeDlg(ov,btn){$(ov).hidden=true;$('#startOv').hidden=false;fitTitles();$(btn).focus()}
+DIALOGS.forEach(([ov,btn,done,rows])=>{$(btn).onclick=()=>openDlg(ov,btn,done,rows);$(done).onclick=()=>closeDlg(ov,btn);
+  $(ov).addEventListener('click',e=>{if(e.target===e.currentTarget)closeDlg(ov,btn)})});
+addEventListener('keydown',e=>{if(e.code==='Escape')DIALOGS.forEach(([ov,btn])=>{if(!$(ov).hidden)closeDlg(ov,btn)})});
 try{two=localStorage.getItem('skiing.mode')==='2'}catch(_){}
 function paintModes(){document.body.classList.toggle('two',two);document.querySelectorAll('#modes button').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.m==='2')===two));$('#mode2').hidden=!two;$('#rules').classList.toggle('two',two);fitTitles()}
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{two=b.dataset.m==='2';try{localStorage.setItem('skiing.mode',two?'2':'1')}catch(_){}paintModes()});

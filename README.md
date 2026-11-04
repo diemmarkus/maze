@@ -25,9 +25,9 @@ A pixel-art ski race against the computer on a mogul run.
 - **The computer** is the pale skier on its own lane, shifted up behind yours, so you see both racing side by side. Reach the finish before it does.
 - **Levels look different:** level 1 is short, then every level gets longer. Level types rotate — more bumps, more ramps, more hurdles, or a mix — and so does the scenery: day, sunset, forest, night. The computer gets better every level.
 - **Your skier:** tap **Your skier** on the start screen to open the picker and choose the colours: helmet, skis and poles (always matching), sweater, pants and skin (saved on the phone). In 2-player mode the skiers stay red and blue so you can tell them apart.
-- Level select for every level you've reached. Keyboard: Space / arrow keys.
+- Level select for every level you've reached, in its own dialog (tap **Level** on the start screen). Keyboard: Space / arrow keys.
 - **2-player mode** (optional, pick it in the menu): two players on one phone, no computer, each in their own window — stacked in portrait, side by side in landscape. Blue taps in the top/left window, Red in the bottom/right one; both can tap at the same time. In each window your skier is in front and the other one rides on the back lane. First at the finish wins; a fall only ends your own race. Keyboard: A = Blue, L = Red.
-- Languages: EN, DE, FR, ES, IT, PT (shared with Irrgarten).
+- Languages: EN, DE, FR, ES, IT, PT — chosen on the start page, shared by all games.
 
 ---
 
@@ -48,7 +48,7 @@ A comic-style tilt maze for the phone. Roll the ball through a hedge maze to the
 - **Black hole:** from level 2, every other level (shuffled, if there is room) has a hole without a flag. Fall in and the level is lost. It never lies on the real route to the goal — only off to the side, preferably in a dead end — also after a green dot has moved the goal.
 - **Level select:** tap the LVL chip at the top to pause and pick difficulty and level.
 - **Continue:** after a loss you can restart at any level you've reached on that difficulty. The restart button retries the current level.
-- Languages: EN, DE, FR, ES, IT, PT.
+- Languages: EN, DE, FR, ES, IT, PT — chosen on the start page.
 
 Single self-contained `irrgarten/index.html` — no build step. Same look and tilt handling as [Don't Spill](https://github.com/diemmarkus/dont-spill).
 
