@@ -28,7 +28,7 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 .track{position:relative;flex:1;height:12px;background:var(--white);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
 .track::after{content:"";position:absolute;right:0;top:0;bottom:0;width:10px;background:conic-gradient(var(--ink) 25%,var(--white) 0 50%,var(--ink) 0 75%,var(--white) 0) 0 0/6px 6px}
 .dot{position:absolute;top:50%;width:10px;height:10px;margin:-7px 0 0 -7px;border:2px solid var(--ink);left:0}
-#dotMe{background:var(--pop);z-index:2}
+#dotMe{background:var(--me,var(--pop));z-index:2}
 #dotAi{background:var(--cpu)}
 .legend{display:flex;gap:12px;font-family:var(--pix);font-size:9px;background:var(--white);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:4px 7px;width:max-content}
 .legend i{display:inline-block;width:8px;height:8px;border:2px solid var(--ink);margin-right:5px;vertical-align:-2px}
@@ -58,6 +58,18 @@ body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-sele
 .card p.mode2{font-size:15px;margin:8px 0 0}
 body.two #dotAi{background:#2F7FE0}
 body.two .legend .l1,body:not(.two) .legend .l2{display:none}
+.char{display:flex;gap:12px;align-items:center;margin:12px 0 4px;text-align:left}
+.char>span{display:none}
+.charPrev{flex:none;width:72px;height:80px;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);background:linear-gradient(var(--sky) 0 70%,var(--snow) 70%);display:grid;place-items:center}
+.charPrev canvas{width:64px;height:64px;image-rendering:pixelated;image-rendering:crisp-edges}
+.charRows{flex:1;display:grid;gap:7px;min-width:0}
+.charRow b{display:block;font-family:var(--pix);font-size:8px;font-weight:400;margin-bottom:3px}
+.sw{display:flex;flex-wrap:wrap;gap:5px}
+.sw button{width:22px;height:22px;padding:0;border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);cursor:pointer}
+.sw button[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:2px;box-shadow:none}
+.sw button:focus-visible{outline:3px dashed var(--pop);outline-offset:2px}
+.charHead{font-family:var(--pix);font-size:10px;margin:14px 0 0}
+body.two .char,body.two .charHead{display:none}
 .stats{font-family:var(--pix);font-size:11px;line-height:1.8;margin:10px 0 4px}
 .langs{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:14px}
 .langs button{font-family:var(--pix);font-size:9px;background:var(--white);color:var(--ink);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);padding:5px 6px;cursor:pointer}
@@ -76,7 +88,7 @@ body.two .legend .l1,body:not(.two) .legend .l2{display:none}
     <div class="chip warn" id="wobChip" hidden>WACKELIG!</div>
   </div>
   <div class="row"><div class="track"><div class="dot" id="dotAi"></div><div class="dot" id="dotMe"></div></div></div>
-  <div class="legend"><span><i style="background:var(--pop)"></i><b class="l1" data-i18n="you">DU</b><b class="l2" data-i18n="red">ROT</b></span><span><i class="l1" style="background:var(--cpu)"></i><i class="l2" style="background:#2F7FE0"></i><b class="l1" data-i18n="cpu">CPU</b><b class="l2" data-i18n="blue">BLAU</b></span></div>
+  <div class="legend"><span><i style="background:var(--me,var(--pop))"></i><b class="l1" data-i18n="you">DU</b><b class="l2" data-i18n="red">ROT</b></span><span><i class="l1" style="background:var(--cpu)"></i><i class="l2" style="background:#2F7FE0"></i><b class="l1" data-i18n="cpu">CPU</b><b class="l2" data-i18n="blue">BLAU</b></span></div>
 </div>
 <div class="count" id="count" hidden>3</div>
 <div class="hint" id="hint" hidden data-i18n="hint"></div>
@@ -85,6 +97,8 @@ body.two .legend .l1,body:not(.two) .legend .l2{display:none}
   <div class="card">
     <h1 class="good" data-i18n="title">SKIING!</h1>
     <p data-i18n="intro"></p>
+    <p class="charHead" data-i18n="you2">DEIN SKIFAHRER</p>
+    <div class="char" id="char"><div class="charPrev"><canvas id="charCv" width="16" height="16"></canvas></div><div class="charRows" id="charRows"></div></div>
     <ul id="rules"></ul>
     <div class="lvls" id="lvls" hidden><span data-i18n="from">LEVEL</span><div class="lv" id="lvRow" role="group"></div></div>
     <div class="modes" id="modes" role="group"><button type="button" data-m="1" data-i18n="p1">1 SPIELER</button><button type="button" data-m="2" data-i18n="p2">2 SPIELER</button></div>
@@ -109,7 +123,7 @@ body.two .legend .l1,body:not(.two) .legend .l2{display:none}
 /* ---------- texts ---------- */
 const NB=' ';
 const LANG={
-  de:{name:'DE',p1:'1 SPIELER',p2:'2 SPIELER',rule2:'Zwei Spieler auf einem Handy: Links tippen steuert Blau (hinten), rechts tippen steuert Rot (vorne).',red:'ROT',blue:'BLAU',redWin:'ROT GEWINNT!',redWinP:'Rot war zuerst im Ziel.',blueWin:'BLAU GEWINNT!',blueWinP:'Blau war zuerst im Ziel.',bothOut:'BEIDE GESTÜRZT!',bothOutP:'Diesmal ist keiner angekommen.',hint2:'◀ LINKS = BLAU · RECHTS = ROT ▶',hurdleP:'Über die Hürden musst du springen – tippe auf dem blauen Schnee.',ouch:'AUTSCH!',newH:'NEU: HÜRDEN! TIPPE AUF BLAU = SPRINGEN',title:'SKIING!',intro:'Wer ist zuerst im Ziel – du oder der Computer?',
+  de:{name:'DE',you2:'DEIN SKIFAHRER',cHelm:'HELM',cTop:'PULLOVER',cPants:'HOSE',cSkis:'SKI',p1:'1 SPIELER',p2:'2 SPIELER',rule2:'Zwei Spieler auf einem Handy: Links tippen steuert Blau (hinten), rechts tippen steuert Rot (vorne).',red:'ROT',blue:'BLAU',redWin:'ROT GEWINNT!',redWinP:'Rot war zuerst im Ziel.',blueWin:'BLAU GEWINNT!',blueWinP:'Blau war zuerst im Ziel.',bothOut:'BEIDE GESTÜRZT!',bothOutP:'Diesmal ist keiner angekommen.',hint2:'◀ LINKS = BLAU · RECHTS = ROT ▶',hurdleP:'Über die Hürden musst du springen – tippe auf dem blauen Schnee.',ouch:'AUTSCH!',newH:'NEU: HÜRDEN! TIPPE AUF BLAU = SPRINGEN',title:'SKIING!',intro:'Wer ist zuerst im Ziel – du oder der Computer?',
     rules:[['g','Tippe, wenn es den Buckel hinuntergeht (gelber Schnee) – dann wirst du schneller.'],
       ['r','Tippst du bergauf, wirst du langsamer und wackelst. Noch einmal falsch – und du liegst im Schnee.'],
       ['o','Tippe auf der Schanze, wenn der Schnee orange ist – dann springst du ganz hoch.'],
@@ -121,7 +135,7 @@ const LANG={
     land:'BRUCHLANDUNG!',landP:'Lass nach dem Salto rechtzeitig los, damit du gerade landest.',slow:'ZU LANGSAM!',slowP:'Der Computer war zuerst im Ziel.',
     time:'ZEIT',flips:'SALTOS',you:'DU',cpu:'CPU',wob:'WACKELIG!',hint:'TIPPEN, WENN GELB · HALTEN = SALTO',go:'LOS!',
     super:'SUPER!',good:'GUT!',oops:'HOPPLA!',jump:'SPRUNG!',flip:'SALTO!',flip2:'DOPPELSALTO!',flip3:'DREIFACH!',finish:'ZIEL',startT:'START'},
-  en:{name:'EN',p1:'1 PLAYER',p2:'2 PLAYERS',rule2:'Two players on one phone: tapping on the left steers Blue (back), tapping on the right steers Red (front).',red:'RED',blue:'BLUE',redWin:'RED WINS!',redWinP:'Red reached the finish first.',blueWin:'BLUE WINS!',blueWinP:'Blue reached the finish first.',bothOut:'BOTH FELL!',bothOutP:'Nobody made it this time.',hint2:'◀ LEFT = BLUE · RIGHT = RED ▶',hurdleP:'Jump over the hurdles – tap on the blue snow.',ouch:'OUCH!',newH:'NEW: HURDLES! TAP ON BLUE = JUMP',title:'SKIING!',intro:'Who reaches the finish first – you or the computer?',
+  en:{name:'EN',you2:'YOUR SKIER',cHelm:'HELMET',cTop:'SWEATER',cPants:'PANTS',cSkis:'SKIS',p1:'1 PLAYER',p2:'2 PLAYERS',rule2:'Two players on one phone: tapping on the left steers Blue (back), tapping on the right steers Red (front).',red:'RED',blue:'BLUE',redWin:'RED WINS!',redWinP:'Red reached the finish first.',blueWin:'BLUE WINS!',blueWinP:'Blue reached the finish first.',bothOut:'BOTH FELL!',bothOutP:'Nobody made it this time.',hint2:'◀ LEFT = BLUE · RIGHT = RED ▶',hurdleP:'Jump over the hurdles – tap on the blue snow.',ouch:'OUCH!',newH:'NEW: HURDLES! TAP ON BLUE = JUMP',title:'SKIING!',intro:'Who reaches the finish first – you or the computer?',
     rules:[['g','Tap when you are going down a bump (yellow snow) to speed up.'],
       ['r','Tap going uphill and you slow down and wobble. Do it again and you are in the snow.'],
       ['o','Tap on the ramp when the snow is orange to jump really high.'],
@@ -133,7 +147,7 @@ const LANG={
     land:'CRASH!',landP:'Let go after the flip in time so you land straight.',slow:'TOO SLOW!',slowP:'The computer got there first.',
     time:'TIME',flips:'FLIPS',you:'YOU',cpu:'CPU',wob:'WOBBLY!',hint:'TAP ON YELLOW · HOLD = FLIP',go:'GO!',
     super:'SUPER!',good:'GOOD!',oops:'OOPS!',jump:'JUMP!',flip:'FLIP!',flip2:'DOUBLE FLIP!',flip3:'TRIPLE!',finish:'FINISH',startT:'START'},
-  fr:{name:'FR',p1:'1 JOUEUR',p2:'2 JOUEURS',rule2:'Deux joueurs sur un téléphone'+NB+': à gauche tu diriges Bleu (derrière), à droite Rouge (devant).',red:'ROUGE',blue:'BLEU',redWin:'ROUGE GAGNE'+NB+'!',redWinP:'Rouge est arrivé le premier.',blueWin:'BLEU GAGNE'+NB+'!',blueWinP:'Bleu est arrivé le premier.',bothOut:'TOUS À TERRE'+NB+'!',bothOutP:'Personne n’est arrivé cette fois.',hint2:'◀ GAUCHE = BLEU · DROITE = ROUGE ▶',hurdleP:'Saute par-dessus les obstacles'+NB+': tape sur la neige bleue.',ouch:'AÏE'+NB+'!',newH:'NOUVEAU'+NB+': OBSTACLES'+NB+'! TAPE SUR LE BLEU = SAUT',title:'SKIING'+NB+'!',intro:'Qui arrive le premier'+NB+': toi ou l’ordinateur'+NB+'?',
+  fr:{name:'FR',you2:'TON SKIEUR',cHelm:'CASQUE',cTop:'PULL',cPants:'PANTALON',cSkis:'SKIS',p1:'1 JOUEUR',p2:'2 JOUEURS',rule2:'Deux joueurs sur un téléphone'+NB+': à gauche tu diriges Bleu (derrière), à droite Rouge (devant).',red:'ROUGE',blue:'BLEU',redWin:'ROUGE GAGNE'+NB+'!',redWinP:'Rouge est arrivé le premier.',blueWin:'BLEU GAGNE'+NB+'!',blueWinP:'Bleu est arrivé le premier.',bothOut:'TOUS À TERRE'+NB+'!',bothOutP:'Personne n’est arrivé cette fois.',hint2:'◀ GAUCHE = BLEU · DROITE = ROUGE ▶',hurdleP:'Saute par-dessus les obstacles'+NB+': tape sur la neige bleue.',ouch:'AÏE'+NB+'!',newH:'NOUVEAU'+NB+': OBSTACLES'+NB+'! TAPE SUR LE BLEU = SAUT',title:'SKIING'+NB+'!',intro:'Qui arrive le premier'+NB+': toi ou l’ordinateur'+NB+'?',
     rules:[['g','Tape quand tu descends une bosse (neige jaune) pour accélérer.'],
       ['r','Si tu tapes en montée, tu ralentis et tu vacilles. Encore une fois et tu tombes.'],
       ['o','Tape sur le tremplin quand la neige est orange pour sauter très haut.'],
@@ -145,7 +159,7 @@ const LANG={
     land:'AÏE'+NB+'!',landP:'Lâche à temps après le salto pour atterrir droit.',slow:'TROP LENT'+NB+'!',slowP:'L’ordinateur est arrivé le premier.',
     time:'TEMPS',flips:'SALTOS',you:'TOI',cpu:'CPU',wob:'ÇA VACILLE'+NB+'!',hint:'TAPE SUR LE JAUNE · MAINTIENS = SALTO',go:'GO'+NB+'!',
     super:'SUPER'+NB+'!',good:'BIEN'+NB+'!',oops:'OUPS'+NB+'!',jump:'SAUT'+NB+'!',flip:'SALTO'+NB+'!',flip2:'DOUBLE'+NB+'!',flip3:'TRIPLE'+NB+'!',finish:'ARRIVÉE',startT:'DÉPART'},
-  es:{name:'ES',p1:'1 JUGADOR',p2:'2 JUGADORES',rule2:'Dos jugadores en un móvil: tocando a la izquierda manejas Azul (detrás), a la derecha Rojo (delante).',red:'ROJO',blue:'AZUL',redWin:'¡GANA ROJO!',redWinP:'Rojo llegó primero a la meta.',blueWin:'¡GANA AZUL!',blueWinP:'Azul llegó primero a la meta.',bothOut:'¡LOS DOS AL SUELO!',bothOutP:'Esta vez nadie llegó.',hint2:'◀ IZQUIERDA = AZUL · DERECHA = ROJO ▶',hurdleP:'Salta las vallas: toca en la nieve azul.',ouch:'¡AY!',newH:'¡NUEVO: VALLAS! TOCA EN AZUL = SALTO',title:'¡SKIING!',intro:'¿Quién llega antes a la meta: tú o el ordenador?',
+  es:{name:'ES',you2:'TU ESQUIADOR',cHelm:'CASCO',cTop:'JERSEY',cPants:'PANTALÓN',cSkis:'ESQUÍS',p1:'1 JUGADOR',p2:'2 JUGADORES',rule2:'Dos jugadores en un móvil: tocando a la izquierda manejas Azul (detrás), a la derecha Rojo (delante).',red:'ROJO',blue:'AZUL',redWin:'¡GANA ROJO!',redWinP:'Rojo llegó primero a la meta.',blueWin:'¡GANA AZUL!',blueWinP:'Azul llegó primero a la meta.',bothOut:'¡LOS DOS AL SUELO!',bothOutP:'Esta vez nadie llegó.',hint2:'◀ IZQUIERDA = AZUL · DERECHA = ROJO ▶',hurdleP:'Salta las vallas: toca en la nieve azul.',ouch:'¡AY!',newH:'¡NUEVO: VALLAS! TOCA EN AZUL = SALTO',title:'¡SKIING!',intro:'¿Quién llega antes a la meta: tú o el ordenador?',
     rules:[['g','Toca cuando bajes un bache (nieve amarilla) para ir más rápido.'],
       ['r','Si tocas cuesta arriba, frenas y te tambaleas. Otra vez y te caes.'],
       ['o','Toca en el trampolín cuando la nieve esté naranja para saltar muy alto.'],
@@ -157,7 +171,7 @@ const LANG={
     land:'¡PLAF!',landP:'Suelta a tiempo tras la voltereta para aterrizar recto.',slow:'¡MUY LENTO!',slowP:'El ordenador llegó primero.',
     time:'TIEMPO',flips:'VUELTAS',you:'TÚ',cpu:'CPU',wob:'¡TAMBALEO!',hint:'TOCA EN AMARILLO · MANTÉN = VOLTERETA',go:'¡YA!',
     super:'¡SUPER!',good:'¡BIEN!',oops:'¡UPS!',jump:'¡SALTO!',flip:'¡VUELTA!',flip2:'¡DOBLE!',flip3:'¡TRIPLE!',finish:'META',startT:'SALIDA'},
-  it:{name:'IT',p1:'1 GIOCATORE',p2:'2 GIOCATORI',rule2:'Due giocatori su un telefono: tocca a sinistra per Blu (dietro), a destra per Rosso (davanti).',red:'ROSSO',blue:'BLU',redWin:'VINCE ROSSO!',redWinP:'Rosso è arrivato per primo.',blueWin:'VINCE BLU!',blueWinP:'Blu è arrivato per primo.',bothOut:'TUTTI A TERRA!',bothOutP:'Stavolta non è arrivato nessuno.',hint2:'◀ SINISTRA = BLU · DESTRA = ROSSO ▶',hurdleP:'Salta gli ostacoli: tocca sulla neve blu.',ouch:'AHI!',newH:'NUOVO: OSTACOLI! TOCCA IL BLU = SALTO',title:'SKIING!',intro:'Chi arriva prima al traguardo: tu o il computer?',
+  it:{name:'IT',you2:'IL TUO SCIATORE',cHelm:'CASCO',cTop:'MAGLIONE',cPants:'PANTALONI',cSkis:'SCI',p1:'1 GIOCATORE',p2:'2 GIOCATORI',rule2:'Due giocatori su un telefono: tocca a sinistra per Blu (dietro), a destra per Rosso (davanti).',red:'ROSSO',blue:'BLU',redWin:'VINCE ROSSO!',redWinP:'Rosso è arrivato per primo.',blueWin:'VINCE BLU!',blueWinP:'Blu è arrivato per primo.',bothOut:'TUTTI A TERRA!',bothOutP:'Stavolta non è arrivato nessuno.',hint2:'◀ SINISTRA = BLU · DESTRA = ROSSO ▶',hurdleP:'Salta gli ostacoli: tocca sulla neve blu.',ouch:'AHI!',newH:'NUOVO: OSTACOLI! TOCCA IL BLU = SALTO',title:'SKIING!',intro:'Chi arriva prima al traguardo: tu o il computer?',
     rules:[['g','Tocca quando scendi da una gobba (neve gialla) per andare più veloce.'],
       ['r','Se tocchi in salita rallenti e traballi. Un’altra volta e cadi.'],
       ['o','Tocca sul trampolino quando la neve è arancione per saltare altissimo.'],
@@ -169,7 +183,7 @@ const LANG={
     land:'OUCH!',landP:'Lascia in tempo dopo il salto per atterrare dritto.',slow:'TROPPO LENTO!',slowP:'Il computer è arrivato prima.',
     time:'TEMPO',flips:'SALTI',you:'TU',cpu:'CPU',wob:'TRABALLI!',hint:'TOCCA SUL GIALLO · TIENI = SALTO',go:'VIA!',
     super:'SUPER!',good:'BENE!',oops:'OPS!',jump:'SALTO!',flip:'MORTALE!',flip2:'DOPPIO!',flip3:'TRIPLO!',finish:'ARRIVO',startT:'PARTENZA'},
-  pt:{name:'PT',p1:'1 JOGADOR',p2:'2 JOGADORES',rule2:'Dois jogadores num celular: toque à esquerda para o Azul (atrás) e à direita para o Vermelho (frente).',red:'VERMELHO',blue:'AZUL',redWin:'VERMELHO VENCE!',redWinP:'O Vermelho chegou primeiro.',blueWin:'AZUL VENCE!',blueWinP:'O Azul chegou primeiro.',bothOut:'OS DOIS CAÍRAM!',bothOutP:'Ninguém chegou desta vez.',hint2:'◀ ESQUERDA = AZUL · DIREITA = VERMELHO ▶',hurdleP:'Pule os obstáculos: toque na neve azul.',ouch:'AI!',newH:'NOVO: OBSTÁCULOS! TOQUE NO AZUL = PULO',title:'SKIING!',intro:'Quem chega primeiro: você ou o computador?',
+  pt:{name:'PT',you2:'SEU ESQUIADOR',cHelm:'CAPACETE',cTop:'BLUSA',cPants:'CALÇA',cSkis:'ESQUIS',p1:'1 JOGADOR',p2:'2 JOGADORES',rule2:'Dois jogadores num celular: toque à esquerda para o Azul (atrás) e à direita para o Vermelho (frente).',red:'VERMELHO',blue:'AZUL',redWin:'VERMELHO VENCE!',redWinP:'O Vermelho chegou primeiro.',blueWin:'AZUL VENCE!',blueWinP:'O Azul chegou primeiro.',bothOut:'OS DOIS CAÍRAM!',bothOutP:'Ninguém chegou desta vez.',hint2:'◀ ESQUERDA = AZUL · DIREITA = VERMELHO ▶',hurdleP:'Pule os obstáculos: toque na neve azul.',ouch:'AI!',newH:'NOVO: OBSTÁCULOS! TOQUE NO AZUL = PULO',title:'SKIING!',intro:'Quem chega primeiro: você ou o computador?',
     rules:[['g','Toque quando descer uma lombada (neve amarela) para ganhar velocidade.'],
       ['r','Se tocar na subida, você freia e balança. De novo e você cai.'],
       ['o','Toque na rampa quando a neve estiver laranja para pular bem alto.'],
@@ -192,7 +206,7 @@ function setLang(k,save){
   document.querySelectorAll('#langs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===lang));
   if(save)try{localStorage.setItem('irrgarten.lang',lang)}catch(_){}
   if(lastEnd)showEnd(lastEnd,true);
-  fitTitles();
+  paintChar();fitTitles();
 }
 Object.keys(LANG).forEach(k=>{const b=document.createElement('button');b.type='button';b.dataset.k=k;b.textContent=LANG[k].name;b.onclick=()=>setLang(k,true);$('#langs').append(b)});
 
@@ -239,7 +253,17 @@ const PINE=[
 "...T..."];
 function sprite(rows,pal){const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const g=c.getContext('2d');
   rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(pal[ch]){g.fillStyle=pal[ch];g.fillRect(x,y,1,1)}}));return c}
-const SPR_ME=sprite(SKIER,{K:'#1B1F3B',H:'#FFD23F',G:'#38D1E0',S:'#F2B58C',J:'#E83B3B',P:'#2B4C9B',B:'#3A3F5C',L:'#9AA3B5',W:'#FF8C1A'});
+/* Character picker: colours for helmet (H), sweater (J), pants (P) and skis (W). Index 0 = the original look. */
+const OUTFIT={
+  h:['#FFD23F','#E83B3B','#FFFFFF','#6CC24A','#FF6FB5','#2F7FE0','#3A3F5C'],
+  j:['#E83B3B','#FF9A2E','#FFD23F','#3FAE5A','#8B4FD8','#FF6FB5','#2F7FE0'],
+  p:['#2B4C9B','#3A3F5C','#C0392B','#2E7D4F','#8A93A8','#7A4A22','#F4F4F4'],
+  w:['#FF8C1A','#E83B3B','#FFD23F','#6CC24A','#FF6FB5','#2F7FE0','#1B1F3B']};
+let look={h:0,j:0,p:0,w:0};
+try{const s=JSON.parse(localStorage.getItem('skiing.char')||'{}');for(const k in look)if(OUTFIT[k][s[k]])look[k]=s[k]}catch(_){}
+const meColor=()=>OUTFIT.j[look.j];
+function makeMe(){return sprite(SKIER,{K:'#1B1F3B',H:OUTFIT.h[look.h],G:'#38D1E0',S:'#F2B58C',J:OUTFIT.j[look.j],P:OUTFIT.p[look.p],B:'#3A3F5C',L:'#9AA3B5',W:OUTFIT.w[look.w]})}
+let SPR_ME=makeMe(),SPR_RED=sprite(SKIER,{K:'#1B1F3B',H:'#FFD23F',G:'#38D1E0',S:'#F2B58C',J:'#E83B3B',P:'#2B4C9B',B:'#3A3F5C',L:'#9AA3B5',W:'#FF8C1A'});
 const SPR_AI=sprite(SKIER,{K:'#6F7FA8',H:'#FFFFFF',G:'#BFEFF5',S:'#F8D9C4',J:'#9CCFF6',P:'#B3B0EA',B:'#8E97B8',L:'#D0D6E2',W:'#B8E59E'});
 const SPR_P2=sprite(SKIER,{K:'#1B1F3B',H:'#FFFFFF',G:'#FFD23F',S:'#F2B58C',J:'#2F7FE0',P:'#1B1F3B',B:'#3A3F5C',L:'#9AA3B5',W:'#6CC24A'});
 const SPR_PINE=sprite(PINE,{G:'#2F7D4A',g:'#4FA36A',T:'#6B4A2B'});
@@ -519,7 +543,7 @@ function drawRider(r){
   if(r.wob&&!r.crashed&&!r.air)ang+=Math.sin(r.wobT*22)*0.16;
   if(r.crashed&&!r.ai){rot=Math.min(1,r.crashT*3)*1.6+(r.air?r.rot*Math.PI/180:0)}
   ctx.translate(Math.round(sx),Math.round(sy)+(r.push>0?1:0));ctx.rotate(ang);ctx.translate(0,-7);ctx.rotate(rot);
-  ctx.drawImage(r.ai?SPR_AI:r.back?SPR_P2:SPR_ME,-8,-8);ctx.restore();
+  ctx.drawImage(r.ai?SPR_AI:r.back?SPR_P2:two?SPR_RED:SPR_ME,-8,-8);ctx.restore();
 }
 function drawFx(dt){
   parts=parts.filter(p=>(p.t-=dt)>0);parts.forEach(p=>{p.x+=p.vx*dt;p.vy+=200*dt;p.y+=p.vy*dt;rect(p.ai?'#EAF4FD':'#FFFFFF',p.x-camX,p.y-camY-(p.ai?LANE:0),1,1)});
@@ -547,7 +571,7 @@ function startRace(lv){
   if(AC&&AC.state==='suspended')AC.resume();
   build(lv);SK=aiSkill(lv);
   P=mkRider(false,false);A=mkRider(!two,true);P.y=A.y=TY(40);A.x=40;
-  document.body.classList.toggle('two',two);
+  document.body.classList.toggle('two',two);document.body.style.setProperty('--me',two?'':meColor());
   parts=[];pops=[];raceT=0;hurdles.forEach(h=>{h.hit0=h.hit1=0});endWhy=null;lastEnd=null;
   camX=P.x-W*0.3;camY=P.y-H*0.6;
   $('#startOv').hidden=true;$('#endOv').hidden=true;$('#hud').hidden=false;
@@ -574,8 +598,21 @@ function showEnd(why,refresh){
     fitTitles();
   }
 }
+function paintChar(){
+  const rows=$('#charRows');rows.innerHTML='';
+  [['h','cHelm'],['j','cTop'],['p','cPants'],['w','cSkis']].forEach(([k,lbl])=>{
+    const row=document.createElement('div');row.className='charRow';
+    const b=document.createElement('b');b.textContent=T[lbl];row.append(b);
+    const sw=document.createElement('div');sw.className='sw';sw.setAttribute('role','group');sw.setAttribute('aria-label',T[lbl]);
+    OUTFIT[k].forEach((c,i)=>{const btn=document.createElement('button');btn.type='button';btn.style.background=c;btn.setAttribute('aria-label',T[lbl]+' '+(i+1));btn.setAttribute('aria-pressed',look[k]===i);
+      btn.onclick=()=>{look[k]=i;try{localStorage.setItem('skiing.char',JSON.stringify(look))}catch(_){}
+        sw.querySelectorAll('button').forEach((x,j)=>x.setAttribute('aria-pressed',j===i));SPR_ME=makeMe();drawPrev();beep('tick')};sw.append(btn)});
+    row.append(sw);rows.append(row)});
+  drawPrev();
+}
+function drawPrev(){const g=$('#charCv').getContext('2d');g.clearRect(0,0,16,16);g.drawImage(SPR_ME,0,0)}
 try{two=localStorage.getItem('skiing.mode')==='2'}catch(_){}
-function paintModes(){document.querySelectorAll('#modes button').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.m==='2')===two));$('#mode2').hidden=!two;$('#rules').classList.toggle('two',two);fitTitles()}
+function paintModes(){document.body.classList.toggle('two',two);document.querySelectorAll('#modes button').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.m==='2')===two));$('#mode2').hidden=!two;$('#rules').classList.toggle('two',two);fitTitles()}
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{two=b.dataset.m==='2';try{localStorage.setItem('skiing.mode',two?'2':'1')}catch(_){}paintModes()});
 paintModes();
 $('#startBtn').onclick=()=>startRace(pick);
