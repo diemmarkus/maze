@@ -266,6 +266,39 @@ function makeMe(){const g=OUTFIT.g[look.g];return sprite(SKIER,{K:'#1B1F3B',H:g,
 let SPR_ME=makeMe(),SPR_RED=sprite(SKIER,{K:'#1B1F3B',H:'#FFD23F',G:'#38D1E0',S:'#F2B58C',J:'#E83B3B',P:'#2B4C9B',B:'#3A3F5C',L:'#9AA3B5',W:'#FF8C1A'});
 const SPR_AI=sprite(SKIER,{K:'#6F7FA8',H:'#FFFFFF',G:'#BFEFF5',S:'#F8D9C4',J:'#9CCFF6',P:'#B3B0EA',B:'#8E97B8',L:'#D0D6E2',W:'#B8E59E'});
 const SPR_P2=sprite(SKIER,{K:'#1B1F3B',H:'#FFFFFF',G:'#FFD23F',S:'#F2B58C',J:'#2F7FE0',P:'#1B1F3B',B:'#3A3F5C',L:'#9AA3B5',W:'#6CC24A'});
+const SPR_COW=sprite([
+"..H...........",
+".KKK.KKKKKKKK.",
+"KWWWKWWBBWWWWK",
+"KWKWKWBBBWWBWK",
+"KWWWWWWBWWWBBK",
+"KPPKWWWWWWWBBK",
+".KKKWWWWWWWWWK",
+"....KWKKKKKWKK",
+"....KWK...KWK.",
+"....KKK...KKK."],{K:'#1B1F3B',W:'#FFFFFF',B:'#2A2A33',P:'#F4A6B8',H:'#F2E6C9'});
+const SPR_GOAT=sprite([
+"..HH......",
+".KHHK.....",
+".KGGK.KKK.",
+"KGKGGKGGGK",
+"KGGGGGGGGK",
+".KDKGGGGGK",
+"..D.KGKKGK",
+"....KG.KG.",
+"....KK.KK."],{K:'#1B1F3B',G:'#B89B7A',D:'#8C7358',H:'#E8DCC0'});
+const YETI_TOP=[["KK..KKK..KK","KYKKYYYKKYK",".KYYFFFYYK."],["....KKK....","...KYYYK...","..KYFFFYK.."]];
+const YETI_ARMS=[[".KYYYYYYYK.","KYYYyYyYYYK","KYKYYYYYKYK"],["KKYYYYYYYKK","KYYYyYyYYYK","KYKYYYYYKYK"]];
+const SPR_YETI=[0,1].map(f=>sprite([...YETI_TOP[f],
+"..KFKFKFK..",
+"..KFFFFFK..",
+"..KYRRRYK..",
+...YETI_ARMS[f],
+".K.KYyYK.K.",
+"...KYYYK...",
+"..KYYKYYK..",
+"..KYK.KYK..",
+".KKKK.KKKK."],{K:'#1B1F3B',Y:'#CFE3F7',y:'#9FBBD8',F:'#8FA8C8',R:'#5A1F3B'}));
 const SPR_PINE=sprite(PINE,{G:'#2F7D4A',g:'#4FA36A',T:'#6B4A2B'});
 const SPR_PINE_FAR=sprite(PINE,{G:'#5E8FB5',g:'#7EA8C8',T:'#5E8FB5'});
 
@@ -316,8 +349,10 @@ function build(lv){
     const n=2+Math.floor(r()*(lv>=6?3:2));
     for(let i=0;i<70;i++)put(y+=0.5,6);
     for(let h=0;h<n;h++){
-      const types=['fence','snowman','logs','barrier'],type=types[Math.floor(r()*types.length)];
-      const w={fence:10,snowman:8,logs:12,barrier:14}[type],hh={fence:9,snowman:12,logs:7,barrier:8}[type];
+      // obstacles: mostly fences, snowmen, logs, barriers, cows and goats; the yeti only rarely
+      const pool=[['fence',1],['snowman',1],['logs',1],['barrier',1],['cow',1],['goat',1],['yeti',0.25]];
+      let roll=r()*pool.reduce((a,b)=>a+b[1],0),type='fence';for(const[t,wt]of pool){if((roll-=wt)<0){type=t;break}}
+      const w={fence:10,snowman:8,logs:12,barrier:14,cow:14,goat:10,yeti:11}[type],hh={fence:9,snowman:12,logs:7,barrier:8,cow:10,goat:9,yeti:14}[type];
       hurdles.push({x:x,w,h:hh,type});
       const gap=230+Math.floor(r()*60);for(let i=0;i<gap;i++)put(y+=0.5,6);
     }
@@ -520,6 +555,9 @@ function drawHurdle(h,off){
   if(h.type==='fence'){rect(K,sx,t,2,h.h);rect(K,sx+h.w-2,t,2,h.h);rect('#A0652F',sx,t+1,h.w,2);rect('#A0652F',sx,t+5,h.w,2);rect('#7A4A22',sx,t+3,h.w,1);rect('#7A4A22',sx,t+7,h.w,1)}
   else if(h.type==='snowman'){rect(K,sx,t+6,8,6);rect('#FFFFFF',sx+1,t+7,6,5);rect(K,sx+1,t+2,6,5);rect('#FFFFFF',sx+2,t+3,4,4);rect(K,sx+2,t-1,4,3);rect(K,sx+1,t+1,6,1);rect('#FF8C1A',sx+6,t+4,2,1);rect(K,sx+3,t+4,1,1);rect('#E83B3B',sx+1,t+6,6,1)}
   else if(h.type==='logs'){for(const[dx,dy]of[[0,3],[6,3],[3,0]]){rect(K,sx+dx,t+dy,6,4);rect('#A0652F',sx+dx+1,t+dy+1,4,2);rect('#E0B07A',sx+dx+2,t+dy+1,2,2)}}
+  else if(h.type==='cow')ctx.drawImage(SPR_COW,sx,t+(Math.floor(clock*2+h.x)%3===0?0:0));
+  else if(h.type==='goat')ctx.drawImage(SPR_GOAT,sx,t-(Math.floor(clock*3+h.x)%4===0?1:0));
+  else if(h.type==='yeti')ctx.drawImage(SPR_YETI[Math.floor(clock*3)%2],sx,t);
   else{rect(K,sx+1,t+3,1,h.h-3);rect(K,sx+h.w-2,t+3,1,h.h-3);rect(K,sx,t,h.w,4);for(let i=1;i<h.w-1;i++)rect((i>>1)%2?'#FFFFFF':'#E83B3B',sx+i,t+1,1,2)}
 }
 function drawDeco(off,back){
