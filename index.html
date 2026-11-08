@@ -54,8 +54,6 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
 .txt h2{font-family:var(--display);font-size:34px;line-height:.95;letter-spacing:.03em;margin:0 0 4px;-webkit-text-stroke:1.5px var(--ink);text-shadow:3px 3px 0 var(--ink)}
 .maze h2{color:var(--hedge)}
 .ski h2{color:var(--sky)}
-.skiar h2{color:#FFD23F}
-.skiar .tag{background:var(--sky)}
 .txt p{margin:0;font-size:15px;line-height:1.3}
 .tag{display:inline-block;margin-top:8px;font-family:var(--display);letter-spacing:.06em;font-size:17px;background:var(--leaf);border:3px solid var(--ink);border-radius:6px;box-shadow:3px 3px 0 var(--ink);padding:1px 10px}
 .langs{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:30px}
@@ -74,6 +72,9 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
 .friend .go svg{width:22px;height:22px}
 .anna h2{color:#FF4FB8}
 .anna .go{background:#FFD93B}
+.more .friend+.friend{margin-top:16px;transform:rotate(-.6deg)}
+.webar h2{color:#7FC8F0}
+.webar .go{background:#FF9A2E}
 </style>
 </head>
 <body>
@@ -127,25 +128,6 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
         <span class="tag" data-i18n="play">SPIELEN!</span>
       </div>
     </a>
-    <a class="game skiar" href="../WebAR/skiing/">
-      <div class="pic" aria-hidden="true">
-        <svg viewBox="0 0 92 92" shape-rendering="crispEdges">
-          <rect width="92" height="92" fill="#2B2F45"/>
-          <rect x="8" y="14" width="76" height="52" fill="none" stroke="#FFFDF6" stroke-width="2" stroke-dasharray="10 46"/>
-          <g fill="#FFFFFF"><rect x="8" y="30" width="16" height="4"/><rect x="52" y="44" width="12" height="4"/></g>
-          <g fill="#FFD23F"><rect x="24" y="34" width="10" height="4"/><rect x="34" y="38" width="8" height="4"/><rect x="42" y="42" width="10" height="4"/></g>
-          <g fill="#FF9A2E"><rect x="64" y="48" width="10" height="4"/><rect x="74" y="52" width="10" height="4"/></g>
-          <g fill="#9CCFF6" opacity=".55"><rect x="8" y="22" width="76" height="2"/></g>
-          <rect x="30" y="18" width="6" height="4" fill="#FFD23F"/><rect x="30" y="22" width="6" height="5" fill="#E83B3B"/><rect x="30" y="27" width="6" height="4" fill="#2B4C9B"/><rect x="26" y="31" width="14" height="2" fill="#FFD23F"/>
-          <rect x="14" y="72" width="64" height="12" rx="6" fill="#FFFDF6"/><rect x="20" y="74" width="20" height="8" rx="4" fill="#2B2F45"/><rect x="52" y="74" width="20" height="8" rx="4" fill="#2B2F45"/>
-        </svg>
-      </div>
-      <div class="txt">
-        <h2>SKIING AR</h2>
-        <p data-i18n="skiArT">Die Piste hängt an deiner Wand: duck dich auf den Buckeln und hüpf über die Schanzen.</p>
-        <span class="tag" data-i18n="ar">IN AR!</span>
-      </div>
-    </a>
   </div>
   <div class="more">
     <span class="lbl" data-i18n="more">MEHR SPIELE</span>
@@ -166,6 +148,23 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
       </div>
       <span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="#16120F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     </a>
+    <a class="friend webar" href="../WebAR/">
+      <div class="pic" aria-hidden="true">
+        <svg viewBox="0 0 64 64" shape-rendering="crispEdges">
+            <rect width="64" height="64" fill="#2B2F45"/>
+            <g fill="#FFFFFF"><rect x="6" y="18" width="12" height="3"/><rect x="38" y="28" width="8" height="3"/></g>
+            <g fill="#FFD23F"><rect x="18" y="21" width="8" height="3"/><rect x="26" y="24" width="12" height="3"/></g>
+            <g fill="#FF9A2E"><rect x="46" y="31" width="12" height="3"/></g>
+            <rect x="21" y="9" width="4" height="3" fill="#FFD23F"/><rect x="21" y="12" width="4" height="3" fill="#E83B3B"/><rect x="21" y="15" width="4" height="2" fill="#2B4C9B"/><rect x="18" y="17" width="10" height="1" fill="#FFD23F"/>
+            <rect x="8" y="42" width="48" height="12" rx="6" fill="#FFFDF6"/><rect x="13" y="44" width="16" height="8" rx="4" fill="#2B2F45"/><rect x="35" y="44" width="16" height="8" rx="4" fill="#2B2F45"/>
+            <rect x="15" y="45" width="4" height="2" fill="#7FC8F0"/><rect x="37" y="45" width="4" height="2" fill="#7FC8F0"/></svg>
+      </div>
+      <div class="txt">
+        <h2 data-i18n="arH">SPIELE IN AR</h2>
+        <p data-i18n="arT">WebAR-Experimente – auch Skiing an deiner Wand.</p>
+      </div>
+      <span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="#16120F" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </a>
   </div>
   <div class="langs" id="langs" role="group" aria-label="Language"></div>
 </main>
@@ -180,12 +179,12 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
     e.style.setProperty('--w',(-Math.random()*4)+'s');
     g.append(e)}})();
 const L={
-  de:{doc:"Jonas' Spiele",title:"JONAS' SPIELE",sub:'Such dir ein Spiel aus!',mazeT:'Kipp das Handy und roll die Kugel ins Loch, bevor die Hecken zuwachsen.',skiT:'Tippe zur richtigen Zeit auf der Buckelpiste, spring über Schanzen und schlag den Computer.',skiArT:'Die Piste hängt an deiner Wand: duck dich auf den Buckeln und hüpf über die Schanzen.',ar:'IN AR!',play:'SPIELEN!',soon:'KOMMT BALD',more:'MEHR SPIELE',annaH:'ANNAS ABENTEUER',annaT:'Danger in the Jungle und mehr.'},
-  en:{doc:"Jonas's Games",title:"JONAS'S GAMES",sub:'Pick a game!',mazeT:'Tilt the phone and roll the ball into the hole before the hedges grow shut.',skiT:'Tap at the right moment on the bumps, fly off ramps and beat the computer.',skiArT:'The slope hangs on your wall: duck on the bumps and jump off the ramps.',ar:'IN AR!',play:'PLAY!',soon:'COMING SOON',more:'MORE GAMES',annaH:"ANNA'S ADVENTURES",annaT:'Danger in the Jungle and more.'},
-  fr:{doc:"Les jeux de Jonas",title:'LES JEUX DE JONAS',sub:'Choisis un jeu !',mazeT:'Incline le téléphone et fais rouler la bille dans le trou avant que les haies ne se referment.',skiT:'Tape au bon moment sur les bosses, saute des tremplins et bats l’ordinateur.',skiArT:'La piste est sur ton mur : baisse-toi sur les bosses et saute aux tremplins.',ar:'EN RA !',play:'JOUER !',soon:'BIENTÔT',more:'PLUS DE JEUX',annaH:"LES AVENTURES D'ANNA",annaT:'Danger in the Jungle et plus.'},
-  es:{doc:"Los juegos de Jonas",title:'LOS JUEGOS DE JONAS',sub:'¡Elige un juego!',mazeT:'Inclina el móvil y mete la bola en el hoyo antes de que los setos lo cierren.',skiT:'Toca en el momento justo en los baches, salta en los trampolines y gana al ordenador.',skiArT:'La pista cuelga de tu pared: agáchate en los baches y salta en los trampolines.',ar:'¡EN RA!',play:'¡JUGAR!',soon:'MUY PRONTO',more:'MÁS JUEGOS',annaH:'LAS AVENTURAS DE ANNA',annaT:'Danger in the Jungle y más.'},
-  it:{doc:"I giochi di Jonas",title:'I GIOCHI DI JONAS',sub:'Scegli un gioco!',mazeT:'Inclina il telefono e porta la pallina nella buca prima che le siepi chiudano i sentieri.',skiT:'Tocca al momento giusto sulle gobbe, salta dai trampolini e batti il computer.',skiArT:'La pista è sulla tua parete: abbassati sulle gobbe e salta dai trampolini.',ar:'IN RA!',play:'GIOCA!',soon:'IN ARRIVO',more:'ALTRI GIOCHI',annaH:'LE AVVENTURE DI ANNA',annaT:'Danger in the Jungle e altro.'},
-  pt:{doc:"Os jogos do Jonas",title:'OS JOGOS DO JONAS',sub:'Escolha um jogo!',mazeT:'Incline o celular e leve a bola até o buraco antes que as sebes fechem os caminhos.',skiT:'Toque na hora certa nas lombadas, salte das rampas e vença o computador.',skiArT:'A pista fica na sua parede: abaixe-se nas lombadas e pule nas rampas.',ar:'EM RA!',play:'JOGAR!',soon:'EM BREVE',more:'MAIS JOGOS',annaH:'AS AVENTURAS DA ANNA',annaT:'Danger in the Jungle e mais.'}
+  de:{doc:"Jonas' Spiele",title:"JONAS' SPIELE",sub:'Such dir ein Spiel aus!',mazeT:'Kipp das Handy und roll die Kugel ins Loch, bevor die Hecken zuwachsen.',skiT:'Tippe zur richtigen Zeit auf der Buckelpiste, spring über Schanzen und schlag den Computer.',arH:'SPIELE IN AR',arT:'WebAR-Experimente – auch Skiing an deiner Wand.',play:'SPIELEN!',soon:'KOMMT BALD',more:'MEHR SPIELE',annaH:'ANNAS ABENTEUER',annaT:'Danger in the Jungle und mehr.'},
+  en:{doc:"Jonas's Games",title:"JONAS'S GAMES",sub:'Pick a game!',mazeT:'Tilt the phone and roll the ball into the hole before the hedges grow shut.',skiT:'Tap at the right moment on the bumps, fly off ramps and beat the computer.',arH:'GAMES IN AR',arT:'WebAR experiments – including Skiing on your wall.',play:'PLAY!',soon:'COMING SOON',more:'MORE GAMES',annaH:"ANNA'S ADVENTURES",annaT:'Danger in the Jungle and more.'},
+  fr:{doc:"Les jeux de Jonas",title:'LES JEUX DE JONAS',sub:'Choisis un jeu !',mazeT:'Incline le téléphone et fais rouler la bille dans le trou avant que les haies ne se referment.',skiT:'Tape au bon moment sur les bosses, saute des tremplins et bats l’ordinateur.',arH:'JEUX EN RA',arT:'Expériences WebAR – dont Skiing sur ton mur.',play:'JOUER !',soon:'BIENTÔT',more:'PLUS DE JEUX',annaH:"LES AVENTURES D'ANNA",annaT:'Danger in the Jungle et plus.'},
+  es:{doc:"Los juegos de Jonas",title:'LOS JUEGOS DE JONAS',sub:'¡Elige un juego!',mazeT:'Inclina el móvil y mete la bola en el hoyo antes de que los setos lo cierren.',skiT:'Toca en el momento justo en los baches, salta en los trampolines y gana al ordenador.',arH:'JUEGOS EN RA',arT:'Experimentos WebAR, también Skiing en tu pared.',play:'¡JUGAR!',soon:'MUY PRONTO',more:'MÁS JUEGOS',annaH:'LAS AVENTURAS DE ANNA',annaT:'Danger in the Jungle y más.'},
+  it:{doc:"I giochi di Jonas",title:'I GIOCHI DI JONAS',sub:'Scegli un gioco!',mazeT:'Inclina il telefono e porta la pallina nella buca prima che le siepi chiudano i sentieri.',skiT:'Tocca al momento giusto sulle gobbe, salta dai trampolini e batti il computer.',arH:'GIOCHI IN RA',arT:'Esperimenti WebAR – anche Skiing sulla tua parete.',play:'GIOCA!',soon:'IN ARRIVO',more:'ALTRI GIOCHI',annaH:'LE AVVENTURE DI ANNA',annaT:'Danger in the Jungle e altro.'},
+  pt:{doc:"Os jogos do Jonas",title:'OS JOGOS DO JONAS',sub:'Escolha um jogo!',mazeT:'Incline o celular e leve a bola até o buraco antes que as sebes fechem os caminhos.',skiT:'Toque na hora certa nas lombadas, salte das rampas e vença o computador.',arH:'JOGOS EM RA',arT:'Experimentos WebAR – inclusive Skiing na sua parede.',play:'JOGAR!',soon:'EM BREVE',more:'MAIS JOGOS',annaH:'AS AVENTURAS DA ANNA',annaT:'Danger in the Jungle e mais.'}
 };
 // Shares the language choice with Irrgarten (same origin, same key).
 const KEY='irrgarten.lang';

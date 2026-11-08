@@ -6,9 +6,8 @@ Comic-style phone games by Jonas. The start page (`index.html`) lets you pick a 
 |---|---|---|
 | Irrgarten | [`irrgarten/`](irrgarten/) | playable |
 | Skiing | [`skiing/`](skiing/) | playable |
-| Skiing AR | [WebAR/skiing](https://diemmarkus.github.io/WebAR/skiing/) (lives in the WebAR repo) | playable in AR (Android Chrome, Spectacles) |
 
-At the bottom, **Mehr Spiele** links to Anna's start page ([Abenteuer](https://diemmarkus.github.io/danger-in-the-jungle/)).
+At the bottom, **Mehr Spiele** links to Anna's start page ([Abenteuer](https://diemmarkus.github.io/danger-in-the-jungle/)) and to the [WebAR experiments](https://diemmarkus.github.io/WebAR/) (Skiing AR lives there).
 
 Play: https://diemmarkus.github.io/maze/
 
