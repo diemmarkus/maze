@@ -67,6 +67,16 @@ body.two .charBtn{display:none}
 .sw button:focus-visible{outline:3px dashed var(--pop);outline-offset:2px}
 .stats{font-family:var(--pix);font-size:11px;line-height:1.9;margin:10px 0 4px}
 .stats .best{display:block;font-family:var(--body);font-size:15px;line-height:1.3;margin-top:6px}
+.trophy{display:block;width:64px;height:56px;margin:0 auto 2px;image-rendering:pixelated;animation:bob 1s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-5px) rotate(-4deg)}}
+@media (prefers-reduced-motion:reduce){.trophy{animation:none}}
+.board{width:100%;border-collapse:collapse;font-family:var(--pix);font-size:10px;margin:6px 0 4px}
+.board th{font-weight:400;font-size:8px;padding:2px 3px;text-align:right}
+.board td{padding:6px 3px;text-align:right;border-top:2px solid var(--ink)}
+.board td:first-child,.board th:first-child{text-align:left}
+.board td i{display:inline-block;width:8px;height:8px;border:2px solid var(--ink);margin-right:5px;vertical-align:-2px}
+.board tr.win td{background:var(--gold)}
+.board b{font-size:13px}
 .home{display:table;margin:14px auto 0;font-family:var(--pix);font-size:10px;color:var(--ink);text-decoration:none;border-bottom:3px solid var(--pop);padding-bottom:2px}
 .hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));font-family:var(--pix);font-size:10px;line-height:1.4;text-align:center;background:var(--white);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:6px 8px;pointer-events:none;width:max-content;max-width:calc(100% - 40px)}
 </style>
@@ -124,6 +134,7 @@ body.two .charBtn{display:none}
 </div>
 <div class="overlay" id="endOv" hidden>
   <div class="card">
+    <svg id="trophy" class="trophy" viewBox="0 0 16 14" shape-rendering="crispEdges" aria-hidden="true"><path fill="#1B1F3B" d="M3 0h10v1h2v4h-1v1h-2v1h-1v2h-1v1h2v1h1v3H3v-3h1V10h2V9H5V7H4V6H2V5H1V1h2Z"/><path fill="#FFD23F" d="M4 1h8v5h-1v1h-1v2H6V7H5V6H4ZM2 2h1v2H2ZM13 2h1v2h-1ZM5 11h6v2H5Z"/><path fill="#FFF0A8" d="M5 2h1v3H5Z"/><path fill="#FF9A2E" d="M10 2h1v4h-1Z"/></svg>
     <h1 id="endTitle">GEWONNEN!</h1>
     <p id="endText"></p>
     <div class="stats" id="endStats"></div>
@@ -150,7 +161,7 @@ const LANG={
     win:'GEWONNEN!',winP:'Du hast mehr Punkte als der Computer!',lose:'VERLOREN!',loseP:'Der Computer hat mehr Punkte.',tie:'UNENTSCHIEDEN!',tieP:'Genau gleich viele Punkte!',
     redWin:'ROT GEWINNT!',redWinP:'Rot hat mehr Punkte.',blueWin:'BLAU GEWINNT!',blueWinP:'Blau hat mehr Punkte.',
     perfect:'PERFEKT!',good:'GUT!',ok:'OK',early:'ZU FRÜH!',late:'KNAPP!',ouch:'AUTSCH!',wobbly:'WACKELIG!',air:'AIR',
-    hint:'TIPPEN BEI GRÜN = HOCH SPRINGEN · WISCHEN = TRICKS',ff:'FRONTFLIP',bf:'BACKFLIP'},
+    hint:'TIPPEN BEI GRÜN = HOCH SPRINGEN · WISCHEN = TRICKS',ff:'FRONTFLIP',bf:'BACKFLIP',mega:'MEGA-SPRUNG!',tot:'GESAMT',},
   en:{done:'DONE',you2:'YOUR SNOWBOARDER',cGear:'HELMET & BOARD',cTop:'SWEATER',cPants:'PANTS',cSkin:'SKIN',p1:'1 PLAYER',p2:'2 PLAYERS',
     rule2:'Two players, one phone: Red and Blue take turns. Pass the phone after every run.',
     title:'HALFPIPE!',intro:'Who scores more points – you or the computer?',
@@ -164,7 +175,7 @@ const LANG={
     win:'YOU WIN!',winP:'You scored more than the computer!',lose:'YOU LOSE!',loseP:'The computer scored more.',tie:'DRAW!',tieP:'Exactly the same score!',
     redWin:'RED WINS!',redWinP:'Red scored more.',blueWin:'BLUE WINS!',blueWinP:'Blue scored more.',
     perfect:'PERFECT!',good:'GOOD!',ok:'OK',early:'TOO EARLY!',late:'JUST IN TIME!',ouch:'OUCH!',wobbly:'WOBBLY!',air:'AIR',
-    hint:'TAP ON GREEN = BIG AIR · SWIPE = TRICKS',ff:'FRONTFLIP',bf:'BACKFLIP'},
+    hint:'TAP ON GREEN = BIG AIR · SWIPE = TRICKS',ff:'FRONTFLIP',bf:'BACKFLIP',mega:'MEGA AIR!',tot:'TOTAL',},
   fr:{done:'OK',you2:'TON SNOWBOARDEUR',cGear:'CASQUE & PLANCHE',cTop:'PULL',cPants:'PANTALON',cSkin:'PEAU',p1:'1 JOUEUR',p2:'2 JOUEURS',
     rule2:'Deux joueurs, un téléphone'+NB+': Rouge et Bleu jouent chacun son tour. Passez-vous le téléphone après chaque manche.',
     title:'HALFPIPE'+NB+'!',intro:'Qui marque le plus de points'+NB+': toi ou l’ordinateur'+NB+'?',
@@ -178,7 +189,7 @@ const LANG={
     win:'GAGNÉ'+NB+'!',winP:'Tu as plus de points que l’ordinateur'+NB+'!',lose:'PERDU'+NB+'!',loseP:'L’ordinateur a plus de points.',tie:'ÉGALITÉ'+NB+'!',tieP:'Exactement le même score'+NB+'!',
     redWin:'ROUGE GAGNE'+NB+'!',redWinP:'Rouge a plus de points.',blueWin:'BLEU GAGNE'+NB+'!',blueWinP:'Bleu a plus de points.',
     perfect:'PARFAIT'+NB+'!',good:'BIEN'+NB+'!',ok:'OK',early:'TROP TÔT'+NB+'!',late:'JUSTE'+NB+'!',ouch:'AÏE'+NB+'!',wobbly:'ÇA VACILLE'+NB+'!',air:'AIR',
-    hint:'TAPE SUR LE VERT = GRAND SAUT · GLISSE = FIGURES',ff:'FRONTFLIP',bf:'BACKFLIP'},
+    hint:'TAPE SUR LE VERT = GRAND SAUT · GLISSE = FIGURES',ff:'FRONTFLIP',bf:'BACKFLIP',mega:'MÉGA SAUT'+NB+'!',tot:'TOTAL',},
   es:{done:'LISTO',you2:'TU SNOWBOARDER',cGear:'CASCO Y TABLA',cTop:'JERSEY',cPants:'PANTALÓN',cSkin:'PIEL',p1:'1 JUGADOR',p2:'2 JUGADORES',
     rule2:'Dos jugadores, un móvil: Rojo y Azul se turnan. Pasaos el móvil después de cada bajada.',
     title:'¡HALFPIPE!',intro:'¿Quién consigue más puntos: tú o el ordenador?',
@@ -192,7 +203,7 @@ const LANG={
     win:'¡GANASTE!',winP:'¡Tienes más puntos que el ordenador!',lose:'¡PERDISTE!',loseP:'El ordenador tiene más puntos.',tie:'¡EMPATE!',tieP:'¡Exactamente los mismos puntos!',
     redWin:'¡GANA ROJO!',redWinP:'Rojo tiene más puntos.',blueWin:'¡GANA AZUL!',blueWinP:'Azul tiene más puntos.',
     perfect:'¡PERFECTO!',good:'¡BIEN!',ok:'OK',early:'¡MUY PRONTO!',late:'¡JUSTO!',ouch:'¡AY!',wobbly:'¡TAMBALEO!',air:'AIRE',
-    hint:'TOCA EN VERDE = SALTO ALTO · DESLIZA = TRUCOS',ff:'FRONTFLIP',bf:'BACKFLIP'},
+    hint:'TOCA EN VERDE = SALTO ALTO · DESLIZA = TRUCOS',ff:'FRONTFLIP',bf:'BACKFLIP',mega:'¡MEGASALTO!',tot:'TOTAL',},
   it:{done:'FATTO',you2:'IL TUO SNOWBOARDER',cGear:'CASCO E TAVOLA',cTop:'MAGLIONE',cPants:'PANTALONI',cSkin:'PELLE',p1:'1 GIOCATORE',p2:'2 GIOCATORI',
     rule2:'Due giocatori, un telefono: Rosso e Blu si danno il turno. Passatevi il telefono dopo ogni manche.',
     title:'HALFPIPE!',intro:'Chi fa più punti: tu o il computer?',
@@ -206,7 +217,7 @@ const LANG={
     win:'VITTORIA!',winP:'Hai più punti del computer!',lose:'SCONFITTA!',loseP:'Il computer ha più punti.',tie:'PAREGGIO!',tieP:'Esattamente gli stessi punti!',
     redWin:'VINCE ROSSO!',redWinP:'Rosso ha più punti.',blueWin:'VINCE BLU!',blueWinP:'Blu ha più punti.',
     perfect:'PERFETTO!',good:'BENE!',ok:'OK',early:'TROPPO PRESTO!',late:'AL PELO!',ouch:'AHI!',wobbly:'TRABALLI!',air:'ARIA',
-    hint:'TOCCA SUL VERDE = SALTO ALTO · SCORRI = TRICK',ff:'FRONTFLIP',bf:'BACKFLIP'},
+    hint:'TOCCA SUL VERDE = SALTO ALTO · SCORRI = TRICK',ff:'FRONTFLIP',bf:'BACKFLIP',mega:'MEGA SALTO!',tot:'TOTALE',},
   pt:{done:'PRONTO',you2:'SEU SNOWBOARDER',cGear:'CAPACETE E PRANCHA',cTop:'BLUSA',cPants:'CALÇA',cSkin:'PELE',p1:'1 JOGADOR',p2:'2 JOGADORES',
     rule2:'Dois jogadores, um celular: Vermelho e Azul se revezam. Passem o celular depois de cada descida.',
     title:'HALFPIPE!',intro:'Quem faz mais pontos: você ou o computador?',
@@ -220,7 +231,7 @@ const LANG={
     win:'VITÓRIA!',winP:'Você fez mais pontos que o computador!',lose:'DERROTA!',loseP:'O computador fez mais pontos.',tie:'EMPATE!',tieP:'Exatamente os mesmos pontos!',
     redWin:'VERMELHO VENCE!',redWinP:'O Vermelho fez mais pontos.',blueWin:'AZUL VENCE!',blueWinP:'O Azul fez mais pontos.',
     perfect:'PERFEITO!',good:'BOM!',ok:'OK',early:'CEDO DEMAIS!',late:'NA HORA!',ouch:'AI!',wobbly:'BALANÇANDO!',air:'AR',
-    hint:'TOQUE NO VERDE = PULO ALTO · DESLIZE = MANOBRAS',ff:'FRONTFLIP',bf:'BACKFLIP'}
+    hint:'TOQUE NO VERDE = PULO ALTO · DESLIZE = MANOBRAS',ff:'FRONTFLIP',bf:'BACKFLIP',mega:'MEGASALTO!',tot:'TOTAL',}
 };
 let lang='de',T=LANG.de;
 const $=s=>document.querySelector(s);
@@ -373,7 +384,7 @@ const SX=x=>cx+x*S,SY=y=>by0+camUp-y*S;
 
 /* ---------- riders ---------- */
 function mkRider(key,ai,demo){return{key,ai,demo:!!demo,s:-SMAX,dir:1,E2:E2N,air:false,side:-1,ay:0,vy:0,tAir:0,Tair:1,hmax:0,face0:1,
-  pressed:false,q:0,late:false,buf:[],tricks:[],ti:0,tp:0,crashed:false,crashT:9,wob:0,hits:0,run:0,best:null,done:false,wait:0.9,plan:null,last:null,pf:0,sq:1,trail:[],trailT:0}}
+  pressed:false,q:0,late:false,buf:[],tricks:[],ti:0,tp:0,crashed:false,crashT:9,wob:0,hits:0,run:0,best:null,done:false,wait:0.9,plan:null,last:null,apexT:null,peak:null,pf:0,sq:1,trail:[],trailT:0}}
 let rider=null;
 function approaching(r){return!r.air&&(Math.sign(r.s)===r.dir||Math.abs(r.s)<0.05)}
 function press(r){
@@ -411,7 +422,7 @@ function scoreJump(h,tr,st){
   let tp=sp*100+fl*150;if(n>1)tp*=1+0.5*(n-1);if(sp&&fl)tp*=1.25;if(st==='wobbly')tp*=0.5;
   return Math.round((h*METERS*60+tp)/10)*10}
 function land(r){
-  r.air=false;r.dir=-r.side;r.s=r.side*(SMAX-0.002);r.ay=0;r.sq=0.65;r.trail=[];
+  r.peak={h:r.hmax,side:r.side,t:0,at:r.apexT==null?9:r.apexT};r.apexT=null;r.air=false;r.dir=-r.side;r.s=r.side*(SMAX-0.002);r.ay=0;r.sq=0.65;r.trail=[];
   const left=r.tricks.length-r.ti;let st='clean';
   if(left>1||(left===1&&r.tp<0.72))st='crash';
   else if(left===1){st=r.tp>=0.93?'clean':'wobbly';r.ti++;r.tp=0}
@@ -438,11 +449,12 @@ function crossCenter(r){
 }
 function step(r,dt){
   if(r.wait>0){r.wait-=dt;return}
-  r.crashT+=dt;if(r.wob>0)r.wob-=dt;r.sq+=(1-r.sq)*Math.min(1,dt*9);
+  r.crashT+=dt;if(r.wob>0)r.wob-=dt;if(r.peak){r.peak.t+=dt;r.peak.at+=dt}r.sq+=(1-r.sq)*Math.min(1,dt*9);
   if(r.air&&r.ti<r.tricks.length){if((r.trailT+=dt)>0.035){r.trailT=0;r.trail.push(riderPose(r));if(r.trail.length>4)r.trail.shift()}}else if(r.trail.length&&(r.trailT+=dt)>0.035){r.trailT=0;r.trail.shift()}
   if(r.ai)aiThink(r);
   if(r.air){
     r.tAir+=dt;r.vy-=G*dt;r.ay+=r.vy*dt;
+    if(r.apexT==null&&r.vy<=0){r.apexT=0;if(r.hmax*METERS>=3)beep('super')}else if(r.apexT!=null)r.apexT+=dt;
     if(r.ti<r.tricks.length){r.tp+=dt/TD[r.tricks[r.ti]];if(r.tp>=1){r.tp=0;r.ti++}}
     if(r.vy<0&&r.ay<=0)land(r);
     return;
@@ -485,12 +497,17 @@ function pop(r,key,col){const c=r.air?{x:r.side*(F+R),y:HC+r.ay}:curve(r.s);pops
 function result(r,lines,pts,col){res={lines,pts,col,t:0}}
 let AC=null;
 function beep(kind){
-  if(!AC||(rider&&rider.demo))return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  if(!AC||state==='menu')return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
   const S_={good:[660,880,.08,'square'],super:[880,1320,.1,'square'],bad:[220,140,.18,'sawtooth'],flip:[660,1760,.22,'triangle'],crash:[180,60,.35,'sawtooth'],land:[520,780,.1,'square'],win:[523,1046,.4,'square'],tick:[440,440,.06,'square'],go:[880,880,.18,'square']}[kind];
   if(!S_)return;
   o.type=S_[3];o.frequency.setValueAtTime(S_[0],t);o.frequency.exponentialRampToValueAtTime(S_[1],t+S_[2]);
   g.gain.setValueAtTime(0.06,t);g.gain.exponentialRampToValueAtTime(0.0001,t+S_[2]+0.05);o.start(t);o.stop(t+S_[2]+0.06);
 }
+function fanfare(sad){if(!AC)return;const n=sad?[392,330,262]:[523,659,784,1046,784,1046];
+  n.forEach((f,i)=>{const t=AC.currentTime+i*0.13,o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.setValueAtTime(f,t);o.connect(g);g.connect(AC.destination);
+    g.gain.setValueAtTime(0.05,t);g.gain.exponentialRampToValueAtTime(0.0001,t+(i===n.length-1?0.5:0.12));o.start(t);o.stop(t+0.55)})}
+function whoosh(){if(!AC)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.setValueAtTime(300,t);o.frequency.exponentialRampToValueAtTime(90,t+0.6);
+  o.connect(g);g.connect(AC.destination);g.gain.setValueAtTime(0.07,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.7);o.start(t);o.stop(t+0.72)}
 function updFx(dt){
   parts=parts.filter(p=>(p.t-=dt)>0);parts.forEach(p=>{p.x+=p.vx*dt;p.vy-=G*dt;p.y+=p.vy*dt});
   pops=pops.filter(p=>(p.t+=dt)<0.9);
@@ -570,6 +587,23 @@ function drawPose(p,set,alpha){
   ctx.save();ctx.globalAlpha=alpha;ctx.translate(X,Y);ctx.rotate(p.ang);ctx.scale(1,p.sy||1);ctx.translate(0,-7);ctx.rotate(p.rot);ctx.scale(p.sx,1);
   ctx.drawImage(set[p.frame],-8,-8);ctx.restore();
 }
+const hCol=m=>m>=4.9?'#FF9A2E':m>=3?'#FFD23F':'#FFFFFF';
+function drawHeight(r){
+  const side=r.air?r.side:r.peak&&r.peak.side,pk=r.peak;
+  if(!r.air&&!(pk&&pk.t<1.3))return;
+  const xi=Math.round(SX(side*(F+R)))-side*14,base=Math.round(SY(HC));
+  const h=r.air?Math.max(0,r.ay):pk.h,top=Math.round(SY(HC+h)),m=h*METERS,fade=r.air?1:Math.max(0,1-(pk.t-0.8)/0.5);
+  ctx.save();ctx.globalAlpha=fade;
+  // ruler grows with the rider, a tick every metre
+  for(let y=top;y<base;y+=2)rect('#FFFFFF',xi,y,1,1);
+  for(let k=1;k<=Math.floor(m);k++){const ty=Math.round(SY(HC+k/METERS));rect('#FFFFFF',xi-2,ty,5,1);if(S>30)txt(String(k),xi+side*7,ty,'#FFFFFF',8)}
+  // the number climbs while going up; at the top it pops and stays a moment
+  const apexT=r.air?r.apexT:pk.at;
+  const big=apexT!=null&&apexT<0.35,col=hCol(m);
+  rect(col,xi-4,top,9,2);
+  txt(m.toFixed(1)+'M',xi-side*(big?30:22),top,col,big?16:8);
+  ctx.restore();
+}
 function drawRider(r){
   const p=riderPose(r),X=Math.round(SX(p.x)),Y=Math.round(SY(p.y)),set=PL[r.key].spr();
   r.trail.forEach((q,i)=>drawPose(q,set,0.1+0.07*i));
@@ -577,9 +611,7 @@ function drawRider(r){
   drawPose(p,set,1);
   if(r.crashed&&r.crashT<1.4)for(let i=0;i<3;i++){const a=clock*6+i*2.1;rect('#FFD23F',X+Math.cos(a)*6,Y-12+Math.sin(a)*2,1,1)}
   // height marker while flying
-  if(r.air&&r.hmax>0.05){const xi=Math.round(SX(r.side*(F+R)))-r.side*14,top=Math.round(SY(HC+r.hmax)),base=Math.round(SY(HC));
-    for(let y=top;y<base;y+=3)rect('#FFFFFF',xi,y,1,1);rect('#FFFFFF',xi-2,top,5,1);
-    txt((r.hmax*METERS).toFixed(1)+'M',xi-r.side*18,base-8,'#FFFFFF',8)}
+  drawHeight(r);
   // the tricks you asked for: done (green), doing (gold), still to do (white) – red ones won't fit before landing
   const list=r.air?r.tricks:r.buf;
   if(list.length&&!r.crashed){
@@ -593,7 +625,7 @@ function drawRider(r){
 function drawMeter(r){
   if(!r||r.air||r.crashed||r.done||r.demo&&state!=='menu')return;
   if(!(Math.sign(r.s)===r.dir&&Math.abs(r.s)>F*0.4))return;
-  const f=r.pressed?r.pf:wallF(r.s),w=Math.round(Math.min(W*0.7,150)),x0=Math.round(W/2-w/2),y=Math.min(H-12,Math.round(SY(0))+18),hh=6;
+  const f=r.pressed?r.pf:wallF(r.s),w=Math.round(Math.min(W*0.7,150)),x0=Math.round(W/2-w/2),y=TOPM+6,hh=6;
   const at=t=>r.dir>0?x0+Math.round(t*w):x0+w-Math.round(t*w);
   rect('#1B1F3B',x0-2,y-2,w+4,hh+4);
   [[0,0.45,'#7A3036','#E83B3B'],[0.45,0.85,'#8A7A2E','#FFD23F'],[0.85,1,'#2E6B3A','#6CC24A']].forEach(([a,b,dim,lit])=>{
@@ -649,20 +681,49 @@ function startRun(){
 }
 function runOver(r){
   const p=cur();p.runs.push(r.run);p.total+=r.run;if(r.best&&(!p.best||r.best.pts>p.best.pts))p.best=r.best;
-  state='after';afterT=2.2;setTimeout(()=>{if(state==='after')res={lines:[T.run+' '+(Math.floor(turn/2)+1)],pts:r.run,col:'#FFFFFF',t:0}},500);
+  state='after';afterT=turn+1>=ROUNDS*2?1.6:2.2;setTimeout(()=>{if(state==='after')res={lines:[T.run+' '+(Math.floor(turn/2)+1)],pts:r.run,col:'#FFFFFF',t:0}},500);
+}
+let finT=0,conf=[],fworks=[],finWhy='tie',finWin=null;
+function outcome(){const[a,b]=players;
+  if(two)return a.total>b.total?['redWin',a]:b.total>a.total?['blueWin',b]:['tie',null];
+  return a.total>b.total?['win',a]:a.total<b.total?['lose',b]:['tie',null]}
+/* After the last run: the winner rides a victory run with big tricks, confetti and fireworks, then the score card. */
+function startFinale(){
+  [finWhy,finWin]=outcome();state='finale';finT=0;conf=[];fworks=[];res=null;pops=[];
+  $('#hud').hidden=true;$('#hint').hidden=true;
+  const key=finWin?finWin.key:players[0].key;SK=aiSkill(14);rider=mkRider(key,true,true);rider.wait=0.2;
+  fanfare(finWhy==='lose');cheer=99;
+}
+function finFx(dt){
+  cheer=1;
+  if(finWhy!=='lose'||Math.random()<0.3)for(let i=0;i<(conf.length<160?3:0);i++)conf.push({x:Math.random()*W,y:-4-Math.random()*20,vx:(Math.random()-0.5)*20,vy:20+Math.random()*30,c:['#E83B3B','#FFD23F','#2F7FE0','#6CC24A','#FF6FB5','#FF9A2E','#FFFFFF'][Math.floor(Math.random()*7)],ph:Math.random()*6});
+  conf.forEach(c=>{c.x+=(c.vx+Math.sin(clock*3+c.ph)*12)*dt;c.y+=c.vy*dt});conf=conf.filter(c=>c.y<H+4);
+  if(finWhy!=='lose'&&Math.random()<dt*1.6){const x=W*(0.15+Math.random()*0.7),y=TOPM+10+Math.random()*H*0.25,col=['#FFD23F','#FF6FB5','#6CC24A','#7FC8F0','#FF9A2E'][Math.floor(Math.random()*5)];
+    for(let i=0;i<24;i++){const a=i/24*Math.PI*2,v=30+Math.random()*25;fworks.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:0.9+Math.random()*0.4,col})}beep('flip')}
+  fworks.forEach(f=>{f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=25*dt;f.t-=dt});fworks=fworks.filter(f=>f.t>0);
+}
+function drawFinale(){
+  fworks.forEach(f=>rect(f.t>0.3||Math.floor(clock*20)%2?f.col:'#FFFFFF',f.x,f.y,1,1));
+  conf.forEach(c=>rect(c.c,c.x,c.y,Math.sin(clock*6+c.ph)>0?2:1,2));
+  if(state==='finale'){const sc=Math.min(1,finT*3),y=TOPM+Math.round(H*0.12),len=T[finWhy].length,sz=len*24<=W*0.92&&finT<0.4?24:len*16<=W*0.92?16:8;
+    txt(T[finWhy],W/2,y+Math.round(Math.sin(clock*5)*3),finWhy==='lose'?'#E83B3B':'#FFD23F',sc<1?8:sz)}
 }
 function showEnd(refresh){
   state='end';$('#endOv').hidden=false;$('#hud').hidden=true;$('#hint').hidden=true;
-  const[a,b]=players;let why;
-  if(two)why=a.total>b.total?'redWin':b.total>a.total?'blueWin':'tie';
-  else why=a.total>b.total?'win':a.total<b.total?'lose':'tie';
+  const[a,b]=players,why=outcome()[0],win=outcome()[1];
   $('#endTitle').textContent=T[why];$('#endTitle').className=why==='lose'?'':'good';
   $('#endText').textContent=T[why+'P'];
   const bestP=[a,b].filter(p=>p.best).sort((x,y)=>y.best.pts-x.best.pts)[0];
-  $('#endStats').innerHTML=scoreLines()+(bestP?`<span class="best">${T.best}: ${pname(bestP)} – ${bestP.best.name} (${bestP.best.pts})</span>`:'');
+  $('#trophy').hidden=why==='lose';
+  // score board: one row per player, runs and total; the total counts up
+  let h=`<table class="board"><tr><th></th>${Array.from({length:ROUNDS},(_,i)=>`<th>${T.run} ${i+1}</th>`).join('')}<th>${T.tot}</th></tr>`;
+  players.forEach(p=>{h+=`<tr class="${p===win?'win':''}"><td><i style="background:${PL[p.key].col()}"></i>${pname(p)}</td>${p.runs.map(v=>`<td>${v}</td>`).join('')}<td><b data-to="${p.total}">${refresh?p.total:0}</b></td></tr>`});
+  h+='</table>';
+  $('#endStats').innerHTML=h+(bestP?`<span class="best">${T.best}: ${pname(bestP)} – ${bestP.best.name} (${bestP.best.pts})</span>`:'');
+  if(!refresh){const els=[...document.querySelectorAll('#endStats b[data-to]')],t0=performance.now();
+    (function count(now){const k=Math.min(1,(now-t0)/1400),e=1-Math.pow(1-k,3);els.forEach(el=>el.textContent=Math.round(+el.dataset.to*e));if(k<1&&state==='end')requestAnimationFrame(count);else if(k>=1)beep('super')})(t0)}
   $('#againBtn').textContent=!two&&why==='win'?T.next:T.retry;
   if(!refresh){
-    beep(why==='lose'?'crash':'win');
     if(!two&&why==='win'){if(level+1>reached){reached=level+1;try{localStorage.setItem('halfpipe.reach',reached)}catch(_){}}pick=level+1}else if(!two)pick=level;
     fitTitles();$('#againBtn').focus();
   }else fitTitles();
@@ -712,7 +773,7 @@ $('#menuBtn').onclick=toMenu;
 /* ---------- input: tap = jump, swipe = trick ---------- */
 const human=()=>state==='run'&&rider&&!rider.ai;
 let anchor=null;
-cv.addEventListener('pointerdown',e=>{if(e.cancelable)e.preventDefault();if(!human())return;anchor={id:e.pointerId,x:e.clientX,y:e.clientY};press(rider)});
+cv.addEventListener('pointerdown',e=>{if(e.cancelable)e.preventDefault();if(state==='finale'&&finT>0.8){showEnd();return}if(!human())return;anchor={id:e.pointerId,x:e.clientX,y:e.clientY};press(rider)});
 addEventListener('pointermove',e=>{if(!anchor||e.pointerId!==anchor.id||!human())return;
   const dx=e.clientX-anchor.x,dy=e.clientY-anchor.y;if(Math.hypot(dx,dy)<30)return;
   // one swipe = one trick, however long it is: the same direction counts again only after lifting the finger
@@ -727,20 +788,31 @@ addEventListener('keydown',e=>{if(e.repeat)return;
   if((e.code==='Enter'||e.code==='Space')&&document.activeElement===document.body){const b=!$('#startOv').hidden?$('#startBtn'):!$('#turnOv').hidden?$('#goBtn'):!$('#endOv').hidden?$('#againBtn'):null;if(b){e.preventDefault();b.click()}}});
 
 /* ---------- main loop ---------- */
-let last=0;
+let last=0,slow=1,slowOn=false,megaT=9;
+/* very high jumps (about 5 m and more, only with a tap right at the edge) go into slow motion around the top */
+function slowTarget(r){if(!r||!r.air||r.crashed)return 1;const nat=r.tAir/r.Tair;return r.hmax*METERS>=4.9&&nat>0.16&&nat<0.84?0.35:1}
 function frame(ts){
   const dt=Math.min(0.05,Math.max(0,(ts-last)/1000));last=ts;clock+=dt;
   if(state==='turn'&&autoT>0){autoT-=dt;if(autoT<=0)startRun()}
-  if(rider&&(state==='run'||state==='after'||state==='menu')){for(let i=0;i<3;i++)step(rider,dt/3)}
-  if(state==='after'){afterT-=dt;if(afterT<=0){turn++;if(turn>=ROUNDS*2)showEnd();else showTurn()}}
+  const st=slowTarget(rider);slow+=(st-slow)*Math.min(1,dt*(st<slow?7:5));
+  if(st<1&&!slowOn){slowOn=true;megaT=0;whoosh()}else if(st>=1)slowOn=false;if(megaT<9)megaT+=dt;
+  const sdt=dt*slow;
+  if(rider&&(state==='run'||state==='after'||state==='menu'||state==='finale'||state==='end')){for(let i=0;i<3;i++)step(rider,sdt/3)}
+  if(state==='finale'){finT+=dt;finFx(dt);if(finT>3.4)showEnd()}else if(state==='end')finFx(dt);
+  if(state==='after'){afterT-=dt;if(afterT<=0){turn++;if(turn>=ROUNDS*2)startFinale();else showTurn()}}
   if(hintT>0){hintT-=dt;$('#hint').hidden=hintT<=0||state!=='run'}
-  updFx(dt);
+  updFx(sdt);
   // camera: lift the view when the rider flies high
   let want=0;if(rider&&rider.air){const top=SY(HC+rider.ay)-camUp-(rider.tricks.length?44:28);want=Math.max(0,TOPM+6-top)}
   camUp+=(want-camUp)*Math.min(1,dt*(want>camUp?8:3));
   drawSky();drawBg();drawDeck();drawPipe();
   if(rider)drawRider(rider);
-  drawMeter(rider);drawFx();updHud();
+  drawMeter(rider);drawFx();
+  if(state==='finale'||state==='end')drawFinale();
+  if(slow<0.97){const k=(1-slow)/0.65,bh=Math.round(H*0.07*k);rect('#1B1F3B',0,0,W,bh);rect('#1B1F3B',0,H-bh,W,bh);
+    ctx.save();ctx.globalAlpha=0.18*k;rect('#7FC8F0',0,0,W,H);ctx.restore()}
+  if(megaT<1.6&&state!=='menu'){const l=T.mega.length,sz=l*16<=W*0.9?16:8;ctx.save();ctx.globalAlpha=megaT<1.2?1:1-(megaT-1.2)/0.4;txt(T.mega,W/2+(Math.floor(clock*14)%2),TOPM+26,Math.floor(clock*8)%2?'#FF9A2E':'#FFD23F',megaT<0.15?8:sz);ctx.restore()}
+  updHud();
   requestAnimationFrame(frame);
 }
 (function init(){

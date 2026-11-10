@@ -18,8 +18,11 @@ Play: https://diemmarkus.github.io/maze/
 
 A pixel-art snowboard halfpipe contest in the same look as Skiing. Players take turns: 2 rounds, each run is 6 jumps (right wall, left wall, …). Most points wins.
 
-- **Jump:** tap while riding up the wall. The jump height depends only on how close to the edge you tap. A bar under the pipe fills as you ride up (red = too early, yellow = ok, green = big air), and the edge of the wall flashes green at the best moment. No tap = only a tiny hop.
+- **Jump:** tap while riding up the wall. The jump height depends only on how close to the edge you tap. A bar at the top of the screen fills as you ride up (red = too early, yellow = ok, green = big air), and the edge of the wall flashes green at the best moment. No tap = only a tiny hop.
 - **Tricks:** swipe in the air (or on the way up after tapping) — left/right = a 360 spin, up = front flip, down = backflip. One swipe = one trick, however long it is (swipe twice for two). Swipes queue up and run one after another, so you can combine them. Arrows above the rider show the queue: green = done, gold = doing, white = coming, red = won't finish before landing.
+- **Height:** a ruler grows next to the rider with a mark every metre and the height counting up; at the top it pops (white, gold from 3 m, orange from about 5 m) and stays a moment after the landing.
+- **Slow motion:** mega jumps (about 5 m and more — only with a tap right at the edge) go into slow motion around the top, with black bars and a *MEGA AIR!* banner. Tricks slow down too, so you get more time to swipe.
+- **Finale:** after the last run the winner rides a victory run with fanfare, confetti and fireworks and the crowd cheering (tap to skip), then a trophy and a score board with both runs and the totals counting up.
 - **Animation:** spins turn the rider through side, front and back views; flips are done tucked with a grab; big airs get a grab; crouch before the jump, stretch on take-off, squash on landing, and a short motion trail during tricks.
 - **Landing:** if a trick isn't finished when you land you fall on your face and the jump scores 0. Almost finished = a wobbly landing with half trick points.
 - **Points:** height (60 per metre) plus tricks (spin 100, flip 150), multiplied for combos (×1.5 for 2 tricks, ×2 for 3, …) and ×1.25 for mixing spins and flips.
