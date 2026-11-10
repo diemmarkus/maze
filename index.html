@@ -80,6 +80,10 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
 .more .friend+.friend{margin-top:16px;transform:rotate(-.6deg)}
 .webar h2{color:#7FC8F0}
 .webar .go{background:#FF9A2E}
+/* the secret one: a tiny glider under the languages, looks like decoration */
+.secret{display:block;width:22px;height:22px;margin:26px auto 0;opacity:.32;transition:opacity .2s}
+.secret:hover,.secret:focus-visible{opacity:.9;outline:none}
+.secret svg{display:block;width:100%;height:100%}
 </style>
 </head>
 <body>
@@ -194,6 +198,7 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
     </a>
   </div>
   <div class="langs" id="langs" role="group" aria-label="Language"></div>
+  <a class="secret" href="life/" aria-label="?"><svg id="glider" viewBox="0 0 6 6" shape-rendering="crispEdges" fill="#fff"></svg></a>
 </main>
 <script>
 // sparkles
@@ -205,6 +210,11 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
     e.style.setProperty('--d',(1.6+Math.random()*2.6)+'s');
     e.style.setProperty('--w',(-Math.random()*4)+'s');
     g.append(e)}})();
+// the glider walks through its four steps
+(()=>{const P=[[[1,0],[2,1],[0,2],[1,2],[2,2]],[[0,1],[2,1],[1,2],[2,2],[1,3]],[[2,1],[0,2],[2,2],[1,3],[2,3]],[[1,1],[2,2],[3,2],[1,3],[2,3]]];
+  const el=document.getElementById('glider');let k=0;
+  const show=()=>{el.innerHTML=P[k].map(([x,y])=>`<rect x="${x+1}" y="${y+1}" width="1" height="1"/>`).join('');k=(k+1)%4};
+  show();if(!matchMedia('(prefers-reduced-motion:reduce)').matches)setInterval(show,700)})();
 const L={
   de:{pipeT:'Spring aus der Halfpipe, kombinier Drehungen und Saltos und hol mehr Punkte.',doc:"Jonas' Spiele",title:"JONAS' SPIELE",sub:'Such dir ein Spiel aus!',mazeT:'Kipp das Handy und roll die Kugel ins Loch, bevor die Hecken zuwachsen.',skiT:'Tippe zur richtigen Zeit auf der Buckelpiste, spring über Schanzen und schlag den Computer.',arH:'SPIELE IN AR',arT:'WebAR-Experimente – auch Skiing an deiner Wand.',play:'SPIELEN!',soon:'KOMMT BALD',more:'MEHR SPIELE',annaH:'ANNAS ABENTEUER',annaT:'Danger in the Jungle und mehr.'},
   en:{pipeT:'Fly out of the halfpipe, combine spins and flips and score more points.',doc:"Jonas's Games",title:"JONAS'S GAMES",sub:'Pick a game!',mazeT:'Tilt the phone and roll the ball into the hole before the hedges grow shut.',skiT:'Tap at the right moment on the bumps, fly off ramps and beat the computer.',arH:'GAMES IN AR',arT:'WebAR experiments – including Skiing on your wall.',play:'PLAY!',soon:'COMING SOON',more:'MORE GAMES',annaH:"ANNA'S ADVENTURES",annaT:'Danger in the Jungle and more.'},

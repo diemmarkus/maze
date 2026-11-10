@@ -8,9 +8,23 @@ Comic-style phone games by Jonas. The start page (`index.html`) lets you pick a 
 | Skiing | [`skiing/`](skiing/) | playable |
 | Halfpipe | [`halfpipe/`](halfpipe/) | playable |
 
+There's also a secret one: the tiny glider under the language buttons opens **Leben** ([`life/`](life/)).
+
 At the bottom, **Mehr Spiele** links to Anna's start page ([Abenteuer](https://diemmarkus.github.io/danger-in-the-jungle/)) and to the [WebAR experiments](https://diemmarkus.github.io/WebAR/) (Skiing AR lives there).
 
 Play: https://diemmarkus.github.io/maze/
+
+---
+
+## Leben (Game of Life) — secret
+
+Conway's Game of Life in the pixel look of Skiing. Not on the game list: tap the faint glider under the language buttons on the start page.
+
+- **Touch to bring cells to life:** tap and drag to draw living cells. Start on a living cell and you erase instead. Several fingers work at once, also while it's running.
+- **Yellow button = touch tool:** pen, glider, spaceship or boom (a random burst). With the last three, every tap drops that pattern, pointing in a random direction.
+- **Buttons:** play/pause, one step, speed 1×/2×/4×, random fill, clear.
+- Cells change colour as they age (white newborn → gold → orange → red → purple, blue for cells that stay put); dying cells leave a short shadow. The edges wrap around.
+- Keyboard: Space = play/pause, → = one step, T = next tool.
 
 ---
 
