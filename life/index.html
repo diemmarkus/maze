@@ -40,6 +40,11 @@ a.chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
 .bar svg{width:26px;height:26px;display:block}
 #toolBtn{flex-basis:64px;background:var(--gold)}
 #toolBtn canvas{width:30px;height:30px;image-rendering:pixelated;image-rendering:crisp-edges}
+/* clean view: everything hidden except a faint eye in the corner to bring it back */
+body.clean .top,body.clean .bar,body.clean .hint{display:none}
+#showBtn{position:fixed;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));width:44px;height:44px;padding:8px;background:none;border:0;opacity:.3;cursor:pointer}
+#showBtn:hover,#showBtn:focus-visible{opacity:.8;outline:none}
+#showBtn svg{display:block;width:100%;height:100%}
 .hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom,0px));font-family:var(--pix);font-size:10px;line-height:1.5;text-align:center;background:var(--white);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:6px 9px;pointer-events:none;width:max-content;max-width:calc(100% - 40px);transition:opacity .3s}
 .hint.off{opacity:0}
 </style>
@@ -54,6 +59,7 @@ a.chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
   <div class="zoom"><button type="button" class="chip" id="lessBtn" aria-label="−">−</button><button type="button" class="chip" id="moreBtn" aria-label="+">+</button></div>
 </div>
 <div class="hint" id="hint"></div>
+<button type="button" id="showBtn" aria-label="Show buttons" hidden><svg viewBox="0 0 12 12" shape-rendering="crispEdges"><path d="M4 3h4v1h2v1h1v2h-1v1h-2v1h-4v-1h-2v-1h-1v-2h1v-1h2Z" fill="#fff"/><rect x="5" y="5" width="2" height="2" fill="#000"/></svg></button>
 <div class="bar">
   <button type="button" id="playBtn" aria-label="Play/Pause"></button>
   <button type="button" id="stepBtn" aria-label="Step">
@@ -64,6 +70,7 @@ a.chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
   <button type="button" id="bwBtn" aria-label="S/W" aria-pressed="false">
     <svg viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="1" width="10" height="10" fill="#1B1F3B"/><rect x="2" y="2" width="4" height="8" fill="#fff"/><rect x="6" y="2" width="4" height="8" fill="#000"/></svg>
   </button>
+  <button type="button" id="hideBtn" aria-label="Hide buttons"><svg viewBox="0 0 12 12" shape-rendering="crispEdges"><path d="M4 3h4v1h2v1h1v2h-1v1h-2v1h-4v-1h-2v-1h-1v-2h1v-1h2Z" fill="#1B1F3B"/><path d="M4 4h4v1h1v2h-1v1h-4v-1h-1v-2h1Z" fill="#fff"/><rect x="5" y="5" width="2" height="2" fill="#1B1F3B"/><path d="M1 1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1Z" fill="#E83B3B"/></svg></button>
   <button type="button" id="clrBtn" aria-label="Clear">
     <svg viewBox="0 0 12 12" shape-rendering="crispEdges"><path d="M2 2h2v1h1v1h2v-1h1v-1h2v2h-1v1h-1v2h1v1h1v2h-2v-1h-1v-1h-2v1h-1v1h-2v-2h1v-1h1v-2h-1v-1h-1Z" fill="#1B1F3B"/></svg>
   </button>
@@ -117,8 +124,10 @@ function resize(){
   W=innerWidth;H=innerHeight;
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   // grid fits between the chips on top and the buttons at the bottom
-  const y0=document.querySelector('.top').getBoundingClientRect().bottom+8;
-  const y1=document.querySelector('.bar').getBoundingClientRect().top-8;
+  // (clean view: the whole screen)
+  const clean=document.body.classList.contains('clean');
+  const y0=clean?6:document.querySelector('.top').getBoundingClientRect().bottom+8;
+  const y1=clean?H-6:document.querySelector('.bar').getBoundingClientRect().top-8;
   const base=Math.max(11,Math.round(Math.min(W,H)/28));
   zoom=Math.max(ZMIN,Math.min(zoom,ZMAX));
   cs=Math.max(CS_MIN,Math.round(base/Math.pow(Math.SQRT2,zoom)));
@@ -235,6 +244,14 @@ try{bw=localStorage.getItem('life.color')!=='1'}catch(_){}
 const bwBtn=document.getElementById('bwBtn');
 function drawBw(){bwBtn.classList.toggle('on',bw);bwBtn.setAttribute('aria-pressed',bw);document.body.classList.toggle('bw',bw);dirty=true}
 bwBtn.onclick=()=>{bw=!bw;try{localStorage.setItem('life.color',bw?'0':'1')}catch(_){}drawBw()};
+// hide all buttons and chips; the grid then fills the screen
+function setClean(on){
+  document.body.classList.toggle('clean',on);
+  document.getElementById('showBtn').hidden=!on;
+  resize();
+}
+document.getElementById('hideBtn').onclick=()=>setClean(true);
+document.getElementById('showBtn').onclick=()=>setClean(false);
 document.getElementById('clrBtn').onclick=()=>{clearAll();running=true;drawPlay()};
 document.getElementById('moreBtn').onclick=()=>{zoom++;resize()};
 document.getElementById('lessBtn').onclick=()=>{zoom--;resize()};
@@ -244,6 +261,7 @@ addEventListener('keydown',e=>{
   if(e.code==='Space'){e.preventDefault();playBtn.onclick()}
   else if(e.code==='ArrowRight')document.getElementById('stepBtn').onclick();
   else if(e.key==='b')bwBtn.onclick();
+  else if(e.key==='h')setClean(!document.body.classList.contains('clean'));
   else if(e.key==='t')document.getElementById('toolBtn').onclick();
 });
 

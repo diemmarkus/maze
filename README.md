@@ -24,9 +24,10 @@ Conway's Game of Life in the pixel look of Skiing. Not on the game list: tap the
 - **Yellow button = touch tool:** pen, glider, spaceship or boom (a random burst). With the last three, every tap drops that pattern, pointing in a random direction.
 - **Buttons:** play/pause, one step, speed 1×/2×/4×, clear. It starts with a random fill.
 - **Black & white** is the default: white cells on black. The half-black button switches to colour (remembered on the phone).
+- **Eye button:** hides all buttons and chips, the grid fills the whole screen. Tap the faint eye in the bottom-right corner to bring them back.
 - **+ / − (top right):** + doubles the number of cells (smaller cells), − halves it. What's alive stays in the middle.
 - In colour mode, cells change colour as they age (white newborn → gold → orange → red → purple, blue for cells that stay put); dying cells leave a short shadow. The edges wrap around.
-- Keyboard: Space = play/pause, → = one step, T = next tool, +/− = more/fewer cells, B = black & white.
+- Keyboard: Space = play/pause, → = one step, T = next tool, +/− = more/fewer cells, B = black & white, H = hide buttons.
 
 ---
 
