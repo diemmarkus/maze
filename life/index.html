@@ -61,9 +61,6 @@ a.chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
   </button>
   <button type="button" id="toolBtn" aria-label="Tool"><canvas id="toolCv" width="7" height="7"></canvas></button>
   <button type="button" id="speedBtn" aria-label="Speed">1×</button>
-  <button type="button" id="rndBtn" aria-label="Random">
-    <svg viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="1" width="10" height="10" fill="#1B1F3B"/><rect x="2" y="2" width="8" height="8" fill="#fff"/><g fill="#E83B3B"><rect x="3" y="3" width="2" height="2"/><rect x="5" y="5" width="2" height="2"/><rect x="7" y="7" width="2" height="2"/></g></svg>
-  </button>
   <button type="button" id="bwBtn" aria-label="S/W" aria-pressed="false">
     <svg viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="1" y="1" width="10" height="10" fill="#1B1F3B"/><rect x="2" y="2" width="4" height="8" fill="#fff"/><rect x="6" y="2" width="4" height="8" fill="#000"/></svg>
   </button>
@@ -232,13 +229,12 @@ document.getElementById('stepBtn').onclick=()=>{running=false;drawPlay();step()}
 document.getElementById('toolBtn').onclick=()=>{tool=(tool+1)%PATTERNS.length;drawTool();showHint(T.tools[tool],1200)};
 const speedBtn=document.getElementById('speedBtn');
 speedBtn.onclick=()=>{speedI=(speedI+1)%SPEEDS.length;speedBtn.textContent=SPEED_L[speedI]};
-document.getElementById('rndBtn').onclick=()=>{randomize();if(!running){running=true;drawPlay()}};
-// black & white: white cells on black, no age colours, no shadows (remembered on the phone)
-let bw=false;
-try{bw=localStorage.getItem('life.bw')==='1'}catch(_){}
+// black & white (default): white cells on black, no age colours, no shadows (remembered on the phone)
+let bw=true;
+try{bw=localStorage.getItem('life.color')!=='1'}catch(_){}
 const bwBtn=document.getElementById('bwBtn');
 function drawBw(){bwBtn.classList.toggle('on',bw);bwBtn.setAttribute('aria-pressed',bw);document.body.classList.toggle('bw',bw);dirty=true}
-bwBtn.onclick=()=>{bw=!bw;try{localStorage.setItem('life.bw',bw?'1':'0')}catch(_){}drawBw()};
+bwBtn.onclick=()=>{bw=!bw;try{localStorage.setItem('life.color',bw?'0':'1')}catch(_){}drawBw()};
 document.getElementById('clrBtn').onclick=()=>{clearAll();running=true;drawPlay()};
 document.getElementById('moreBtn').onclick=()=>{zoom++;resize()};
 document.getElementById('lessBtn').onclick=()=>{zoom--;resize()};
