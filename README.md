@@ -6,10 +6,24 @@ Comic-style phone games by Jonas. The start page (`index.html`) lets you pick a 
 |---|---|---|
 | Irrgarten | [`irrgarten/`](irrgarten/) | playable |
 | Skiing | [`skiing/`](skiing/) | playable |
+| Halfpipe | [`halfpipe/`](halfpipe/) | playable |
 
 At the bottom, **Mehr Spiele** links to Anna's start page ([Abenteuer](https://diemmarkus.github.io/danger-in-the-jungle/)) and to the [WebAR experiments](https://diemmarkus.github.io/WebAR/) (Skiing AR lives there).
 
 Play: https://diemmarkus.github.io/maze/
+
+---
+
+## Halfpipe
+
+A pixel-art halfpipe contest in the same look as Skiing. Players take turns: 2 rounds, each run is 6 jumps (right wall, left wall, …). Most points wins.
+
+- **Jump:** tap while riding up the wall. The top of each wall is yellow (orange right at the edge) — the closer to the edge you tap, the higher you fly (up to about 6 m). Tapping in the flat counts as too early; a tap a split second after the edge still gives a slightly smaller jump.
+- **Tricks:** swipe in the air (or on the way up after tapping) — left/right = a 360 spin, up = front flip, down = backflip. Swipes queue up and run one after another, so you can combine them. Arrows above the skier show the queue: green = done, gold = doing, white = coming, red = won't finish before landing.
+- **Landing:** if a trick isn't finished when you land you fall on your face and the jump scores 0. Almost finished = a wobbly landing with half trick points.
+- **Points:** height (60 per metre) plus tricks (spin 100, flip 150), multiplied for combos (×1.5 for 2 tricks, ×2 for 3, …) and ×1.25 for mixing spins and flips.
+- **1 player:** against the computer, which rides its runs in between yours (tap *Watch* or wait). Beat it to unlock the next level — the computer gets better and the scenery rotates (day, sunset, forest, night). **2 players:** Red and Blue take turns on one phone.
+- Uses the same skier as Skiing (picker on the start screen). Keyboard: Space = jump, arrow keys / WASD = tricks.
 
 ---
 

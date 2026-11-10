@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#3E8EDE">
+<title>Halfpipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;600&display=swap">
+<style>
+/* Same look as Skiing: full-screen pixel canvas scaled up crisp, pixel HUD on top, overlay cards for menu, turns and results. */
+:root{
+  --ink:#1B1F3B; --sky:#3E8EDE; --snow:#F4FAFF; --pop:#E83B3B; --gold:#FFD23F; --orange:#FF9A2E;
+  --cpu:#A9D4F5; --white:#FFFFFF;
+  --pix:"Press Start 2P",ui-monospace,monospace;
+  --body:"Pixelify Sans","Press Start 2P",ui-monospace,monospace;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--sky)}
+body{font-family:var(--body);color:var(--ink);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+#c{position:fixed;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;display:block}
+.hud{position:fixed;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));display:grid;gap:8px;pointer-events:none}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{font-family:var(--pix);font-size:11px;line-height:1;background:var(--white);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:6px 7px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip.who{color:var(--white);text-shadow:1px 1px 0 var(--ink)}
+.chip.sc{font-size:10px;padding:5px 6px;opacity:.75}
+.chip.sc.on{background:var(--gold);opacity:1}
+.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(27,31,59,.28)}
+.card{box-sizing:border-box;width:min(350px,100%);max-height:100%;overflow-y:auto;background:var(--white);border:4px solid var(--ink);box-shadow:8px 8px 0 var(--ink);padding:18px 18px 16px;text-align:center}
+.card h1{font-family:var(--pix);font-size:30px;line-height:1.15;margin:4px 0 12px;color:var(--pop);text-shadow:3px 3px 0 var(--ink);white-space:nowrap}
+.card h1.good{color:var(--gold)}
+.card h1.c-me{color:var(--me,var(--pop))} .card h1.c-cpu{color:var(--cpu)} .card h1.c-red{color:var(--pop)} .card h1.c-blue{color:#2F7FE0}
+.card p{margin:6px 0;font-size:17px;line-height:1.3}
+.card ul{list-style:none;padding:0;margin:10px 0;text-align:left;font-size:15px;line-height:1.3;display:grid;gap:6px}
+.card li{padding-left:18px;position:relative}
+.card li::before{content:"";position:absolute;left:2px;top:6px;width:8px;height:8px;background:var(--gold);box-shadow:0 0 0 2px var(--ink)}
+.card li.g::before{background:var(--gold)} .card li.o::before{background:var(--orange)} .card li.r::before{background:var(--pop)} .card li.b::before{background:var(--cpu)}
+.btn{font-family:var(--pix);font-size:15px;line-height:1.2;background:var(--gold);color:var(--ink);border:4px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:12px 16px;cursor:pointer;margin-top:10px}
+.btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.btn:focus-visible,.lv button:focus-visible,.home:focus-visible{outline:3px dashed var(--pop);outline-offset:3px}
+.btn.alt{background:var(--white);font-size:12px;padding:9px 12px;box-shadow:3px 3px 0 var(--ink)}
+.lv{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-height:min(46vh,300px);overflow-y:auto;padding:4px 6px 6px 4px;margin:4px 0 6px}
+.lv button{font-family:var(--pix);font-size:13px;width:42px;height:38px;padding:0;background:var(--white);color:var(--ink);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);cursor:pointer}
+.lv button[aria-pressed="true"]{background:var(--pop);color:var(--white)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 2px}
+.modes button{font-family:var(--pix);font-size:11px;background:var(--white);color:var(--ink);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:8px 4px;cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--gold)}
+.modes button:focus-visible{outline:3px dashed var(--pop);outline-offset:2px}
+.card p.mode2{font-size:15px;margin:8px 0 0}
+.picks{display:grid;gap:10px;margin:12px 0 4px}
+.charBtn{box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;margin:0;text-align:left;font-family:var(--pix);font-size:11px;background:var(--white);color:var(--ink);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:5px 12px 5px 5px;cursor:pointer}
+.charBtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.charBtn:focus-visible{outline:3px dashed var(--pop);outline-offset:3px}
+.charBtn .mini{width:40px;height:40px;background:linear-gradient(var(--sky) 0 72%,var(--snow) 72%);border:2px solid var(--ink);display:grid;place-items:center}
+.charBtn canvas{width:32px;height:32px;image-rendering:pixelated;image-rendering:crisp-edges}
+.charBtn i{font-style:normal;color:var(--pop);margin-left:auto}
+.charBtn .num{font-size:15px;color:var(--ink);background:var(--gold)}
+body.two .charBtn{display:none}
+.charPrev{width:120px;height:120px;margin:4px auto 14px;border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);background:linear-gradient(var(--sky) 0 72%,var(--snow) 72%);display:grid;place-items:center}
+.charPrev canvas{width:96px;height:96px;image-rendering:pixelated;image-rendering:crisp-edges}
+.charRows{display:grid;gap:10px;text-align:left}
+.charRow b{display:block;font-family:var(--pix);font-size:9px;font-weight:400;margin-bottom:5px}
+.sw{display:flex;flex-wrap:wrap;gap:7px}
+.sw button{width:30px;height:30px;padding:0;border:3px solid var(--ink);box-shadow:2px 2px 0 var(--ink);cursor:pointer}
+.sw button[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:2px;box-shadow:none}
+.sw button:focus-visible{outline:3px dashed var(--pop);outline-offset:2px}
+.stats{font-family:var(--pix);font-size:11px;line-height:1.9;margin:10px 0 4px}
+.stats .best{display:block;font-family:var(--body);font-size:15px;line-height:1.3;margin-top:6px}
+.home{display:table;margin:14px auto 0;font-family:var(--pix);font-size:10px;color:var(--ink);text-decoration:none;border-bottom:3px solid var(--pop);padding-bottom:2px}
+.hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));font-family:var(--pix);font-size:10px;line-height:1.4;text-align:center;background:var(--white);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:6px 8px;pointer-events:none;width:max-content;max-width:calc(100% - 40px)}
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Halfpipe"></canvas>
+<div class="hud" id="hud" hidden>
+  <div class="row">
+    <div class="chip who" id="whoChip">DU</div>
+    <div class="chip" id="hitChip">1/6</div>
+    <div class="chip" id="rndChip">1/2</div>
+  </div>
+  <div class="row"><div class="chip sc" id="sc0">DU 0</div><div class="chip sc" id="sc1">CPU 0</div></div>
+</div>
+<div class="hint" id="hint" hidden></div>
+
+<div class="overlay" id="startOv">
+  <div class="card">
+    <h1 class="good" data-i18n="title">HALFPIPE!</h1>
+    <p data-i18n="intro"></p>
+    <div class="picks">
+      <button type="button" class="charBtn" id="charBtn" aria-haspopup="dialog"><span class="mini"><canvas id="charMini" width="16" height="16"></canvas></span><span data-i18n="you2">DEIN SKIFAHRER</span><i aria-hidden="true">▶</i></button>
+      <button type="button" class="charBtn" id="lvlBtn" aria-haspopup="dialog" hidden><span class="mini num" id="lvlNum">1</span><span data-i18n="from">LEVEL</span><i aria-hidden="true">▶</i></button>
+    </div>
+    <ul id="rules"></ul>
+    <div class="modes" id="modes" role="group"><button type="button" data-m="1" data-i18n="p1">1 SPIELER</button><button type="button" data-m="2" data-i18n="p2">2 SPIELER</button></div>
+    <p class="mode2" id="mode2" hidden data-i18n="rule2"></p>
+    <button class="btn" id="startBtn" data-i18n="start">LOS!</button>
+    <a class="home" href="../" data-i18n="home">← ALLE SPIELE</a>
+  </div>
+</div>
+<div class="overlay" id="charOv" hidden>
+  <div class="card" role="dialog" aria-labelledby="charTitle">
+    <h1 class="good" id="charTitle" data-i18n="you2">DEIN SKIFAHRER</h1>
+    <div class="charPrev"><canvas id="charCv" width="16" height="16"></canvas></div>
+    <div class="charRows" id="charRows"></div>
+    <button class="btn" id="charDone" data-i18n="done">FERTIG</button>
+  </div>
+</div>
+<div class="overlay" id="lvlOv" hidden>
+  <div class="card" role="dialog" aria-labelledby="lvlTitle">
+    <h1 class="good" id="lvlTitle" data-i18n="from">LEVEL</h1>
+    <div class="lv" id="lvRow" role="group" aria-labelledby="lvlTitle"></div>
+    <button class="btn" id="lvlDone" data-i18n="done">FERTIG</button>
+  </div>
+</div>
+<div class="overlay" id="turnOv" hidden>
+  <div class="card">
+    <h1 id="turnTitle">DU BIST DRAN!</h1>
+    <p id="turnText"></p>
+    <div class="stats" id="turnStats"></div>
+    <button class="btn" id="goBtn">LOS!</button><br>
+    <button class="btn alt" id="quitBtn" data-i18n="menu">MENÜ</button>
+  </div>
+</div>
+<div class="overlay" id="endOv" hidden>
+  <div class="card">
+    <h1 id="endTitle">GEWONNEN!</h1>
+    <p id="endText"></p>
+    <div class="stats" id="endStats"></div>
+    <button class="btn" id="againBtn">NOCHMAL</button><br>
+    <button class="btn alt" id="menuBtn" data-i18n="menu">MENÜ</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ---------- texts ---------- */
+const NB=' ';
+const LANG={
+  de:{done:'FERTIG',you2:'DEIN SKIFAHRER',cGear:'HELM, SKI & STÖCKE',cTop:'PULLOVER',cPants:'HOSE',cSkin:'HAUT',p1:'1 SPIELER',p2:'2 SPIELER',
+    rule2:'Zwei Spieler, ein Handy: Rot und Blau fahren abwechselnd. Gebt das Handy nach jedem Lauf weiter.',
+    title:'HALFPIPE!',intro:'Wer holt mehr Punkte – du oder der Computer?',
+    rules:[['g','Tippe, wenn du die Wand hinauffährst (gelber Schnee). Je näher an der Kante, desto höher springst du.'],
+      ['o','In der Luft wischen: links oder rechts = Drehung, rauf = Salto vorwärts, runter = Salto rückwärts. Tricks kannst du kombinieren!'],
+      ['r','Aber nicht zu viele: Ist ein Trick bei der Landung nicht fertig, landest du auf der Nase und der Sprung zählt nicht.'],
+      ['b','Punkte gibt es für Höhe und Tricks. Jeder fährt 2 Läufe mit 6 Sprüngen, immer abwechselnd.']],
+    start:'LOS!',watch:'ZUSCHAUEN',from:'LEVEL',home:'← ALLE SPIELE',menu:'MENÜ',next:'WEITER',retry:'NOCHMAL',
+    you:'DU',cpu:'CPU',red:'ROT',blue:'BLAU',turnMe:'DU BIST DRAN!',turnCpu:'CPU IST DRAN!',turnRed:'ROT IST DRAN!',turnBlue:'BLAU IST DRAN!',
+    round:'RUNDE',hit:'SPRUNG',pts:'PUNKTE',best:'Bester Sprung',run:'LAUF',
+    win:'GEWONNEN!',winP:'Du hast mehr Punkte als der Computer!',lose:'VERLOREN!',loseP:'Der Computer hat mehr Punkte.',tie:'UNENTSCHIEDEN!',tieP:'Genau gleich viele Punkte!',
+    redWin:'ROT GEWINNT!',redWinP:'Rot hat mehr Punkte.',blueWin:'BLAU GEWINNT!',blueWinP:'Blau hat mehr Punkte.',
+    perfect:'PERFEKT!',good:'GUT!',ok:'OK',early:'ZU FRÜH!',late:'KNAPP!',ouch:'AUTSCH!',wobbly:'WACKELIG!',air:'AIR',
+    hint:'TIPPEN AUF GELB = SPRINGEN · WISCHEN = TRICKS',ff:'FRONTFLIP',bf:'BACKFLIP'},
+  en:{done:'DONE',you2:'YOUR SKIER',cGear:'HELMET, SKIS & POLES',cTop:'SWEATER',cPants:'PANTS',cSkin:'SKIN',p1:'1 PLAYER',p2:'2 PLAYERS',
+    rule2:'Two players, one phone: Red and Blue take turns. Pass the phone after every run.',
+    title:'HALFPIPE!',intro:'Who scores more points – you or the computer?',
+    rules:[['g','Tap while riding up the wall (yellow snow). The closer to the edge, the higher you fly.'],
+      ['o','Swipe in the air: left or right = spin, up = front flip, down = backflip. You can combine tricks!'],
+      ['r','But not too many: if a trick isn’t finished when you land, you fall on your face and the jump scores nothing.'],
+      ['b','You score for height and tricks. Everyone rides 2 runs of 6 jumps, taking turns.']],
+    start:'GO!',watch:'WATCH',from:'LEVEL',home:'← ALL GAMES',menu:'MENU',next:'NEXT',retry:'AGAIN',
+    you:'YOU',cpu:'CPU',red:'RED',blue:'BLUE',turnMe:'YOUR TURN!',turnCpu:'CPU’S TURN!',turnRed:'RED’S TURN!',turnBlue:'BLUE’S TURN!',
+    round:'ROUND',hit:'JUMP',pts:'POINTS',best:'Best jump',run:'RUN',
+    win:'YOU WIN!',winP:'You scored more than the computer!',lose:'YOU LOSE!',loseP:'The computer scored more.',tie:'DRAW!',tieP:'Exactly the same score!',
+    redWin:'RED WINS!',redWinP:'Red scored more.',blueWin:'BLUE WINS!',blueWinP:'Blue scored more.',
+    perfect:'PERFECT!',good:'GOOD!',ok:'OK',early:'TOO EARLY!',late:'JUST IN TIME!',ouch:'OUCH!',wobbly:'WOBBLY!',air:'AIR',
+    hint:'TAP ON YELLOW = JUMP · SWIPE = TRICKS',ff:'FRONTFLIP',bf:'BACKFLIP'},
+  fr:{done:'OK',you2:'TON SKIEUR',cGear:'CASQUE, SKIS & BÂTONS',cTop:'PULL',cPants:'PANTALON',cSkin:'PEAU',p1:'1 JOUEUR',p2:'2 JOUEURS',
+    rule2:'Deux joueurs, un téléphone'+NB+': Rouge et Bleu jouent chacun son tour. Passez-vous le téléphone après chaque manche.',
+    title:'HALFPIPE'+NB+'!',intro:'Qui marque le plus de points'+NB+': toi ou l’ordinateur'+NB+'?',
+    rules:[['g','Tape quand tu montes le mur (neige jaune). Plus tu es près du bord, plus tu sautes haut.'],
+      ['o','Glisse le doigt en l’air'+NB+': gauche ou droite = vrille, haut = salto avant, bas = salto arrière. Tu peux combiner les figures'+NB+'!'],
+      ['r','Mais pas trop'+NB+': si une figure n’est pas finie à l’atterrissage, tu tombes sur le nez et le saut ne compte pas.'],
+      ['b','Les points viennent de la hauteur et des figures. Chacun fait 2 manches de 6 sauts, chacun son tour.']],
+    start:'GO'+NB+'!',watch:'REGARDER',from:'NIVEAU',home:'← TOUS LES JEUX',menu:'MENU',next:'SUITE',retry:'REJOUER',
+    you:'TOI',cpu:'CPU',red:'ROUGE',blue:'BLEU',turnMe:'À TOI'+NB+'!',turnCpu:'AU CPU'+NB+'!',turnRed:'À ROUGE'+NB+'!',turnBlue:'À BLEU'+NB+'!',
+    round:'MANCHE',hit:'SAUT',pts:'POINTS',best:'Meilleur saut',run:'MANCHE',
+    win:'GAGNÉ'+NB+'!',winP:'Tu as plus de points que l’ordinateur'+NB+'!',lose:'PERDU'+NB+'!',loseP:'L’ordinateur a plus de points.',tie:'ÉGALITÉ'+NB+'!',tieP:'Exactement le même score'+NB+'!',
+    redWin:'ROUGE GAGNE'+NB+'!',redWinP:'Rouge a plus de points.',blueWin:'BLEU GAGNE'+NB+'!',blueWinP:'Bleu a plus de points.',
+    perfect:'PARFAIT'+NB+'!',good:'BIEN'+NB+'!',ok:'OK',early:'TROP TÔT'+NB+'!',late:'JUSTE'+NB+'!',ouch:'AÏE'+NB+'!',wobbly:'ÇA VACILLE'+NB+'!',air:'AIR',
+    hint:'TAPE SUR LE JAUNE = SAUT · GLISSE = FIGURES',ff:'FRONTFLIP',bf:'BACKFLIP'},
+  es:{done:'LISTO',you2:'TU ESQUIADOR',cGear:'CASCO, ESQUÍS Y BASTONES',cTop:'JERSEY',cPants:'PANTALÓN',cSkin:'PIEL',p1:'1 JUGADOR',p2:'2 JUGADORES',
+    rule2:'Dos jugadores, un móvil: Rojo y Azul se turnan. Pasaos el móvil después de cada bajada.',
+    title:'¡HALFPIPE!',intro:'¿Quién consigue más puntos: tú o el ordenador?',
+    rules:[['g','Toca mientras subes la pared (nieve amarilla). Cuanto más cerca del borde, más alto saltas.'],
+      ['o','Desliza en el aire: izquierda o derecha = giro, arriba = mortal adelante, abajo = mortal atrás. ¡Puedes combinar trucos!'],
+      ['r','Pero no demasiados: si un truco no ha terminado al aterrizar, caes de cara y el salto no cuenta.'],
+      ['b','Hay puntos por altura y por trucos. Cada uno hace 2 bajadas de 6 saltos, por turnos.']],
+    start:'¡YA!',watch:'MIRAR',from:'NIVEL',home:'← TODOS LOS JUEGOS',menu:'MENÚ',next:'SIGUIENTE',retry:'OTRA VEZ',
+    you:'TÚ',cpu:'CPU',red:'ROJO',blue:'AZUL',turnMe:'¡TE TOCA!',turnCpu:'¡LE TOCA A CPU!',turnRed:'¡LE TOCA A ROJO!',turnBlue:'¡LE TOCA A AZUL!',
+    round:'RONDA',hit:'SALTO',pts:'PUNTOS',best:'Mejor salto',run:'BAJADA',
+    win:'¡GANASTE!',winP:'¡Tienes más puntos que el ordenador!',lose:'¡PERDISTE!',loseP:'El ordenador tiene más puntos.',tie:'¡EMPATE!',tieP:'¡Exactamente los mismos puntos!',
+    redWin:'¡GANA ROJO!',redWinP:'Rojo tiene más puntos.',blueWin:'¡GANA AZUL!',blueWinP:'Azul tiene más puntos.',
+    perfect:'¡PERFECTO!',good:'¡BIEN!',ok:'OK',early:'¡MUY PRONTO!',late:'¡JUSTO!',ouch:'¡AY!',wobbly:'¡TAMBALEO!',air:'AIRE',
+    hint:'TOCA EN AMARILLO = SALTO · DESLIZA = TRUCOS',ff:'FRONTFLIP',bf:'BACKFLIP'},
+  it:{done:'FATTO',you2:'IL TUO SCIATORE',cGear:'CASCO, SCI E BASTONI',cTop:'MAGLIONE',cPants:'PANTALONI',cSkin:'PELLE',p1:'1 GIOCATORE',p2:'2 GIOCATORI',
+    rule2:'Due giocatori, un telefono: Rosso e Blu si danno il turno. Passatevi il telefono dopo ogni manche.',
+    title:'HALFPIPE!',intro:'Chi fa più punti: tu o il computer?',
+    rules:[['g','Tocca mentre sali sulla parete (neve gialla). Più sei vicino al bordo, più salti in alto.'],
+      ['o','Scorri in aria: sinistra o destra = rotazione, su = salto in avanti, giù = salto all’indietro. Puoi combinare i trick!'],
+      ['r','Ma non troppi: se un trick non è finito all’atterraggio, cadi di faccia e il salto non conta.'],
+      ['b','Si fanno punti con l’altezza e i trick. Ognuno fa 2 manche da 6 salti, a turno.']],
+    start:'VIA!',watch:'GUARDA',from:'LIVELLO',home:'← TUTTI I GIOCHI',menu:'MENU',next:'AVANTI',retry:'ANCORA',
+    you:'TU',cpu:'CPU',red:'ROSSO',blue:'BLU',turnMe:'TOCCA A TE!',turnCpu:'TOCCA ALLA CPU!',turnRed:'TOCCA A ROSSO!',turnBlue:'TOCCA A BLU!',
+    round:'TURNO',hit:'SALTO',pts:'PUNTI',best:'Miglior salto',run:'MANCHE',
+    win:'VITTORIA!',winP:'Hai più punti del computer!',lose:'SCONFITTA!',loseP:'Il computer ha più punti.',tie:'PAREGGIO!',tieP:'Esattamente gli stessi punti!',
+    redWin:'VINCE ROSSO!',redWinP:'Rosso ha più punti.',blueWin:'VINCE BLU!',blueWinP:'Blu ha più punti.',
+    perfect:'PERFETTO!',good:'BENE!',ok:'OK',early:'TROPPO PRESTO!',late:'AL PELO!',ouch:'AHI!',wobbly:'TRABALLI!',air:'ARIA',
+    hint:'TOCCA SUL GIALLO = SALTO · SCORRI = TRICK',ff:'FRONTFLIP',bf:'BACKFLIP'},
+  pt:{done:'PRONTO',you2:'SEU ESQUIADOR',cGear:'CAPACETE, ESQUIS E BASTÕES',cTop:'BLUSA',cPants:'CALÇA',cSkin:'PELE',p1:'1 JOGADOR',p2:'2 JOGADORES',
+    rule2:'Dois jogadores, um celular: Vermelho e Azul se revezam. Passem o celular depois de cada descida.',
+    title:'HALFPIPE!',intro:'Quem faz mais pontos: você ou o computador?',
+    rules:[['g','Toque enquanto sobe a parede (neve amarela). Quanto mais perto da borda, mais alto você pula.'],
+      ['o','Deslize no ar: esquerda ou direita = giro, para cima = mortal para frente, para baixo = mortal para trás. Dá para combinar manobras!'],
+      ['r','Mas não exagere: se uma manobra não terminar na aterrissagem, você cai de cara e o salto não conta.'],
+      ['b','Os pontos vêm da altura e das manobras. Cada um faz 2 descidas de 6 saltos, revezando.']],
+    start:'VAI!',watch:'ASSISTIR',from:'NÍVEL',home:'← TODOS OS JOGOS',menu:'MENU',next:'PRÓXIMO',retry:'DE NOVO',
+    you:'VOCÊ',cpu:'CPU',red:'VERMELHO',blue:'AZUL',turnMe:'SUA VEZ!',turnCpu:'VEZ DA CPU!',turnRed:'VEZ DO VERMELHO!',turnBlue:'VEZ DO AZUL!',
+    round:'RODADA',hit:'SALTO',pts:'PONTOS',best:'Melhor salto',run:'DESCIDA',
+    win:'VITÓRIA!',winP:'Você fez mais pontos que o computador!',lose:'DERROTA!',loseP:'O computador fez mais pontos.',tie:'EMPATE!',tieP:'Exatamente os mesmos pontos!',
+    redWin:'VERMELHO VENCE!',redWinP:'O Vermelho fez mais pontos.',blueWin:'AZUL VENCE!',blueWinP:'O Azul fez mais pontos.',
+    perfect:'PERFEITO!',good:'BOM!',ok:'OK',early:'CEDO DEMAIS!',late:'NA HORA!',ouch:'AI!',wobbly:'BALANÇANDO!',air:'AR',
+    hint:'TOQUE NO AMARELO = PULO · DESLIZE = MANOBRAS',ff:'FRONTFLIP',bf:'BACKFLIP'}
+};
+let lang='de',T=LANG.de;
+const $=s=>document.querySelector(s);
+function fitTitles(){document.querySelectorAll('.card h1').forEach(h=>{h.style.fontSize='';const ov=h.closest('.overlay'),hid=ov.hidden;ov.hidden=false;let fs=parseFloat(getComputedStyle(h).fontSize);while(h.scrollWidth>h.clientWidth+1&&fs>12){fs-=2;h.style.fontSize=fs+'px'}ov.hidden=hid})}
+function setLang(k,save){
+  lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=T[el.dataset.i18n]});
+  $('#rules').innerHTML='';T.rules.forEach(([c,t])=>{const li=document.createElement('li');li.className=c;li.textContent=t;$('#rules').append(li)});
+  $('#hint').textContent=T.hint;
+  if(save)try{localStorage.setItem('irrgarten.lang',lang)}catch(_){}
+  if(state==='end')showEnd(true);if(state==='turn')showTurn(true);
+  paintChar();fitTitles();
+}
+
+/* ---------- canvas ---------- */
+const cv=$('#c'),ctx=cv.getContext('2d');
+let W=200,H=400;
+function resize(){
+  const dpr=window.devicePixelRatio||1,dw=Math.round(innerWidth*dpr),dh=Math.round(innerHeight*dpr);
+  const sc=Math.max(1,Math.round(Math.max(dw,dh)/330));
+  W=Math.ceil(dw/sc);H=Math.ceil(dh/sc);cv.width=W;cv.height=H;ctx.imageSmoothingEnabled=false;layout();
+}
+function rng(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+/* ---------- sprites (shared with Skiing) ---------- */
+const SKIER=[
+"................",
+".........KKK....",
+"........KHHHK...",
+".L......KHHGGK..",
+".LL......KSSK...",
+".L.LLL.KJJJK....",
+"......LKJJJJK...",
+".....KJJJJJJK...",
+".....KJJJJKLSK..",
+"....KPPPPPK.....",
+".....KPPPPPK....",
+"......KKPPPK....",
+".......KPPK.....",
+"......KBBBBK...W",
+"..WWWWWWWWWWWWW.",
+".VVVVVVVVVVVVVV."];
+const PINE=[
+"...G...",
+"..GGG..",
+".GGgGG.",
+"..GGG..",
+".GGGgG.",
+"GGgGGGG",
+".GGGGg.",
+"GGGGGGG",
+"...T...",
+"...T..."];
+const ARROW=["...K...","..KWK..",".KWWWK.","KWWWWWK","KKKWKKK","..KWK..","..KKK.."];
+function shade(hex,f){const n=parseInt(hex.slice(1),16);return'#'+[16,8,0].map(b=>Math.round(((n>>b)&255)*f).toString(16).padStart(2,'0')).join('')}
+function sprite(rows,pal){if(pal.W&&!pal.V)pal=Object.assign({},pal,{V:shade(pal.W,0.72)});const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const g=c.getContext('2d');
+  rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(pal[ch]){g.fillStyle=pal[ch];g.fillRect(x,y,1,1)}}));return c}
+const OUTFIT={
+  g:['#FFD23F','#FF8C1A','#E83B3B','#6CC24A','#FF6FB5','#2F7FE0','#8B4FD8','#3A3F5C'],
+  j:['#E83B3B','#FF9A2E','#FFD23F','#3FAE5A','#8B4FD8','#FF6FB5','#2F7FE0'],
+  p:['#2B4C9B','#3A3F5C','#C0392B','#2E7D4F','#8A93A8','#7A4A22','#F4F4F4'],
+  s:['#FCDCC4','#F2B58C','#E3A672','#C68642','#8D5524','#5C3A21']};
+/* Same skier as in Skiing (same saved choice); random until the player picks one. */
+const look={};for(const k in OUTFIT)look[k]=Math.floor(Math.random()*OUTFIT[k].length);
+try{const s=JSON.parse(localStorage.getItem('skiing.char')||'null');if(s)for(const k in look)if(OUTFIT[k][s[k]]!=null)look[k]=s[k]}catch(_){}
+const meColor=()=>OUTFIT.j[look.j];
+function makeMe(){const g=OUTFIT.g[look.g];return sprite(SKIER,{K:'#1B1F3B',H:g,G:'#38D1E0',S:OUTFIT.s[look.s],J:OUTFIT.j[look.j],P:OUTFIT.p[look.p],B:'#3A3F5C',L:g,W:g})}
+let SPR_ME=makeMe();
+const SPR_RED=sprite(SKIER,{K:'#1B1F3B',H:'#FFD23F',G:'#38D1E0',S:'#F2B58C',J:'#E83B3B',P:'#2B4C9B',B:'#3A3F5C',L:'#9AA3B5',W:'#FF8C1A'});
+const SPR_AI=sprite(SKIER,{K:'#6F7FA8',H:'#FFFFFF',G:'#BFEFF5',S:'#F8D9C4',J:'#9CCFF6',P:'#B3B0EA',B:'#8E97B8',L:'#D0D6E2',W:'#B8E59E'});
+const SPR_BLUE=sprite(SKIER,{K:'#1B1F3B',H:'#FFFFFF',G:'#FFD23F',S:'#F2B58C',J:'#2F7FE0',P:'#1B1F3B',B:'#3A3F5C',L:'#9AA3B5',W:'#6CC24A'});
+const SPR_PINE=sprite(PINE,{G:'#2F7D4A',g:'#4FA36A',T:'#6B4A2B'});
+const arrowCache={};function arrowSpr(col){return arrowCache[col]||(arrowCache[col]=sprite(ARROW,{K:'#1B1F3B',W:col}))}
+const AROT={u:0,r:Math.PI/2,d:Math.PI,l:-Math.PI/2};
+const PL={me:{name:'you',col:()=>meColor(),spr:()=>SPR_ME},cpu:{name:'cpu',col:()=>'#A9D4F5',spr:()=>SPR_AI},
+  red:{name:'red',col:()=>'#E83B3B',spr:()=>SPR_RED},blue:{name:'blue',col:()=>'#2F7FE0',spr:()=>SPR_BLUE}};
+
+/* ---------- looks: day, sunset, forest, night — one per level ---------- */
+const THEMES=[
+  {sky:['#3E8EDE','#4F9CE6','#62ABEE','#7ABBF3','#94CAF6','#B2DAF9'],sun:'#FFF4B0',far:'#9CB8DA',cap:'#EEF5FC',mid:'#C9DDF0',pineFar:'#5E8FB5',cloud:'#FFFFFF',cloud2:'#E3F1FC'},
+  {sky:['#4B3B8F','#7A4A9E','#B45C93','#E3768A','#F59D7E','#FBC48A'],sun:'#FFE08A',far:'#8A6FA8',cap:'#F7D8E6',mid:'#C59AB8',pineFar:'#6F5A8C',cloud:'#FFD6C9',cloud2:'#F2B5B0'},
+  {sky:['#3F9BD6','#57AEDD','#74BFE3','#93CFE8','#B3DEEC','#CFEAEF'],sun:'#FFF4B0',far:'#7FA88F',cap:'#EAF4EE',mid:'#9CC3A4',pineFar:'#3F7A58',cloud:'#FFFFFF',cloud2:'#E3F1FC'},
+  {sky:['#0E1433','#15204A','#1D2D5E','#283C73','#344C86','#435C96'],sun:'#F4F1D0',moon:true,far:'#3D4F80',cap:'#C9D6EE',mid:'#566A9C',pineFar:'#2C3B66',cloud:'#56688F',cloud2:'#43547A',stars:true}];
+let theme=THEMES[0];
+const BG=(()=>{const r=rng(4242),n=1024,far=new Float32Array(n),mid=new Float32Array(n),a=[r()*6,r()*6,r()*6,r()*6,r()*6];
+  for(let i=0;i<n;i++){const t=i/n*2*Math.PI;far[i]=46+20*Math.sin(t*3+a[0])+11*Math.sin(t*7+a[1])+6*Math.sin(t*17+a[2])+3*Math.sin(t*41);mid[i]=20+8*Math.sin(t*4+a[3])+5*Math.sin(t*11+a[4])}
+  const clouds=[];for(let i=0;i<6;i++)clouds.push({x:r()*600,y:20+r()*90,w:18+Math.floor(r()*22)});
+  const crowd=[];for(let i=0;i<40;i++)crowd.push({d:0.3+i*0.2+r()*0.06,side:i%2?1:-1,j:['#E83B3B','#FFD23F','#2F7FE0','#3FAE5A','#FF6FB5','#FF9A2E','#8B4FD8'][Math.floor(r()*7)],h:['#FFD23F','#E83B3B','#2F7FE0','#FFFFFF','#3A3F5C'][Math.floor(r()*5)],s:['#FCDCC4','#F2B58C','#C68642','#8D5524'][Math.floor(r()*4)],ph:r()*6});
+  return{n,far,mid,clouds,crowd}})();
+
+/* ---------- the pipe (units: transition radius = 1) ----------
+   A flat bottom, two round transitions and a short vertical bit up to the edge (coping).
+   s = position along the surface, 0 in the middle, ±SMAX at the edges. */
+const R=1,F=0.8,EV=0.18,QA=Math.PI/2,SMAX=F+QA+EV,HC=R+EV,WIN=SMAX-F,G=7,VB=1.9,VMAX=6,E2N=VB*VB+2*G*HC,METERS=2.4;
+const TD={l:.42,r:.42,u:.52,d:.52},HITS=6,ROUNDS=2,HMAX=VMAX*VMAX/(2*G);
+function curve(s){const a=Math.abs(s),g=s<0?-1:1;
+  if(a<=F)return{x:s,y:0,t:0};
+  if(a<=F+QA){const th=a-F;return{x:g*(F+Math.sin(th)),y:1-Math.cos(th),t:th}}
+  return{x:g*(F+1),y:1+(a-F-QA),t:Math.PI/2}}
+/* where on the wall: 0 at the start of the transition, 1 at the edge */
+function wallF(s){return Math.max(0,Math.min(1,(Math.abs(s)-F)/WIN))}
+
+/* ---------- view ---------- */
+let S=40,cx=100,by0=300,camUp=0,TOPM=40,clock=0;
+function layout(){
+  TOPM=Math.round(84*W/innerWidth);
+  S=Math.max(14,Math.min(W*0.92/(2*(F+R)+0.3),H*0.36/HC));cx=Math.round(W/2);
+  by0=Math.round(Math.min(H-Math.max(8,H*0.06),Math.max(H*0.8,TOPM+(HC+1.4)*S)));
+}
+addEventListener('resize',resize);resize();
+const SX=x=>cx+x*S,SY=y=>by0+camUp-y*S;
+
+/* ---------- riders ---------- */
+function mkRider(key,ai,demo){return{key,ai,demo:!!demo,s:-SMAX,dir:1,E2:E2N,air:false,side:-1,ay:0,vy:0,tAir:0,Tair:1,hmax:0,face0:1,
+  pressed:false,q:0,late:false,buf:[],tricks:[],ti:0,tp:0,crashed:false,crashT:9,wob:0,hits:0,run:0,best:null,done:false,wait:0.9,plan:null,last:null}}
+let rider=null;
+function approaching(r){return!r.air&&(Math.sign(r.s)===r.dir||Math.abs(r.s)<0.05)}
+function press(r){
+  if(r.crashed||r.done||r.wait>0)return;
+  if(r.air){ // a hair too late still counts, with a slightly smaller jump
+    if(r.late&&r.tAir<0.1){r.late=false;r.pressed=true;setPop(r,0.72);pop(r,'late','#FFFFFF')}
+    return}
+  if(r.pressed||!approaching(r))return;
+  r.pressed=true;
+  const f=wallF(r.s);
+  if(Math.abs(r.s)<=F||f<0.12){r.q=0;pop(r,'early','#E83B3B');beep('bad');return}
+  r.q=Math.pow(f,1.4);
+  if(f>=0.88){pop(r,'perfect','#FF9A2E');beep('super')}else if(f>=0.6){pop(r,'good','#FFD23F');beep('good')}else{pop(r,'ok','#FFFFFF');beep('good')}
+}
+function trick(r,k){
+  if(r.crashed||r.done||r.wait>0)return;
+  if(r.air){if(r.tricks.length<12){r.tricks.push(k);beep('tick')}return}
+  if(!approaching(r))return;
+  if(!r.pressed)press(r);
+  if(r.buf.length<12)r.buf.push(k);
+}
+function setPop(r,q){const v=Math.sqrt(VB*VB+q*(VMAX*VMAX-VB*VB));r.vy=v-G*r.tAir;r.Tair=2*v/G;r.hmax=v*v/(2*G);r.ay=v*r.tAir-G*r.tAir*r.tAir/2}
+function takeoff(r){
+  r.side=r.dir;r.s=r.side*SMAX;r.air=true;r.tAir=0;r.face0=r.dir;r.late=!r.pressed;
+  setPop(r,r.pressed?r.q:0);
+  r.tricks=r.buf.slice();r.buf=[];r.ti=0;r.tp=0;r.hits++;
+  if(r.ai)aiTricks(r);
+  spray(r.side*(F+R),HC,6);
+}
+function trickState(r){let sp=0,fl=0;const n=Math.min(r.tricks.length,r.ti+1);
+  for(let i=0;i<n;i++){const k=r.tricks[i],p=i<r.ti?1:r.tp;if(k==='l'||k==='r')sp+=p;else fl+=k==='u'?p:-p}return{sp,fl}}
+function trickName(tr){const out=[];let i=0;
+  while(i<tr.length){const k=tr[i];let j=i;while(j<tr.length&&tr[j]===k)j++;const n=j-i;
+    out.push(k==='l'||k==='r'?String(360*n):(n>1?n+'× ':'')+(k==='u'?T.ff:T.bf));i=j}
+  return out}
+function scoreJump(h,tr,st){
+  if(st==='crash')return 0;
+  let sp=0,fl=0;tr.forEach(k=>k==='l'||k==='r'?sp++:fl++);const n=sp+fl;
+  let tp=sp*100+fl*150;if(n>1)tp*=1+0.5*(n-1);if(sp&&fl)tp*=1.25;if(st==='wobbly')tp*=0.5;
+  return Math.round((h*METERS*60+tp)/10)*10}
+function land(r){
+  r.air=false;r.dir=-r.side;r.s=r.side*(SMAX-0.002);r.ay=0;
+  const left=r.tricks.length-r.ti;let st='clean';
+  if(left>1||(left===1&&r.tp<0.72))st='crash';
+  else if(left===1){st=r.tp>=0.93?'clean':'wobbly';r.ti++;r.tp=0}
+  const tr=r.tricks.slice(0,r.ti),pts=scoreJump(r.hmax,tr,st);
+  const names=trickName(tr);
+  r.run+=pts;r.last={pts,st};
+  if(!r.best||pts>r.best.pts)r.best={pts,name:names.length?names.join(' + '):T.air};
+  const x=r.side*(F+R);
+  if(st==='crash'){
+    r.crashed=true;r.crashT=0;spray(x,HC,16);beep('crash');if(!r.ai)try{navigator.vibrate&&navigator.vibrate([80,40,120])}catch(_){}
+    result(r,[T.ouch],0,'#E83B3B');
+  }else{
+    spray(x,HC,7);
+    if(st==='wobbly'){r.wob=0.9;pop(r,'wobbly','#E83B3B')}
+    beep(tr.length?'flip':'land');
+    result(r,names.length?names:[(r.hmax*METERS).toFixed(1)+'M '+T.air],pts,tr.length>=3?'#FF9A2E':'#FFD23F');
+    if(pts>=400)cheer=1.2;
+  }
+}
+function crossCenter(r){
+  r.pressed=false;r.q=0;r.late=false;r.buf=[];r.plan=null;
+  if(r.crashed)r.crashed=false;
+  if(!r.demo&&!r.done&&r.hits>=HITS){r.done=true;runOver(r)}
+}
+function step(r,dt){
+  if(r.wait>0){r.wait-=dt;return}
+  r.crashT+=dt;if(r.wob>0)r.wob-=dt;
+  if(r.ai)aiThink(r);
+  if(r.air){
+    r.tAir+=dt;r.vy-=G*dt;r.ay+=r.vy*dt;
+    if(r.ti<r.tricks.length){r.tp+=dt/TD[r.tricks[r.ti]];if(r.tp>=1){r.tp=0;r.ti++}}
+    if(r.vy<0&&r.ay<=0)land(r);
+    return;
+  }
+  if(r.done){r.E2=Math.max(0,r.E2-dt*7);if(r.E2<0.02){r.s*=0.9;return}}
+  const c=curve(r.s),asc=Math.sign(r.s)===r.dir&&Math.abs(r.s)>F;
+  let v2=r.E2-2*G*c.y;
+  if(v2<0.03){if(asc)r.dir=-r.dir;v2=0.03}
+  let v=Math.sqrt(v2);if(r.crashed)v*=0.6;
+  const ps=r.s;let ns=r.s+r.dir*v*dt;
+  if(Math.abs(ns)>=SMAX&&Math.sign(ns)===r.dir){
+    if(r.done||r.crashed){r.dir=-r.dir;ns=Math.sign(ns)*SMAX}
+    else{takeoff(r);return}
+  }
+  r.s=ns;
+  if(ps!==0&&Math.sign(ns)!==Math.sign(ps))crossCenter(r);
+}
+
+/* ---------- computer brain ---------- */
+/* Strength grows gently with the level: better timing, fuller jumps, fewer crashes. */
+function aiSkill(lv){const l=lv-1;return{f:Math.min(0.94,0.5+0.055*l),spread:Math.max(0.05,0.2-0.018*l),fill:Math.min(0.97,0.45+0.07*l),risk:Math.max(0.05,0.3-0.03*l)}}
+let SK=aiSkill(1);
+function aiThink(r){
+  if(r.air||r.crashed||r.done||r.pressed)return;
+  if(!(Math.sign(r.s)===r.dir&&Math.abs(r.s)>F))return;
+  if(!r.plan)r.plan={f:Math.min(0.99,Math.max(0.2,SK.f+(Math.random()*2-1)*SK.spread))};
+  if(wallF(r.s)>=r.plan.f)press(r);
+}
+function aiTricks(r){
+  const K='lrud',budget=r.Tair*(SK.fill+Math.random()*(1-SK.fill));let t=0;const list=[];
+  for(;;){const k=K[Math.floor(Math.random()*4)];if(t+TD[k]>budget)break;list.push(k);t+=TD[k]}
+  if(Math.random()<SK.risk)list.push(K[Math.floor(Math.random()*4)]);
+  r.tricks=list;
+}
+
+/* ---------- fx & sound ---------- */
+let parts=[],pops=[],res=null,cheer=0;
+function spray(x,y,n){for(let i=0;i<n;i++)parts.push({x:x+(Math.random()-0.5)*0.3,y,vx:(Math.random()-0.5)*2.4,vy:0.8+Math.random()*1.8,t:0.45+Math.random()*0.3})}
+function pop(r,key,col){const c=r.air?{x:r.side*(F+R),y:HC+r.ay}:curve(r.s);pops.push({key,col,x:c.x,y:c.y,t:0})}
+function result(r,lines,pts,col){res={lines,pts,col,t:0}}
+let AC=null;
+function beep(kind){
+  if(!AC||(rider&&rider.demo))return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  const S_={good:[660,880,.08,'square'],super:[880,1320,.1,'square'],bad:[220,140,.18,'sawtooth'],flip:[660,1760,.22,'triangle'],crash:[180,60,.35,'sawtooth'],land:[520,780,.1,'square'],win:[523,1046,.4,'square'],tick:[440,440,.06,'square'],go:[880,880,.18,'square']}[kind];
+  if(!S_)return;
+  o.type=S_[3];o.frequency.setValueAtTime(S_[0],t);o.frequency.exponentialRampToValueAtTime(S_[1],t+S_[2]);
+  g.gain.setValueAtTime(0.06,t);g.gain.exponentialRampToValueAtTime(0.0001,t+S_[2]+0.05);o.start(t);o.stop(t+S_[2]+0.06);
+}
+function updFx(dt){
+  parts=parts.filter(p=>(p.t-=dt)>0);parts.forEach(p=>{p.x+=p.vx*dt;p.vy-=G*dt;p.y+=p.vy*dt});
+  pops=pops.filter(p=>(p.t+=dt)<0.9);
+  if(res&&(res.t+=dt)>1.8)res=null;
+  if(cheer>0)cheer-=dt;
+}
+
+/* ---------- drawing ---------- */
+function rect(c,x,y,w,h){ctx.fillStyle=c;ctx.fillRect(x|0,y|0,w|0,h|0)}
+function txt(s,x,y,col,size){ctx.font=`${size||8}px "Press Start 2P"`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='#1B1F3B';for(const[dx,dy]of[[1,1],[-1,0],[1,0],[0,-1],[0,1],[2,2]])ctx.fillText(s,Math.round(x)+dx,Math.round(y)+dy);ctx.fillStyle=col;ctx.fillText(s,Math.round(x),Math.round(y))}
+function drawSky(){
+  const th=theme,bands=th.sky,bh=Math.ceil(H*0.62/bands.length);
+  bands.forEach((c,i)=>rect(c,0,i*bh,W,bh+1));rect(bands[bands.length-1],0,bands.length*bh,W,H);
+  if(th.stars)for(let i=0;i<40;i++){const sx=(i*73)%W,sy=(i*37)%Math.floor(H*0.45);if((i+Math.floor(clock*2))%9)rect(i%5?'#C9D6EE':'#FFFFFF',sx,sy,1,1)}
+  const sy=Math.max(TOPM-10,26);rect(th.sun,W-40,sy,12,12);rect(th.sun,W-42,sy+2,16,8);rect(th.sun,W-38,sy-2,8,16);if(th.moon)rect(bands[1],W-36,sy-2,9,12);
+  BG.clouds.forEach(c=>{const x=((c.x-clock*3)%(W+80)+W+80)%(W+80)-40,y=c.y+TOPM*0.6;rect(th.cloud,x,y,c.w,4);rect(th.cloud,x+4,y-3,c.w-10,3);rect(th.cloud2,x+2,y+4,c.w-4,2)});
+}
+function drawRange(arr,base,body,cap,capH){
+  for(let i=0;i<W;i++){const idx=(i+BG.n*4)%BG.n,h=Math.round(arr[idx]),top=Math.round(base-h);rect(body,i,top,1,H-top);if(cap)rect(cap,i,top,1,capH)}
+}
+function drawBg(){
+  const deck=SY(HC),yb=Math.round(deck-8-camUp*0.6);
+  drawRange(BG.far,yb,theme.far,theme.cap,5);
+  drawRange(BG.mid,yb+30,theme.mid,null,0);
+  const pf=theme.pineSpr||(theme.pineSpr=sprite(PINE,{G:theme.pineFar,g:theme.pineFar,T:theme.pineFar}));
+  for(let i=3;i<W;i+=17){const h=Math.round(BG.mid[i%BG.n]);ctx.drawImage(pf,i-3,Math.round(yb+30-h)-9)}
+}
+function surfY(x){const a=Math.abs(x);if(a<=F)return 0;if(a<F+R)return R-Math.sqrt(Math.max(0,R*R-(a-F)*(a-F)));return HC}
+function drawPipe(){
+  const blink=Math.floor(clock*6)%2,edgeL=Math.round(SX(-(F+R))),edgeR=Math.round(SX(F+R))-1;
+  for(let i=0;i<W;i++){
+    const x=(i+0.5-cx)/S,a=Math.abs(x),inside=i>edgeL&&i<edgeR,edge=i===edgeL||i===edgeR;
+    let y=inside?surfY(x):HC,f=0;
+    if(inside&&a>F){f=wallF(F+Math.asin(Math.min(1,(a-F)/R)))}
+    if(edge){y=HC;f=1}
+    const ty=Math.round(SY(y));if(ty>=H)continue;
+    const top=f>=0.85?'#FF9A2E':f>=0.45?'#FFD23F':'#FFFFFF',top2=f>=0.45?'#FFF0A8':'#FFFFFF';
+    if(edge){const yr=Math.round(SY(R));rect(top,i,ty,1,yr-ty+2);rect('#3A3F5C',i,ty-1,1,2);rect('#E6F2FC',i,yr+2,1,9);rect('#CFE2F3',i,yr+11,1,H);continue}
+    rect(top,i,ty,1,2);rect(top2,i,ty+2,1,1);
+    rect(inside?'#D9EAF8':'#E6F2FC',i,ty+3,1,9);rect('#CFE2F3',i,ty+12,1,H-ty-12);
+    if(i%11===0)rect('#BBD3EA',i,ty+16+((i/11|0)%5)*6,1,1);
+    if(f>=0.45&&((i+blink*3)%7===0))rect('#FFFFFF',i,ty-2,1,1);
+  }
+  // coping: a metal edge on both sides
+  for(const g of[-1,1]){const x=Math.round(SX(g*(F+R)))-(g>0?2:0),y=Math.round(SY(HC));rect('#1B1F3B',x-1,y-2,4,3);rect('#9AA3B5',x,y-1,2,1)}
+}
+function drawDeck(){
+  const deck=Math.round(SY(HC)),half=W/2/S;
+  // spectators stand back on the decks; they cheer after a big jump
+  BG.crowd.forEach(p=>{const wx=p.side*(F+R+p.d);if(Math.abs(wx)>half+0.1)return;
+    const x=Math.round(SX(wx)),hop=cheer>0&&Math.floor(clock*8+p.ph)%2?2:0,y=deck-hop;
+    rect('#1B1F3B',x-1,y-9,5,8);rect(p.j,x,y-6,3,4);rect(p.s,x,y-8,3,2);rect(p.h,x,y-9,3,1);rect('#1B1F3B',x,y-2,1,2);rect('#1B1F3B',x+2,y-2,1,2);
+    if(cheer>0&&hop)rect(p.s,x+(p.side>0?-1:3),y-11,1,2)});
+  // flags at the edges
+  for(const g of[-1,1]){const x=Math.round(SX(g*(F+R+0.12)));rect('#1B1F3B',x,deck-22,1,22);const wave=Math.floor(clock*4)%2;
+    for(let j=0;j<5;j++)rect(j%2?'#FFFFFF':'#E83B3B',x+(g>0?1:-6),deck-22+j+(wave&&j>2?1:0),6,1)}
+  // trees further out
+  for(const d of[1.25,1.75,2.4]){for(const g of[-1,1]){const x=Math.round(SX(g*(F+R+d)));if(x<-8||x>W+8)continue;ctx.drawImage(SPR_PINE,x-3,deck-10)}}
+}
+function riderPose(r){
+  if(r.air){const st=trickState(r),nat=Math.min(1,r.tAir/r.Tair);
+    // straighten up in the air (so spins and flips read well), lean back against the wall for the landing
+    const e=Math.min(nat,1-nat)/0.18,w=e>=1?0:1-e*e*(3-2*e);
+    return{x:r.side*(F+R),y:HC+Math.max(0,r.ay),ang:-r.side*Math.PI/2*w,sx:r.face0*Math.cos(Math.PI*(nat+2*st.sp)),rot:st.fl*2*Math.PI*r.face0}}
+  const c=curve(r.s);let rot=0;
+  if(r.crashed)rot=r.dir*Math.min(1,r.crashT*4)*1.55;
+  return{x:c.x,y:c.y,ang:-Math.sign(r.s)*c.t,sx:r.dir,rot}
+}
+function drawRider(r){
+  const p=riderPose(r),X=Math.round(SX(p.x)),Y=Math.round(SY(p.y));
+  ctx.save();ctx.translate(X,Y);ctx.rotate(p.ang+(r.wob>0?Math.sin(clock*24)*0.22:0));ctx.translate(0,-7);ctx.rotate(p.rot);
+  let sx=p.sx;if(Math.abs(sx)<0.18)sx=0.18*(sx<0?-1:1);ctx.scale(sx,1);
+  ctx.drawImage(PL[r.key].spr(),-8,-8);ctx.restore();
+  if(r.crashed&&r.crashT<1.4)for(let i=0;i<3;i++){const a=clock*6+i*2.1;rect('#FFD23F',X+Math.cos(a)*6,Y-12+Math.sin(a)*2,1,1)}
+  // height marker while flying
+  if(r.air&&r.hmax>0.05){const xi=Math.round(SX(r.side*(F+R)))-r.side*14,top=Math.round(SY(HC+r.hmax)),base=Math.round(SY(HC));
+    for(let y=top;y<base;y+=3)rect('#FFFFFF',xi,y,1,1);rect('#FFFFFF',xi-2,top,5,1);
+    txt((r.hmax*METERS).toFixed(1)+'M',xi-r.side*18,base-8,'#FFFFFF',8)}
+  // the tricks you asked for: done (green), doing (gold), still to do (white) – red ones won't fit before landing
+  const list=r.air?r.tricks:r.buf;
+  if(list.length&&!r.crashed){
+    let remain=r.air?Math.max(0,r.Tair-r.tAir):Infinity,acc=0;const n=list.length,w=9,x0=Math.max(2,Math.min(W-n*w-2,X-n*w/2)),y0=Math.max(TOPM-14,Y-34);
+    list.forEach((k,i)=>{let col='#FFFFFF';
+      if(r.air){if(i<r.ti)col='#6CC24A';else{acc+=TD[k]*(i===r.ti?1-r.tp:1);col=acc>remain+0.25*TD[k]?'#E83B3B':i===r.ti?'#FFD23F':'#FFFFFF'}}
+      ctx.save();ctx.translate(Math.round(x0+i*w)+3.5,y0+3.5);ctx.rotate(AROT[k]);ctx.drawImage(arrowSpr(col),-3.5,-3.5);ctx.restore()});
+  }
+}
+function drawFx(){
+  parts.forEach(p=>rect('#FFFFFF',SX(p.x),SY(p.y),1,1));
+  pops.forEach(p=>txt(T[p.key],Math.max(40,Math.min(W-40,SX(p.x))),SY(p.y)-30-p.t*16,p.col,8));
+  if(res){const y=Math.max(TOPM+10,Math.round(H*0.2)),a=res.t<1.4?1:Math.max(0,1-(res.t-1.4)/0.4);ctx.save();ctx.globalAlpha=a;
+    res.lines.forEach((l,i)=>txt(l,W/2,y+i*12,res.col,8));
+    txt(res.pts?'+'+res.pts:'0',W/2,y+res.lines.length*12+8,res.pts?'#FFFFFF':'#E83B3B',res.pts>=400?16:8);ctx.restore()}
+}
+
+/* ---------- game flow ---------- */
+let state='menu',two=false,players=[],turn=0,level=1,afterT=0,autoT=0,hintT=0;
+let reached=1;try{reached=Math.max(1,+localStorage.getItem('halfpipe.reach')||1)}catch(_){}
+let pick=Math.min(reached,(()=>{try{return +localStorage.getItem('halfpipe.level')||reached}catch(_){return reached}})());
+const pname=p=>T[PL[p.key].name];
+const cur=()=>players[turn%2];
+function demo(){theme=THEMES[(pick-1)%THEMES.length];SK=aiSkill(6);rider=mkRider(two?'red':'me',true,true);rider.wait=0.3}
+function paintLevels(){
+  const row=$('#lvRow');row.innerHTML='';$('#lvlBtn').hidden=reached<2;$('#lvlNum').textContent=pick;
+  for(let i=1;i<=reached;i++){const b=document.createElement('button');b.type='button';b.textContent=i;b.setAttribute('aria-pressed',i===pick);
+    b.onclick=()=>{pick=i;row.querySelectorAll('button').forEach((x,j)=>x.setAttribute('aria-pressed',j+1===i));$('#lvlNum').textContent=i;theme=THEMES[(i-1)%THEMES.length];beep('tick')};row.append(b)}
+}
+function newGame(lv){
+  level=two?pick:lv;if(!two)try{localStorage.setItem('halfpipe.level',lv)}catch(_){}
+  if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(_){}}
+  if(AC&&AC.state==='suspended')AC.resume();
+  theme=THEMES[(level-1)%THEMES.length];
+  document.body.style.setProperty('--me',meColor());
+  players=(two?['red','blue']:['me','cpu']).map(k=>({key:k,ai:k==='cpu',total:0,runs:[],best:null}));
+  turn=0;$('#startOv').hidden=true;$('#endOv').hidden=true;showTurn();
+}
+function scoreLines(){return players.map(p=>`${pname(p)}: ${p.total} ${T.pts}`).join('<br>')}
+function showTurn(refresh){
+  state='turn';const p=cur();$('#turnOv').hidden=false;$('#hud').hidden=true;$('#hint').hidden=true;
+  $('#turnTitle').textContent=T[{me:'turnMe',cpu:'turnCpu',red:'turnRed',blue:'turnBlue'}[p.key]];$('#turnTitle').className='c-'+p.key;
+  $('#turnText').textContent=`${T.round} ${Math.floor(turn/2)+1}/${ROUNDS}`;
+  $('#turnStats').innerHTML=scoreLines();
+  $('#goBtn').textContent=p.ai?T.watch:T.start;
+  if(!refresh){autoT=p.ai?2.4:0;SK=aiSkill(level);rider=null;fitTitles();$('#goBtn').focus()}else fitTitles();
+}
+function startRun(){
+  if(state!=='turn')return;
+  $('#turnOv').hidden=true;const p=cur();
+  rider=mkRider(p.key,p.ai,false);state='run';parts=[];pops=[];res=null;camUp=0;
+  $('#hud').hidden=false;hintT=!p.ai&&turn<2?7:0;beep('go');
+}
+function runOver(r){
+  const p=cur();p.runs.push(r.run);p.total+=r.run;if(r.best&&(!p.best||r.best.pts>p.best.pts))p.best=r.best;
+  state='after';afterT=2.2;setTimeout(()=>{if(state==='after')res={lines:[T.run+' '+(Math.floor(turn/2)+1)],pts:r.run,col:'#FFFFFF',t:0}},500);
+}
+function showEnd(refresh){
+  state='end';$('#endOv').hidden=false;$('#hud').hidden=true;$('#hint').hidden=true;
+  const[a,b]=players;let why;
+  if(two)why=a.total>b.total?'redWin':b.total>a.total?'blueWin':'tie';
+  else why=a.total>b.total?'win':a.total<b.total?'lose':'tie';
+  $('#endTitle').textContent=T[why];$('#endTitle').className=why==='lose'?'':'good';
+  $('#endText').textContent=T[why+'P'];
+  const bestP=[a,b].filter(p=>p.best).sort((x,y)=>y.best.pts-x.best.pts)[0];
+  $('#endStats').innerHTML=scoreLines()+(bestP?`<span class="best">${T.best}: ${pname(bestP)} – ${bestP.best.name} (${bestP.best.pts})</span>`:'');
+  $('#againBtn').textContent=!two&&why==='win'?T.next:T.retry;
+  if(!refresh){
+    beep(why==='lose'?'crash':'win');
+    if(!two&&why==='win'){if(level+1>reached){reached=level+1;try{localStorage.setItem('halfpipe.reach',reached)}catch(_){}}pick=level+1}else if(!two)pick=level;
+    fitTitles();$('#againBtn').focus();
+  }else fitTitles();
+}
+function toMenu(){state='menu';$('#endOv').hidden=true;$('#turnOv').hidden=true;$('#hud').hidden=true;$('#hint').hidden=true;$('#startOv').hidden=false;res=null;paintLevels();demo();fitTitles()}
+let hudCache='';
+function updHud(){
+  if(state!=='run'&&state!=='after')return;
+  const p=cur(),r=rider,live=i=>players[i].total+(players[i]===p&&r&&!r.done?r.run:0);
+  const key=[p.key,r?r.hits:0,turn,live(0),live(1),lang].join('|');if(key===hudCache)return;hudCache=key;
+  const w=$('#whoChip');w.textContent=pname(p);w.style.background=PL[p.key].col();
+  $('#hitChip').textContent=`${T.hit} ${Math.min(HITS,Math.max(1,r?r.hits+(r.air||r.done?0:1):1))}/${HITS}`;
+  $('#rndChip').textContent=`${T.round} ${Math.floor(turn/2)+1}/${ROUNDS}`;
+  [0,1].forEach(i=>{const c=$('#sc'+i);c.textContent=`${pname(players[i])} ${live(i)}`;c.classList.toggle('on',players[i]===p)});
+}
+
+/* ---------- skier & level pickers ---------- */
+function paintChar(){
+  const rows=$('#charRows');rows.innerHTML='';
+  [['g','cGear'],['j','cTop'],['p','cPants'],['s','cSkin']].forEach(([k,lbl])=>{
+    const row=document.createElement('div');row.className='charRow';
+    const b=document.createElement('b');b.textContent=T[lbl];row.append(b);
+    const sw=document.createElement('div');sw.className='sw';sw.setAttribute('role','group');sw.setAttribute('aria-label',T[lbl]);
+    OUTFIT[k].forEach((c,i)=>{const btn=document.createElement('button');btn.type='button';btn.style.background=c;btn.setAttribute('aria-label',T[lbl]+' '+(i+1));btn.setAttribute('aria-pressed',look[k]===i);
+      btn.onclick=()=>{look[k]=i;try{localStorage.setItem('skiing.char',JSON.stringify(look))}catch(_){}
+        sw.querySelectorAll('button').forEach((x,j)=>x.setAttribute('aria-pressed',j===i));SPR_ME=makeMe();drawPrev();beep('tick')};sw.append(btn)});
+    row.append(sw);rows.append(row)});
+  drawPrev();
+}
+function drawPrev(){['#charCv','#charMini'].forEach(id=>{const g=$(id).getContext('2d');g.clearRect(0,0,16,16);g.drawImage(SPR_ME,0,0)})}
+const DIALOGS=[['#charOv','#charBtn','#charDone','#charRows'],['#lvlOv','#lvlBtn','#lvlDone','#lvRow']];
+function openDlg(ov,btn,done,rows){$('#startOv').hidden=true;$(ov).hidden=false;fitTitles();const on=$(rows+' button[aria-pressed="true"]');
+  if(on){on.scrollIntoView({block:'nearest'});on.focus()}else $(done).focus()}
+function closeDlg(ov,btn){$(ov).hidden=true;$('#startOv').hidden=false;fitTitles();$(btn).focus()}
+DIALOGS.forEach(([ov,btn,done,rows])=>{$(btn).onclick=()=>openDlg(ov,btn,done,rows);$(done).onclick=()=>closeDlg(ov,btn);
+  $(ov).addEventListener('click',e=>{if(e.target===e.currentTarget)closeDlg(ov,btn)})});
+addEventListener('keydown',e=>{if(e.code==='Escape')DIALOGS.forEach(([ov,btn])=>{if(!$(ov).hidden)closeDlg(ov,btn)})});
+try{two=localStorage.getItem('halfpipe.mode')==='2'}catch(_){}
+function paintModes(){document.body.classList.toggle('two',two);document.querySelectorAll('#modes button').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.m==='2')===two));$('#mode2').hidden=!two;$('#lvlBtn').hidden=two||reached<2;if(state==='menu')demo();fitTitles()}
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{two=b.dataset.m==='2';try{localStorage.setItem('halfpipe.mode',two?'2':'1')}catch(_){}paintModes()});
+$('#startBtn').onclick=()=>newGame(two?1:pick);
+$('#goBtn').onclick=startRun;
+$('#quitBtn').onclick=toMenu;
+$('#againBtn').onclick=()=>newGame(two?1:pick);
+$('#menuBtn').onclick=toMenu;
+
+/* ---------- input: tap = jump, swipe = trick ---------- */
+const human=()=>state==='run'&&rider&&!rider.ai;
+let anchor=null;
+cv.addEventListener('pointerdown',e=>{if(e.cancelable)e.preventDefault();if(!human())return;anchor={id:e.pointerId,x:e.clientX,y:e.clientY};press(rider)});
+addEventListener('pointermove',e=>{if(!anchor||e.pointerId!==anchor.id||!human())return;
+  const dx=e.clientX-anchor.x,dy=e.clientY-anchor.y;if(Math.hypot(dx,dy)<26)return;
+  trick(rider,Math.abs(dx)>Math.abs(dy)?(dx<0?'l':'r'):(dy<0?'u':'d'));anchor.x=e.clientX;anchor.y=e.clientY});
+const lift=e=>{if(anchor&&e.pointerId===anchor.id)anchor=null};
+addEventListener('pointerup',lift);addEventListener('pointercancel',lift);
+const KEYS={ArrowLeft:'l',ArrowRight:'r',ArrowUp:'u',ArrowDown:'d',KeyA:'l',KeyD:'r',KeyW:'u',KeyS:'d'};
+addEventListener('keydown',e=>{if(e.repeat)return;
+  if(human()){if(KEYS[e.code]){e.preventDefault();trick(rider,KEYS[e.code])}else if(e.code==='Space'||e.code==='Enter'){e.preventDefault();press(rider)}return}
+  if((e.code==='Enter'||e.code==='Space')&&document.activeElement===document.body){const b=!$('#startOv').hidden?$('#startBtn'):!$('#turnOv').hidden?$('#goBtn'):!$('#endOv').hidden?$('#againBtn'):null;if(b){e.preventDefault();b.click()}}});
+
+/* ---------- main loop ---------- */
+let last=0;
+function frame(ts){
+  const dt=Math.min(0.05,Math.max(0,(ts-last)/1000));last=ts;clock+=dt;
+  if(state==='turn'&&autoT>0){autoT-=dt;if(autoT<=0)startRun()}
+  if(rider&&(state==='run'||state==='after'||state==='menu')){for(let i=0;i<3;i++)step(rider,dt/3)}
+  if(state==='after'){afterT-=dt;if(afterT<=0){turn++;if(turn>=ROUNDS*2)showEnd();else showTurn()}}
+  if(hintT>0){hintT-=dt;$('#hint').hidden=hintT<=0||state!=='run'}
+  updFx(dt);
+  // camera: lift the view when the rider flies high
+  let want=0;if(rider&&rider.air){const top=SY(HC+rider.ay)-camUp-(rider.tricks.length?44:28);want=Math.max(0,TOPM+6-top)}
+  camUp+=(want-camUp)*Math.min(1,dt*(want>camUp?8:3));
+  drawSky();drawBg();drawDeck();drawPipe();
+  if(rider)drawRider(rider);
+  drawFx();updHud();
+  requestAnimationFrame(frame);
+}
+(function init(){
+  let want='de';try{const s=localStorage.getItem('irrgarten.lang');if(LANG[s])want=s;else{const n=(navigator.language||'de').slice(0,2);if(LANG[n])want=n}}catch(_){}
+  setLang(want,false);paintLevels();paintModes();demo();
+  if(document.fonts)document.fonts.ready.then(fitTitles);
+  requestAnimationFrame(frame);
+})();
+window.__hp={get rider(){return rider},get state(){return state},get players(){return players},press:()=>rider&&press(rider),trick:k=>rider&&trick(rider,k),startRun,newGame,wallF};
+</script>
+</body>
+</html>

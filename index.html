@@ -54,6 +54,7 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
 .txt h2{font-family:var(--display);font-size:34px;line-height:.95;letter-spacing:.03em;margin:0 0 4px;-webkit-text-stroke:1.5px var(--ink);text-shadow:3px 3px 0 var(--ink)}
 .maze h2{color:var(--hedge)}
 .ski h2{color:var(--sky)}
+.pipe h2{color:#FF9A2E}
 .txt p{margin:0;font-size:15px;line-height:1.3}
 .tag{display:inline-block;margin-top:8px;font-family:var(--display);letter-spacing:.06em;font-size:17px;background:var(--leaf);border:3px solid var(--ink);border-radius:6px;box-shadow:3px 3px 0 var(--ink);padding:1px 10px}
 .langs{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:30px}
@@ -128,6 +129,28 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
         <span class="tag" data-i18n="play">SPIELEN!</span>
       </div>
     </a>
+    <a class="game pipe" href="halfpipe/">
+      <div class="pic" aria-hidden="true">
+        <svg viewBox="0 0 92 92">
+          <rect width="92" height="92" fill="#7FC8F0"/>
+          <path d="M0 50H16V58Q16 80 34 80H58Q76 80 76 58V50H92V92H0Z" fill="#EAF6FF" stroke="#16120F" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M16 58Q16 66 19 71M76 58Q76 66 73 71" fill="none" stroke="#FFD93B" stroke-width="3" stroke-linecap="round"/>
+          <path d="M12 50h7M73 50h7" stroke="#16120F" stroke-width="3"/>
+          <path d="M60 46c-4-10-10-16-18-18" fill="none" stroke="#FFFDF6" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/>
+          <g transform="rotate(28 34 26)" stroke-linecap="round">
+            <path d="M22 36H46" stroke="#E83B3B" stroke-width="2.5"/>
+            <path d="M33 34l1-7 3-5 6 1-1 5-3 6" fill="#E83B3B" stroke="#16120F" stroke-width="2" stroke-linejoin="round"/>
+            <circle cx="41" cy="16" r="4.5" fill="#FFD93B" stroke="#16120F" stroke-width="2"/>
+          </g>
+          <path d="M20 14a8 8 0 0 1 12-4" fill="none" stroke="#FFFDF6" stroke-width="2.5" stroke-linecap="round"/><path d="M33 7l-1 5-4-2Z" fill="#FFFDF6"/>
+        </svg>
+      </div>
+      <div class="txt">
+        <h2>HALFPIPE</h2>
+        <p data-i18n="pipeT">Spring aus der Halfpipe, kombinier Drehungen und Saltos und hol mehr Punkte.</p>
+        <span class="tag" data-i18n="play">SPIELEN!</span>
+      </div>
+    </a>
   </div>
   <div class="more">
     <span class="lbl" data-i18n="more">MEHR SPIELE</span>
@@ -179,12 +202,12 @@ a.game:focus-visible{outline:3px dashed var(--pop);outline-offset:5px}
     e.style.setProperty('--w',(-Math.random()*4)+'s');
     g.append(e)}})();
 const L={
-  de:{doc:"Jonas' Spiele",title:"JONAS' SPIELE",sub:'Such dir ein Spiel aus!',mazeT:'Kipp das Handy und roll die Kugel ins Loch, bevor die Hecken zuwachsen.',skiT:'Tippe zur richtigen Zeit auf der Buckelpiste, spring über Schanzen und schlag den Computer.',arH:'SPIELE IN AR',arT:'WebAR-Experimente – auch Skiing an deiner Wand.',play:'SPIELEN!',soon:'KOMMT BALD',more:'MEHR SPIELE',annaH:'ANNAS ABENTEUER',annaT:'Danger in the Jungle und mehr.'},
-  en:{doc:"Jonas's Games",title:"JONAS'S GAMES",sub:'Pick a game!',mazeT:'Tilt the phone and roll the ball into the hole before the hedges grow shut.',skiT:'Tap at the right moment on the bumps, fly off ramps and beat the computer.',arH:'GAMES IN AR',arT:'WebAR experiments – including Skiing on your wall.',play:'PLAY!',soon:'COMING SOON',more:'MORE GAMES',annaH:"ANNA'S ADVENTURES",annaT:'Danger in the Jungle and more.'},
-  fr:{doc:"Les jeux de Jonas",title:'LES JEUX DE JONAS',sub:'Choisis un jeu !',mazeT:'Incline le téléphone et fais rouler la bille dans le trou avant que les haies ne se referment.',skiT:'Tape au bon moment sur les bosses, saute des tremplins et bats l’ordinateur.',arH:'JEUX EN RA',arT:'Expériences WebAR – dont Skiing sur ton mur.',play:'JOUER !',soon:'BIENTÔT',more:'PLUS DE JEUX',annaH:"LES AVENTURES D'ANNA",annaT:'Danger in the Jungle et plus.'},
-  es:{doc:"Los juegos de Jonas",title:'LOS JUEGOS DE JONAS',sub:'¡Elige un juego!',mazeT:'Inclina el móvil y mete la bola en el hoyo antes de que los setos lo cierren.',skiT:'Toca en el momento justo en los baches, salta en los trampolines y gana al ordenador.',arH:'JUEGOS EN RA',arT:'Experimentos WebAR, también Skiing en tu pared.',play:'¡JUGAR!',soon:'MUY PRONTO',more:'MÁS JUEGOS',annaH:'LAS AVENTURAS DE ANNA',annaT:'Danger in the Jungle y más.'},
-  it:{doc:"I giochi di Jonas",title:'I GIOCHI DI JONAS',sub:'Scegli un gioco!',mazeT:'Inclina il telefono e porta la pallina nella buca prima che le siepi chiudano i sentieri.',skiT:'Tocca al momento giusto sulle gobbe, salta dai trampolini e batti il computer.',arH:'GIOCHI IN RA',arT:'Esperimenti WebAR – anche Skiing sulla tua parete.',play:'GIOCA!',soon:'IN ARRIVO',more:'ALTRI GIOCHI',annaH:'LE AVVENTURE DI ANNA',annaT:'Danger in the Jungle e altro.'},
-  pt:{doc:"Os jogos do Jonas",title:'OS JOGOS DO JONAS',sub:'Escolha um jogo!',mazeT:'Incline o celular e leve a bola até o buraco antes que as sebes fechem os caminhos.',skiT:'Toque na hora certa nas lombadas, salte das rampas e vença o computador.',arH:'JOGOS EM RA',arT:'Experimentos WebAR – inclusive Skiing na sua parede.',play:'JOGAR!',soon:'EM BREVE',more:'MAIS JOGOS',annaH:'AS AVENTURAS DA ANNA',annaT:'Danger in the Jungle e mais.'}
+  de:{pipeT:'Spring aus der Halfpipe, kombinier Drehungen und Saltos und hol mehr Punkte.',doc:"Jonas' Spiele",title:"JONAS' SPIELE",sub:'Such dir ein Spiel aus!',mazeT:'Kipp das Handy und roll die Kugel ins Loch, bevor die Hecken zuwachsen.',skiT:'Tippe zur richtigen Zeit auf der Buckelpiste, spring über Schanzen und schlag den Computer.',arH:'SPIELE IN AR',arT:'WebAR-Experimente – auch Skiing an deiner Wand.',play:'SPIELEN!',soon:'KOMMT BALD',more:'MEHR SPIELE',annaH:'ANNAS ABENTEUER',annaT:'Danger in the Jungle und mehr.'},
+  en:{pipeT:'Fly out of the halfpipe, combine spins and flips and score more points.',doc:"Jonas's Games",title:"JONAS'S GAMES",sub:'Pick a game!',mazeT:'Tilt the phone and roll the ball into the hole before the hedges grow shut.',skiT:'Tap at the right moment on the bumps, fly off ramps and beat the computer.',arH:'GAMES IN AR',arT:'WebAR experiments – including Skiing on your wall.',play:'PLAY!',soon:'COMING SOON',more:'MORE GAMES',annaH:"ANNA'S ADVENTURES",annaT:'Danger in the Jungle and more.'},
+  fr:{pipeT:'Saute hors du halfpipe, enchaîne vrilles et saltos et marque plus de points.',doc:"Les jeux de Jonas",title:'LES JEUX DE JONAS',sub:'Choisis un jeu !',mazeT:'Incline le téléphone et fais rouler la bille dans le trou avant que les haies ne se referment.',skiT:'Tape au bon moment sur les bosses, saute des tremplins et bats l’ordinateur.',arH:'JEUX EN RA',arT:'Expériences WebAR – dont Skiing sur ton mur.',play:'JOUER !',soon:'BIENTÔT',more:'PLUS DE JEUX',annaH:"LES AVENTURES D'ANNA",annaT:'Danger in the Jungle et plus.'},
+  es:{pipeT:'Salta del halfpipe, combina giros y mortales y consigue más puntos.',doc:"Los juegos de Jonas",title:'LOS JUEGOS DE JONAS',sub:'¡Elige un juego!',mazeT:'Inclina el móvil y mete la bola en el hoyo antes de que los setos lo cierren.',skiT:'Toca en el momento justo en los baches, salta en los trampolines y gana al ordenador.',arH:'JUEGOS EN RA',arT:'Experimentos WebAR, también Skiing en tu pared.',play:'¡JUGAR!',soon:'MUY PRONTO',more:'MÁS JUEGOS',annaH:'LAS AVENTURAS DE ANNA',annaT:'Danger in the Jungle y más.'},
+  it:{pipeT:'Salta fuori dall’halfpipe, combina rotazioni e salti mortali e fai più punti.',doc:"I giochi di Jonas",title:'I GIOCHI DI JONAS',sub:'Scegli un gioco!',mazeT:'Inclina il telefono e porta la pallina nella buca prima che le siepi chiudano i sentieri.',skiT:'Tocca al momento giusto sulle gobbe, salta dai trampolini e batti il computer.',arH:'GIOCHI IN RA',arT:'Esperimenti WebAR – anche Skiing sulla tua parete.',play:'GIOCA!',soon:'IN ARRIVO',more:'ALTRI GIOCHI',annaH:'LE AVVENTURE DI ANNA',annaT:'Danger in the Jungle e altro.'},
+  pt:{pipeT:'Salte do halfpipe, combine giros e mortais e faça mais pontos.',doc:"Os jogos do Jonas",title:'OS JOGOS DO JONAS',sub:'Escolha um jogo!',mazeT:'Incline o celular e leve a bola até o buraco antes que as sebes fechem os caminhos.',skiT:'Toque na hora certa nas lombadas, salte das rampas e vença o computador.',arH:'JOGOS EM RA',arT:'Experimentos WebAR – inclusive Skiing na sua parede.',play:'JOGAR!',soon:'EM BREVE',more:'MAIS JOGOS',annaH:'AS AVENTURAS DA ANNA',annaT:'Danger in the Jungle e mais.'}
 };
 // Shares the language choice with Irrgarten (same origin, same key).
 const KEY='irrgarten.lang';
