@@ -23,8 +23,9 @@ Conway's Game of Life in the pixel look of Skiing. Not on the game list: tap the
 - **Touch to bring cells to life:** tap and drag to draw living cells. Start on a living cell and you erase instead. Several fingers work at once, also while it's running.
 - **Yellow button = touch tool:** pen, glider, spaceship or boom (a random burst). With the last three, every tap drops that pattern, pointing in a random direction.
 - **Buttons:** play/pause, one step, speed 1×/2×/4×, random fill, clear.
+- **+ / − (top right):** + doubles the number of cells (smaller cells), − halves it. What's alive stays in the middle.
 - Cells change colour as they age (white newborn → gold → orange → red → purple, blue for cells that stay put); dying cells leave a short shadow. The edges wrap around.
-- Keyboard: Space = play/pause, → = one step, T = next tool.
+- Keyboard: Space = play/pause, → = one step, T = next tool, +/− = more/fewer cells.
 
 ---
 

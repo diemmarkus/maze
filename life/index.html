@@ -25,6 +25,12 @@ a.chip{pointer-events:auto}
 a.chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
 .chip.dead{background:var(--pop);color:var(--white)}
 .title{margin-left:auto;font-family:var(--pix);font-size:13px;color:var(--gold);text-shadow:3px 3px 0 var(--ink)}
+.zoom{display:flex;gap:8px;pointer-events:auto}
+.zoom .chip{font-size:16px;width:36px;height:32px;padding:0;cursor:pointer}
+.zoom .chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.zoom .chip:disabled{opacity:.4;cursor:default;transform:none;box-shadow:3px 3px 0 var(--ink)}
+.zoom .chip:focus-visible{outline:3px dashed var(--pop);outline-offset:2px}
+@media (max-width:440px){.title{display:none}.zoom{margin-left:auto}}
 .bar{position:fixed;left:0;right:0;bottom:0;padding:0 max(10px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));display:flex;justify-content:center;gap:9px;pointer-events:none}
 .bar button{pointer-events:auto;flex:0 1 52px;height:50px;min-width:40px;padding:0;display:grid;place-items:center;background:var(--white);color:var(--ink);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);cursor:pointer;font-family:var(--pix);font-size:11px}
 .bar button:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
@@ -44,6 +50,7 @@ a.chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
   <div class="chip" id="genChip">GEN 0</div>
   <div class="chip" id="popChip">0</div>
   <div class="title" id="title">LEBEN</div>
+  <div class="zoom"><button type="button" class="chip" id="lessBtn" aria-label="−">−</button><button type="button" class="chip" id="moreBtn" aria-label="+">+</button></div>
 </div>
 <div class="hint" id="hint"></div>
 <div class="bar">
@@ -94,6 +101,13 @@ const COL={bg:'#141731',line:'#1E2246',ghost:['#2A2F5C','#262A54','#22264C','#1E
 // age → colour: newborn white, then gold, orange, red, lila; long-lived (still) cells calm blue
 const AGE=['#FFFFFF','#FFD23F','#FFD23F','#FF9A2E','#FF9A2E','#E83B3B','#E83B3B','#E83B3B','#C04BC9','#8E5BD9'];
 const OLD='#A9D4F5';
+// zoom: + doubles the number of cells, − halves it
+const CS_MIN=3,ZMIN=-2,ZMAX=8;
+let zoom=0;
+function updateZoomBtns(base){
+  document.getElementById('lessBtn').disabled=zoom<=ZMIN;
+  document.getElementById('moreBtn').disabled=zoom>=ZMAX||Math.round(base/Math.pow(Math.SQRT2,zoom+1))<CS_MIN;
+}
 let W=0,H=0,dpr=1,cs=12,cols=0,rows=0,ox=0,oy=0;
 let grid=new Uint8Array(0),next=new Uint8Array(0),age=new Uint16Array(0),ghost=new Uint8Array(0);
 
@@ -104,7 +118,10 @@ function resize(){
   // grid fits between the chips on top and the buttons at the bottom
   const y0=document.querySelector('.top').getBoundingClientRect().bottom+8;
   const y1=document.querySelector('.bar').getBoundingClientRect().top-8;
-  cs=Math.max(11,Math.round(Math.min(W,H)/28));
+  const base=Math.max(11,Math.round(Math.min(W,H)/28));
+  zoom=Math.max(ZMIN,Math.min(zoom,ZMAX));
+  cs=Math.max(CS_MIN,Math.round(base/Math.pow(Math.SQRT2,zoom)));
+  updateZoomBtns(base);
   const c2=Math.max(8,Math.floor((W-12)/cs)),r2=Math.max(8,Math.floor((y1-y0)/cs));
   // keep whatever was alive, centred
   const old=grid,oc=cols,or=rows,oa=age;
@@ -213,7 +230,11 @@ const speedBtn=document.getElementById('speedBtn');
 speedBtn.onclick=()=>{speedI=(speedI+1)%SPEEDS.length;speedBtn.textContent=SPEED_L[speedI]};
 document.getElementById('rndBtn').onclick=()=>{randomize();if(!running){running=true;drawPlay()}};
 document.getElementById('clrBtn').onclick=()=>{clearAll();running=true;drawPlay()};
+document.getElementById('moreBtn').onclick=()=>{zoom++;resize()};
+document.getElementById('lessBtn').onclick=()=>{zoom--;resize()};
 addEventListener('keydown',e=>{
+  if(e.key==='+'||e.key==='=')document.getElementById('moreBtn').onclick();
+  else if(e.key==='-')document.getElementById('lessBtn').onclick();
   if(e.code==='Space'){e.preventDefault();playBtn.onclick()}
   else if(e.code==='ArrowRight')document.getElementById('stepBtn').onclick();
   else if(e.key==='t')document.getElementById('toolBtn').onclick();
@@ -233,8 +254,8 @@ function draw(dt){
   g.fillStyle=COL.bg;g.fillRect(0,0,W,H);
   // faint grid dots
   g.fillStyle=COL.line;
-  for(let y=0;y<=rows;y++)for(let x=0;x<=cols;x++)g.fillRect(ox+x*cs-1,oy+y*cs-1,2,2);
-  const pad=Math.max(1,Math.round(cs/10)),s=cs-pad*2;
+  if(cs>=8)for(let y=0;y<=rows;y++)for(let x=0;x<=cols;x++)g.fillRect(ox+x*cs-1,oy+y*cs-1,2,2);
+  const pad=cs>=6?Math.max(1,Math.round(cs/10)):0,s=cs-pad*2;
   for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
     const i=y*cols+x,px=ox+x*cs+pad,py=oy+y*cs+pad;
     if(grid[i]){
@@ -242,7 +263,7 @@ function draw(dt){
       g.fillStyle=a<AGE.length?AGE[a]:OLD;
       g.fillRect(px,py,s,s);
       // pixel shine on the top-left like the other games' blocks
-      g.fillStyle='rgba(255,255,255,.35)';g.fillRect(px,py,Math.max(1,s>>2),Math.max(1,s>>2));
+      if(cs>=8){g.fillStyle='rgba(255,255,255,.35)';g.fillRect(px,py,Math.max(1,s>>2),Math.max(1,s>>2))}
     }else if(ghost[i]){g.fillStyle=COL.ghost[4-ghost[i]];g.fillRect(px,py,s,s)}
   }
   // stamp flash: a square ring that grows and fades
