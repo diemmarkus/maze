@@ -714,8 +714,11 @@ const human=()=>state==='run'&&rider&&!rider.ai;
 let anchor=null;
 cv.addEventListener('pointerdown',e=>{if(e.cancelable)e.preventDefault();if(!human())return;anchor={id:e.pointerId,x:e.clientX,y:e.clientY};press(rider)});
 addEventListener('pointermove',e=>{if(!anchor||e.pointerId!==anchor.id||!human())return;
-  const dx=e.clientX-anchor.x,dy=e.clientY-anchor.y;if(Math.hypot(dx,dy)<26)return;
-  trick(rider,Math.abs(dx)>Math.abs(dy)?(dx<0?'l':'r'):(dy<0?'u':'d'));anchor.x=e.clientX;anchor.y=e.clientY});
+  const dx=e.clientX-anchor.x,dy=e.clientY-anchor.y;if(Math.hypot(dx,dy)<30)return;
+  // one swipe = one trick, however long it is: the same direction counts again only after lifting the finger
+  const k=Math.abs(dx)>Math.abs(dy)?(dx<0?'l':'r'):(dy<0?'u':'d');
+  if(k!==anchor.last){trick(rider,k);anchor.last=k}
+  anchor.x=e.clientX;anchor.y=e.clientY});
 const lift=e=>{if(anchor&&e.pointerId===anchor.id)anchor=null};
 addEventListener('pointerup',lift);addEventListener('pointercancel',lift);
 const KEYS={ArrowLeft:'l',ArrowRight:'r',ArrowUp:'u',ArrowDown:'d',KeyA:'l',KeyD:'r',KeyW:'u',KeyS:'d'};
