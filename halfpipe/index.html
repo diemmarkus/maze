@@ -88,7 +88,7 @@ body.two .charBtn{display:none}
     <h1 class="good" data-i18n="title">HALFPIPE!</h1>
     <p data-i18n="intro"></p>
     <div class="picks">
-      <button type="button" class="charBtn" id="charBtn" aria-haspopup="dialog"><span class="mini"><canvas id="charMini" width="16" height="16"></canvas></span><span data-i18n="you2">DEIN SKIFAHRER</span><i aria-hidden="true">▶</i></button>
+      <button type="button" class="charBtn" id="charBtn" aria-haspopup="dialog"><span class="mini"><canvas id="charMini" width="16" height="16"></canvas></span><span data-i18n="you2">DEIN SNOWBOARDER</span><i aria-hidden="true">▶</i></button>
       <button type="button" class="charBtn" id="lvlBtn" aria-haspopup="dialog" hidden><span class="mini num" id="lvlNum">1</span><span data-i18n="from">LEVEL</span><i aria-hidden="true">▶</i></button>
     </div>
     <ul id="rules"></ul>
@@ -100,7 +100,7 @@ body.two .charBtn{display:none}
 </div>
 <div class="overlay" id="charOv" hidden>
   <div class="card" role="dialog" aria-labelledby="charTitle">
-    <h1 class="good" id="charTitle" data-i18n="you2">DEIN SKIFAHRER</h1>
+    <h1 class="good" id="charTitle" data-i18n="you2">DEIN SNOWBOARDER</h1>
     <div class="charPrev"><canvas id="charCv" width="16" height="16"></canvas></div>
     <div class="charRows" id="charRows"></div>
     <button class="btn" id="charDone" data-i18n="done">FERTIG</button>
@@ -137,10 +137,10 @@ body.two .charBtn{display:none}
 /* ---------- texts ---------- */
 const NB=' ';
 const LANG={
-  de:{done:'FERTIG',you2:'DEIN SKIFAHRER',cGear:'HELM, SKI & STÖCKE',cTop:'PULLOVER',cPants:'HOSE',cSkin:'HAUT',p1:'1 SPIELER',p2:'2 SPIELER',
+  de:{done:'FERTIG',you2:'DEIN SNOWBOARDER',cGear:'HELM & BOARD',cTop:'PULLOVER',cPants:'HOSE',cSkin:'HAUT',p1:'1 SPIELER',p2:'2 SPIELER',
     rule2:'Zwei Spieler, ein Handy: Rot und Blau fahren abwechselnd. Gebt das Handy nach jedem Lauf weiter.',
     title:'HALFPIPE!',intro:'Wer holt mehr Punkte – du oder der Computer?',
-    rules:[['g','Tippe, wenn du die Wand hinauffährst (gelber Schnee). Je näher an der Kante, desto höher springst du.'],
+    rules:[['g','Fahr die Wand hinauf und tippe, wenn die Anzeige unten grün ist – ganz knapp vor der Kante. Je knapper, desto höher springst du.'],
       ['o','In der Luft wischen: links oder rechts = Drehung, rauf = Salto vorwärts, runter = Salto rückwärts. Tricks kannst du kombinieren!'],
       ['r','Aber nicht zu viele: Ist ein Trick bei der Landung nicht fertig, landest du auf der Nase und der Sprung zählt nicht.'],
       ['b','Punkte gibt es für Höhe und Tricks. Jeder fährt 2 Läufe mit 6 Sprüngen, immer abwechselnd.']],
@@ -150,11 +150,11 @@ const LANG={
     win:'GEWONNEN!',winP:'Du hast mehr Punkte als der Computer!',lose:'VERLOREN!',loseP:'Der Computer hat mehr Punkte.',tie:'UNENTSCHIEDEN!',tieP:'Genau gleich viele Punkte!',
     redWin:'ROT GEWINNT!',redWinP:'Rot hat mehr Punkte.',blueWin:'BLAU GEWINNT!',blueWinP:'Blau hat mehr Punkte.',
     perfect:'PERFEKT!',good:'GUT!',ok:'OK',early:'ZU FRÜH!',late:'KNAPP!',ouch:'AUTSCH!',wobbly:'WACKELIG!',air:'AIR',
-    hint:'TIPPEN AUF GELB = SPRINGEN · WISCHEN = TRICKS',ff:'FRONTFLIP',bf:'BACKFLIP'},
-  en:{done:'DONE',you2:'YOUR SKIER',cGear:'HELMET, SKIS & POLES',cTop:'SWEATER',cPants:'PANTS',cSkin:'SKIN',p1:'1 PLAYER',p2:'2 PLAYERS',
+    hint:'TIPPEN BEI GRÜN = HOCH SPRINGEN · WISCHEN = TRICKS',ff:'FRONTFLIP',bf:'BACKFLIP'},
+  en:{done:'DONE',you2:'YOUR SNOWBOARDER',cGear:'HELMET & BOARD',cTop:'SWEATER',cPants:'PANTS',cSkin:'SKIN',p1:'1 PLAYER',p2:'2 PLAYERS',
     rule2:'Two players, one phone: Red and Blue take turns. Pass the phone after every run.',
     title:'HALFPIPE!',intro:'Who scores more points – you or the computer?',
-    rules:[['g','Tap while riding up the wall (yellow snow). The closer to the edge, the higher you fly.'],
+    rules:[['g','Ride up the wall and tap when the bar at the bottom is green – just before the edge. The closer to the edge, the higher you fly.'],
       ['o','Swipe in the air: left or right = spin, up = front flip, down = backflip. You can combine tricks!'],
       ['r','But not too many: if a trick isn’t finished when you land, you fall on your face and the jump scores nothing.'],
       ['b','You score for height and tricks. Everyone rides 2 runs of 6 jumps, taking turns.']],
@@ -164,11 +164,11 @@ const LANG={
     win:'YOU WIN!',winP:'You scored more than the computer!',lose:'YOU LOSE!',loseP:'The computer scored more.',tie:'DRAW!',tieP:'Exactly the same score!',
     redWin:'RED WINS!',redWinP:'Red scored more.',blueWin:'BLUE WINS!',blueWinP:'Blue scored more.',
     perfect:'PERFECT!',good:'GOOD!',ok:'OK',early:'TOO EARLY!',late:'JUST IN TIME!',ouch:'OUCH!',wobbly:'WOBBLY!',air:'AIR',
-    hint:'TAP ON YELLOW = JUMP · SWIPE = TRICKS',ff:'FRONTFLIP',bf:'BACKFLIP'},
-  fr:{done:'OK',you2:'TON SKIEUR',cGear:'CASQUE, SKIS & BÂTONS',cTop:'PULL',cPants:'PANTALON',cSkin:'PEAU',p1:'1 JOUEUR',p2:'2 JOUEURS',
+    hint:'TAP ON GREEN = BIG AIR · SWIPE = TRICKS',ff:'FRONTFLIP',bf:'BACKFLIP'},
+  fr:{done:'OK',you2:'TON SNOWBOARDEUR',cGear:'CASQUE & PLANCHE',cTop:'PULL',cPants:'PANTALON',cSkin:'PEAU',p1:'1 JOUEUR',p2:'2 JOUEURS',
     rule2:'Deux joueurs, un téléphone'+NB+': Rouge et Bleu jouent chacun son tour. Passez-vous le téléphone après chaque manche.',
     title:'HALFPIPE'+NB+'!',intro:'Qui marque le plus de points'+NB+': toi ou l’ordinateur'+NB+'?',
-    rules:[['g','Tape quand tu montes le mur (neige jaune). Plus tu es près du bord, plus tu sautes haut.'],
+    rules:[['g','Monte le mur et tape quand la barre en bas est verte, juste avant le bord. Plus tu es près du bord, plus tu sautes haut.'],
       ['o','Glisse le doigt en l’air'+NB+': gauche ou droite = vrille, haut = salto avant, bas = salto arrière. Tu peux combiner les figures'+NB+'!'],
       ['r','Mais pas trop'+NB+': si une figure n’est pas finie à l’atterrissage, tu tombes sur le nez et le saut ne compte pas.'],
       ['b','Les points viennent de la hauteur et des figures. Chacun fait 2 manches de 6 sauts, chacun son tour.']],
@@ -178,11 +178,11 @@ const LANG={
     win:'GAGNÉ'+NB+'!',winP:'Tu as plus de points que l’ordinateur'+NB+'!',lose:'PERDU'+NB+'!',loseP:'L’ordinateur a plus de points.',tie:'ÉGALITÉ'+NB+'!',tieP:'Exactement le même score'+NB+'!',
     redWin:'ROUGE GAGNE'+NB+'!',redWinP:'Rouge a plus de points.',blueWin:'BLEU GAGNE'+NB+'!',blueWinP:'Bleu a plus de points.',
     perfect:'PARFAIT'+NB+'!',good:'BIEN'+NB+'!',ok:'OK',early:'TROP TÔT'+NB+'!',late:'JUSTE'+NB+'!',ouch:'AÏE'+NB+'!',wobbly:'ÇA VACILLE'+NB+'!',air:'AIR',
-    hint:'TAPE SUR LE JAUNE = SAUT · GLISSE = FIGURES',ff:'FRONTFLIP',bf:'BACKFLIP'},
-  es:{done:'LISTO',you2:'TU ESQUIADOR',cGear:'CASCO, ESQUÍS Y BASTONES',cTop:'JERSEY',cPants:'PANTALÓN',cSkin:'PIEL',p1:'1 JUGADOR',p2:'2 JUGADORES',
+    hint:'TAPE SUR LE VERT = GRAND SAUT · GLISSE = FIGURES',ff:'FRONTFLIP',bf:'BACKFLIP'},
+  es:{done:'LISTO',you2:'TU SNOWBOARDER',cGear:'CASCO Y TABLA',cTop:'JERSEY',cPants:'PANTALÓN',cSkin:'PIEL',p1:'1 JUGADOR',p2:'2 JUGADORES',
     rule2:'Dos jugadores, un móvil: Rojo y Azul se turnan. Pasaos el móvil después de cada bajada.',
     title:'¡HALFPIPE!',intro:'¿Quién consigue más puntos: tú o el ordenador?',
-    rules:[['g','Toca mientras subes la pared (nieve amarilla). Cuanto más cerca del borde, más alto saltas.'],
+    rules:[['g','Sube la pared y toca cuando la barra de abajo esté verde, justo antes del borde. Cuanto más cerca del borde, más alto saltas.'],
       ['o','Desliza en el aire: izquierda o derecha = giro, arriba = mortal adelante, abajo = mortal atrás. ¡Puedes combinar trucos!'],
       ['r','Pero no demasiados: si un truco no ha terminado al aterrizar, caes de cara y el salto no cuenta.'],
       ['b','Hay puntos por altura y por trucos. Cada uno hace 2 bajadas de 6 saltos, por turnos.']],
@@ -192,11 +192,11 @@ const LANG={
     win:'¡GANASTE!',winP:'¡Tienes más puntos que el ordenador!',lose:'¡PERDISTE!',loseP:'El ordenador tiene más puntos.',tie:'¡EMPATE!',tieP:'¡Exactamente los mismos puntos!',
     redWin:'¡GANA ROJO!',redWinP:'Rojo tiene más puntos.',blueWin:'¡GANA AZUL!',blueWinP:'Azul tiene más puntos.',
     perfect:'¡PERFECTO!',good:'¡BIEN!',ok:'OK',early:'¡MUY PRONTO!',late:'¡JUSTO!',ouch:'¡AY!',wobbly:'¡TAMBALEO!',air:'AIRE',
-    hint:'TOCA EN AMARILLO = SALTO · DESLIZA = TRUCOS',ff:'FRONTFLIP',bf:'BACKFLIP'},
-  it:{done:'FATTO',you2:'IL TUO SCIATORE',cGear:'CASCO, SCI E BASTONI',cTop:'MAGLIONE',cPants:'PANTALONI',cSkin:'PELLE',p1:'1 GIOCATORE',p2:'2 GIOCATORI',
+    hint:'TOCA EN VERDE = SALTO ALTO · DESLIZA = TRUCOS',ff:'FRONTFLIP',bf:'BACKFLIP'},
+  it:{done:'FATTO',you2:'IL TUO SNOWBOARDER',cGear:'CASCO E TAVOLA',cTop:'MAGLIONE',cPants:'PANTALONI',cSkin:'PELLE',p1:'1 GIOCATORE',p2:'2 GIOCATORI',
     rule2:'Due giocatori, un telefono: Rosso e Blu si danno il turno. Passatevi il telefono dopo ogni manche.',
     title:'HALFPIPE!',intro:'Chi fa più punti: tu o il computer?',
-    rules:[['g','Tocca mentre sali sulla parete (neve gialla). Più sei vicino al bordo, più salti in alto.'],
+    rules:[['g','Sali sulla parete e tocca quando la barra in basso è verde, poco prima del bordo. Più sei vicino al bordo, più salti in alto.'],
       ['o','Scorri in aria: sinistra o destra = rotazione, su = salto in avanti, giù = salto all’indietro. Puoi combinare i trick!'],
       ['r','Ma non troppi: se un trick non è finito all’atterraggio, cadi di faccia e il salto non conta.'],
       ['b','Si fanno punti con l’altezza e i trick. Ognuno fa 2 manche da 6 salti, a turno.']],
@@ -206,11 +206,11 @@ const LANG={
     win:'VITTORIA!',winP:'Hai più punti del computer!',lose:'SCONFITTA!',loseP:'Il computer ha più punti.',tie:'PAREGGIO!',tieP:'Esattamente gli stessi punti!',
     redWin:'VINCE ROSSO!',redWinP:'Rosso ha più punti.',blueWin:'VINCE BLU!',blueWinP:'Blu ha più punti.',
     perfect:'PERFETTO!',good:'BENE!',ok:'OK',early:'TROPPO PRESTO!',late:'AL PELO!',ouch:'AHI!',wobbly:'TRABALLI!',air:'ARIA',
-    hint:'TOCCA SUL GIALLO = SALTO · SCORRI = TRICK',ff:'FRONTFLIP',bf:'BACKFLIP'},
-  pt:{done:'PRONTO',you2:'SEU ESQUIADOR',cGear:'CAPACETE, ESQUIS E BASTÕES',cTop:'BLUSA',cPants:'CALÇA',cSkin:'PELE',p1:'1 JOGADOR',p2:'2 JOGADORES',
+    hint:'TOCCA SUL VERDE = SALTO ALTO · SCORRI = TRICK',ff:'FRONTFLIP',bf:'BACKFLIP'},
+  pt:{done:'PRONTO',you2:'SEU SNOWBOARDER',cGear:'CAPACETE E PRANCHA',cTop:'BLUSA',cPants:'CALÇA',cSkin:'PELE',p1:'1 JOGADOR',p2:'2 JOGADORES',
     rule2:'Dois jogadores, um celular: Vermelho e Azul se revezam. Passem o celular depois de cada descida.',
     title:'HALFPIPE!',intro:'Quem faz mais pontos: você ou o computador?',
-    rules:[['g','Toque enquanto sobe a parede (neve amarela). Quanto mais perto da borda, mais alto você pula.'],
+    rules:[['g','Suba a parede e toque quando a barra lá embaixo estiver verde, logo antes da borda. Quanto mais perto da borda, mais alto você pula.'],
       ['o','Deslize no ar: esquerda ou direita = giro, para cima = mortal para frente, para baixo = mortal para trás. Dá para combinar manobras!'],
       ['r','Mas não exagere: se uma manobra não terminar na aterrissagem, você cai de cara e o salto não conta.'],
       ['b','Os pontos vêm da altura e das manobras. Cada um faz 2 descidas de 6 saltos, revezando.']],
@@ -220,7 +220,7 @@ const LANG={
     win:'VITÓRIA!',winP:'Você fez mais pontos que o computador!',lose:'DERROTA!',loseP:'O computador fez mais pontos.',tie:'EMPATE!',tieP:'Exatamente os mesmos pontos!',
     redWin:'VERMELHO VENCE!',redWinP:'O Vermelho fez mais pontos.',blueWin:'AZUL VENCE!',blueWinP:'O Azul fez mais pontos.',
     perfect:'PERFEITO!',good:'BOM!',ok:'OK',early:'CEDO DEMAIS!',late:'NA HORA!',ouch:'AI!',wobbly:'BALANÇANDO!',air:'AR',
-    hint:'TOQUE NO AMARELO = PULO · DESLIZE = MANOBRAS',ff:'FRONTFLIP',bf:'BACKFLIP'}
+    hint:'TOQUE NO VERDE = PULO ALTO · DESLIZE = MANOBRAS',ff:'FRONTFLIP',bf:'BACKFLIP'}
 };
 let lang='de',T=LANG.de;
 const $=s=>document.querySelector(s);
@@ -246,23 +246,59 @@ function resize(){
 function rng(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
 /* ---------- sprites (shared with Skiing) ---------- */
-const SKIER=[
+/* Snowboarder, 16×16, nose to the right. Four frames: side, front, back (for spins) and tucked (for flips and grabs). */
+const SB_SIDE=[
 "................",
-".........KKK....",
-"........KHHHK...",
-".L......KHHGGK..",
-".LL......KSSK...",
-".L.LLL.KJJJK....",
-"......LKJJJJK...",
-".....KJJJJJJK...",
-".....KJJJJKLSK..",
-"....KPPPPPK.....",
-".....KPPPPPK....",
-"......KKPPPK....",
-".......KPPK.....",
-"......KBBBBK...W",
-"..WWWWWWWWWWWWW.",
-".VVVVVVVVVVVVVV."];
+"......KKKK......",
+".....KHHHHK.....",
+".....KHHGGK.....",
+"......KSSSK.....",
+".....KJJJJK.....",
+"..KKKJJJJJJKKK..",
+".KSJJJJJJJJJJSK.",
+"..KK.KJJJJK.KK..",
+"....KPPPPPPK....",
+"...KPPKKKKPPK...",
+"...KPK....KPK...",
+"..KPPK....KPPK..",
+"W.KBBK....KBBK.W",
+".WWWWWWWWWWWWWW.",
+"..VVVVVVVVVVVV.."];
+const SB_FRONT=[
+"................",
+"......KKKK......",
+".....KHHHHK.....",
+".....KGGGGK.....",
+"......KSSK......",
+".....KJJJJK.....",
+"...KKJJJJJJKK...",
+"..KSJJJJJJJJSK..",
+"...KK.KJJK.KK...",
+".....KPPPPK.....",
+"....KPPKKPPK....",
+"....KPK..KPK....",
+"....KPK..KPK....",
+"....KBBKKBBK....",
+"...WWWWWWWWWW...",
+"....VVVVVVVV...."];
+const SB_BACK=SB_FRONT.map((r,i)=>i===3?".....KHHHHK.....":i===4?"......KJJK......":r);
+const SB_TUCK=[
+"................",
+"................",
+"................",
+"......KKKK......",
+".....KHHHHK.....",
+".....KHHGGK.....",
+"......KSSSK.....",
+"....KKJJJJKK....",
+"...KJJJJJJJJK...",
+"...KPPPPPPPPK...",
+"..KPPPKKKKPPPK..",
+"W.KSBBK..KBBSK.W",
+".WWWWWWWWWWWWWW.",
+"..VVVVVVVVVVVV..",
+"................",
+"................"];
 const PINE=[
 "...G...",
 "..GGG..",
@@ -283,15 +319,17 @@ const OUTFIT={
   j:['#E83B3B','#FF9A2E','#FFD23F','#3FAE5A','#8B4FD8','#FF6FB5','#2F7FE0'],
   p:['#2B4C9B','#3A3F5C','#C0392B','#2E7D4F','#8A93A8','#7A4A22','#F4F4F4'],
   s:['#FCDCC4','#F2B58C','#E3A672','#C68642','#8D5524','#5C3A21']};
-/* Same skier as in Skiing (same saved choice); random until the player picks one. */
+/* Same colours as the skier in Skiing (same saved choice); random until the player picks one. */
 const look={};for(const k in OUTFIT)look[k]=Math.floor(Math.random()*OUTFIT[k].length);
 try{const s=JSON.parse(localStorage.getItem('skiing.char')||'null');if(s)for(const k in look)if(OUTFIT[k][s[k]]!=null)look[k]=s[k]}catch(_){}
 const meColor=()=>OUTFIT.j[look.j];
-function makeMe(){const g=OUTFIT.g[look.g];return sprite(SKIER,{K:'#1B1F3B',H:g,G:'#38D1E0',S:OUTFIT.s[look.s],J:OUTFIT.j[look.j],P:OUTFIT.p[look.p],B:'#3A3F5C',L:g,W:g})}
+function rideSet(pal){return{side:sprite(SB_SIDE,pal),front:sprite(SB_FRONT,pal),back:sprite(SB_BACK,pal),tuck:sprite(SB_TUCK,pal)}}
+/* Helmet (H) and board (W) share the gear colour. */
+function makeMe(){const g=OUTFIT.g[look.g];return rideSet({K:'#1B1F3B',H:g,G:'#38D1E0',S:OUTFIT.s[look.s],J:OUTFIT.j[look.j],P:OUTFIT.p[look.p],B:'#3A3F5C',W:g})}
 let SPR_ME=makeMe();
-const SPR_RED=sprite(SKIER,{K:'#1B1F3B',H:'#FFD23F',G:'#38D1E0',S:'#F2B58C',J:'#E83B3B',P:'#2B4C9B',B:'#3A3F5C',L:'#9AA3B5',W:'#FF8C1A'});
-const SPR_AI=sprite(SKIER,{K:'#6F7FA8',H:'#FFFFFF',G:'#BFEFF5',S:'#F8D9C4',J:'#9CCFF6',P:'#B3B0EA',B:'#8E97B8',L:'#D0D6E2',W:'#B8E59E'});
-const SPR_BLUE=sprite(SKIER,{K:'#1B1F3B',H:'#FFFFFF',G:'#FFD23F',S:'#F2B58C',J:'#2F7FE0',P:'#1B1F3B',B:'#3A3F5C',L:'#9AA3B5',W:'#6CC24A'});
+const SPR_RED=rideSet({K:'#1B1F3B',H:'#FFD23F',G:'#38D1E0',S:'#F2B58C',J:'#E83B3B',P:'#2B4C9B',B:'#3A3F5C',W:'#FF8C1A'});
+const SPR_AI=rideSet({K:'#6F7FA8',H:'#FFFFFF',G:'#BFEFF5',S:'#F8D9C4',J:'#9CCFF6',P:'#B3B0EA',B:'#8E97B8',W:'#B8E59E'});
+const SPR_BLUE=rideSet({K:'#1B1F3B',H:'#FFFFFF',G:'#FFD23F',S:'#F2B58C',J:'#2F7FE0',P:'#1B1F3B',B:'#3A3F5C',W:'#6CC24A'});
 const SPR_PINE=sprite(PINE,{G:'#2F7D4A',g:'#4FA36A',T:'#6B4A2B'});
 const arrowCache={};function arrowSpr(col){return arrowCache[col]||(arrowCache[col]=sprite(ARROW,{K:'#1B1F3B',W:col}))}
 const AROT={u:0,r:Math.PI/2,d:Math.PI,l:-Math.PI/2};
@@ -335,20 +373,16 @@ const SX=x=>cx+x*S,SY=y=>by0+camUp-y*S;
 
 /* ---------- riders ---------- */
 function mkRider(key,ai,demo){return{key,ai,demo:!!demo,s:-SMAX,dir:1,E2:E2N,air:false,side:-1,ay:0,vy:0,tAir:0,Tair:1,hmax:0,face0:1,
-  pressed:false,q:0,late:false,buf:[],tricks:[],ti:0,tp:0,crashed:false,crashT:9,wob:0,hits:0,run:0,best:null,done:false,wait:0.9,plan:null,last:null}}
+  pressed:false,q:0,late:false,buf:[],tricks:[],ti:0,tp:0,crashed:false,crashT:9,wob:0,hits:0,run:0,best:null,done:false,wait:0.9,plan:null,last:null,pf:0,sq:1,trail:[],trailT:0}}
 let rider=null;
 function approaching(r){return!r.air&&(Math.sign(r.s)===r.dir||Math.abs(r.s)<0.05)}
 function press(r){
   if(r.crashed||r.done||r.wait>0)return;
-  if(r.air){ // a hair too late still counts, with a slightly smaller jump
-    if(r.late&&r.tAir<0.1){r.late=false;r.pressed=true;setPop(r,0.72);pop(r,'late','#FFFFFF')}
-    return}
-  if(r.pressed||!approaching(r))return;
+  if(r.air||r.pressed||!approaching(r))return;
+  // jump height depends only on how close to the edge you tap (0 = bottom of the wall, 1 = the edge)
   r.pressed=true;
-  const f=wallF(r.s);
-  if(Math.abs(r.s)<=F||f<0.12){r.q=0;pop(r,'early','#E83B3B');beep('bad');return}
-  r.q=Math.pow(f,1.4);
-  if(f>=0.88){pop(r,'perfect','#FF9A2E');beep('super')}else if(f>=0.6){pop(r,'good','#FFD23F');beep('good')}else{pop(r,'ok','#FFFFFF');beep('good')}
+  const f=wallF(r.s);r.pf=f;r.q=Math.pow(f,1.4);
+  if(f>=0.85){pop(r,'perfect','#6CC24A');beep('super')}else if(f>=0.45){pop(r,'good','#FFD23F');beep('good')}else{pop(r,'early','#E83B3B');beep('bad')}
 }
 function trick(r,k){
   if(r.crashed||r.done||r.wait>0)return;
@@ -363,10 +397,10 @@ function takeoff(r){
   setPop(r,r.pressed?r.q:0);
   r.tricks=r.buf.slice();r.buf=[];r.ti=0;r.tp=0;r.hits++;
   if(r.ai)aiTricks(r);
-  spray(r.side*(F+R),HC,6);
+  r.sq=1.3;spray(r.side*(F+R),HC,6);
 }
-function trickState(r){let sp=0,fl=0;const n=Math.min(r.tricks.length,r.ti+1);
-  for(let i=0;i<n;i++){const k=r.tricks[i],p=i<r.ti?1:r.tp;if(k==='l'||k==='r')sp+=p;else fl+=k==='u'?p:-p}return{sp,fl}}
+function trickState(r){let sp=0,fl=0,ss=0;const n=Math.min(r.tricks.length,r.ti+1);
+  for(let i=0;i<n;i++){const k=r.tricks[i],p=i<r.ti?1:r.tp;if(k==='l'||k==='r'){sp+=p;ss+=k==='l'?-p:p}else fl+=k==='u'?p:-p}return{sp,fl,ss}}
 function trickName(tr){const out=[];let i=0;
   while(i<tr.length){const k=tr[i];let j=i;while(j<tr.length&&tr[j]===k)j++;const n=j-i;
     out.push(k==='l'||k==='r'?String(360*n):(n>1?n+'× ':'')+(k==='u'?T.ff:T.bf));i=j}
@@ -377,7 +411,7 @@ function scoreJump(h,tr,st){
   let tp=sp*100+fl*150;if(n>1)tp*=1+0.5*(n-1);if(sp&&fl)tp*=1.25;if(st==='wobbly')tp*=0.5;
   return Math.round((h*METERS*60+tp)/10)*10}
 function land(r){
-  r.air=false;r.dir=-r.side;r.s=r.side*(SMAX-0.002);r.ay=0;
+  r.air=false;r.dir=-r.side;r.s=r.side*(SMAX-0.002);r.ay=0;r.sq=0.65;r.trail=[];
   const left=r.tricks.length-r.ti;let st='clean';
   if(left>1||(left===1&&r.tp<0.72))st='crash';
   else if(left===1){st=r.tp>=0.93?'clean':'wobbly';r.ti++;r.tp=0}
@@ -404,7 +438,8 @@ function crossCenter(r){
 }
 function step(r,dt){
   if(r.wait>0){r.wait-=dt;return}
-  r.crashT+=dt;if(r.wob>0)r.wob-=dt;
+  r.crashT+=dt;if(r.wob>0)r.wob-=dt;r.sq+=(1-r.sq)*Math.min(1,dt*9);
+  if(r.air&&r.ti<r.tricks.length){if((r.trailT+=dt)>0.035){r.trailT=0;r.trail.push(riderPose(r));if(r.trail.length>4)r.trail.shift()}}else if(r.trail.length&&(r.trailT+=dt)>0.035){r.trailT=0;r.trail.shift()}
   if(r.ai)aiThink(r);
   if(r.air){
     r.tAir+=dt;r.vy-=G*dt;r.ay+=r.vy*dt;
@@ -489,19 +524,16 @@ function drawPipe(){
   const blink=Math.floor(clock*6)%2,edgeL=Math.round(SX(-(F+R))),edgeR=Math.round(SX(F+R))-1;
   for(let i=0;i<W;i++){
     const x=(i+0.5-cx)/S,a=Math.abs(x),inside=i>edgeL&&i<edgeR,edge=i===edgeL||i===edgeR;
-    let y=inside?surfY(x):HC,f=0;
-    if(inside&&a>F){f=wallF(F+Math.asin(Math.min(1,(a-F)/R)))}
-    if(edge){y=HC;f=1}
-    const ty=Math.round(SY(y));if(ty>=H)continue;
-    const top=f>=0.85?'#FF9A2E':f>=0.45?'#FFD23F':'#FFFFFF',top2=f>=0.45?'#FFF0A8':'#FFFFFF';
-    if(edge){const yr=Math.round(SY(R));rect(top,i,ty,1,yr-ty+2);rect('#3A3F5C',i,ty-1,1,2);rect('#E6F2FC',i,yr+2,1,9);rect('#CFE2F3',i,yr+11,1,H);continue}
-    rect(top,i,ty,1,2);rect(top2,i,ty+2,1,1);
+    const y=inside?surfY(x):HC,ty=Math.round(SY(y));if(ty>=H)continue;
+    if(edge){const yr=Math.round(SY(R));rect('#FFFFFF',i,ty,1,yr-ty+2);rect('#E6F2FC',i,yr+2,1,9);rect('#CFE2F3',i,yr+11,1,H);continue}
+    rect('#FFFFFF',i,ty,1,3);
     rect(inside?'#D9EAF8':'#E6F2FC',i,ty+3,1,9);rect('#CFE2F3',i,ty+12,1,H-ty-12);
     if(i%11===0)rect('#BBD3EA',i,ty+16+((i/11|0)%5)*6,1,1);
-    if(f>=0.45&&((i+blink*3)%7===0))rect('#FFFFFF',i,ty-2,1,1);
   }
-  // coping: a metal edge on both sides
-  for(const g of[-1,1]){const x=Math.round(SX(g*(F+R)))-(g>0?2:0),y=Math.round(SY(HC));rect('#1B1F3B',x-1,y-2,4,3);rect('#9AA3B5',x,y-1,2,1)}
+  // coping: a metal edge on both sides; it flashes green when it's the moment to tap
+  const hot=rider&&!rider.air&&!rider.pressed&&!rider.crashed&&!rider.done&&Math.sign(rider.s)===rider.dir&&wallF(rider.s)>=0.85?Math.sign(rider.s):0;
+  for(const g of[-1,1]){const x=Math.round(SX(g*(F+R)))-(g>0?2:0),y=Math.round(SY(HC)),on=hot===g&&blink;
+    rect('#1B1F3B',x-1,y-2,4,3);rect(on?'#6CC24A':'#9AA3B5',x,y-1,2,1);if(on){rect('#6CC24A',x-2,y-4,6,1);rect('#6CC24A',x-1,y-5,4,1)}}
 }
 function drawDeck(){
   const deck=Math.round(SY(HC)),half=W/2/S;
@@ -517,19 +549,32 @@ function drawDeck(){
   for(const d of[1.25,1.75,2.4]){for(const g of[-1,1]){const x=Math.round(SX(g*(F+R+d)));if(x<-8||x>W+8)continue;ctx.drawImage(SPR_PINE,x-3,deck-10)}}
 }
 function riderPose(r){
-  if(r.air){const st=trickState(r),nat=Math.min(1,r.tAir/r.Tair);
+  if(r.air){const st=trickState(r),nat=Math.min(1,r.tAir/r.Tair),cur=r.ti<r.tricks.length?r.tricks[r.ti]:null;
+    // spins: the half-turn every jump needs plus the spins asked for; show side, front, other side, back
+    const th=Math.PI*nat+2*Math.PI*st.ss,c=Math.cos(th),sn=Math.sin(th);
+    let frame,sx;
+    if(cur==='u'||cur==='d'){frame='tuck';sx=(c>=0?1:-1)*r.face0}
+    else if(Math.abs(c)>0.55){sx=(c>0?1:-1)*r.face0;frame=!cur&&r.Tair>0.75&&nat>0.3&&nat<0.7?'tuck':'side'}
+    else{frame=sn>0?'front':'back';sx=1}
     // straighten up in the air (so spins and flips read well), lean back against the wall for the landing
     const e=Math.min(nat,1-nat)/0.18,w=e>=1?0:1-e*e*(3-2*e);
-    return{x:r.side*(F+R),y:HC+Math.max(0,r.ay),ang:-r.side*Math.PI/2*w,sx:r.face0*Math.cos(Math.PI*(nat+2*st.sp)),rot:st.fl*2*Math.PI*r.face0}}
+    return{x:r.side*(F+R),y:HC+Math.max(0,r.ay),ang:-r.side*Math.PI/2*w,sx,rot:st.fl*2*Math.PI*r.face0,frame,sy:r.sq}}
   const c=curve(r.s);let rot=0;
   if(r.crashed)rot=r.dir*Math.min(1,r.crashT*4)*1.55;
-  return{x:c.x,y:c.y,ang:-Math.sign(r.s)*c.t,sx:r.dir,rot}
+  // crouch while waiting for the right moment on the wall, then spring up
+  const crouch=!r.pressed&&!r.crashed&&!r.done&&Math.sign(r.s)===r.dir&&Math.abs(r.s)>F;
+  return{x:c.x,y:c.y,ang:-Math.sign(r.s)*c.t,sx:r.dir,rot,frame:r.sq<0.9||crouch&&wallF(r.s)>0.3?'tuck':'side',sy:r.sq}
+}
+function drawPose(p,set,alpha){
+  const X=Math.round(SX(p.x)),Y=Math.round(SY(p.y));
+  ctx.save();ctx.globalAlpha=alpha;ctx.translate(X,Y);ctx.rotate(p.ang);ctx.scale(1,p.sy||1);ctx.translate(0,-7);ctx.rotate(p.rot);ctx.scale(p.sx,1);
+  ctx.drawImage(set[p.frame],-8,-8);ctx.restore();
 }
 function drawRider(r){
-  const p=riderPose(r),X=Math.round(SX(p.x)),Y=Math.round(SY(p.y));
-  ctx.save();ctx.translate(X,Y);ctx.rotate(p.ang+(r.wob>0?Math.sin(clock*24)*0.22:0));ctx.translate(0,-7);ctx.rotate(p.rot);
-  let sx=p.sx;if(Math.abs(sx)<0.18)sx=0.18*(sx<0?-1:1);ctx.scale(sx,1);
-  ctx.drawImage(PL[r.key].spr(),-8,-8);ctx.restore();
+  const p=riderPose(r),X=Math.round(SX(p.x)),Y=Math.round(SY(p.y)),set=PL[r.key].spr();
+  r.trail.forEach((q,i)=>drawPose(q,set,0.1+0.07*i));
+  if(r.wob>0)p.ang+=Math.sin(clock*24)*0.22;
+  drawPose(p,set,1);
   if(r.crashed&&r.crashT<1.4)for(let i=0;i<3;i++){const a=clock*6+i*2.1;rect('#FFD23F',X+Math.cos(a)*6,Y-12+Math.sin(a)*2,1,1)}
   // height marker while flying
   if(r.air&&r.hmax>0.05){const xi=Math.round(SX(r.side*(F+R)))-r.side*14,top=Math.round(SY(HC+r.hmax)),base=Math.round(SY(HC));
@@ -543,6 +588,20 @@ function drawRider(r){
       if(r.air){if(i<r.ti)col='#6CC24A';else{acc+=TD[k]*(i===r.ti?1-r.tp:1);col=acc>remain+0.25*TD[k]?'#E83B3B':i===r.ti?'#FFD23F':'#FFFFFF'}}
       ctx.save();ctx.translate(Math.round(x0+i*w)+3.5,y0+3.5);ctx.rotate(AROT[k]);ctx.drawImage(arrowSpr(col),-3.5,-3.5);ctx.restore()});
   }
+}
+/* Jump bar under the pipe: fills while you ride up the wall toward the edge. Red = too early, yellow = ok, green = big air. */
+function drawMeter(r){
+  if(!r||r.air||r.crashed||r.done||r.demo&&state!=='menu')return;
+  if(!(Math.sign(r.s)===r.dir&&Math.abs(r.s)>F*0.4))return;
+  const f=r.pressed?r.pf:wallF(r.s),w=Math.round(Math.min(W*0.7,150)),x0=Math.round(W/2-w/2),y=Math.min(H-12,Math.round(SY(0))+18),hh=6;
+  const at=t=>r.dir>0?x0+Math.round(t*w):x0+w-Math.round(t*w);
+  rect('#1B1F3B',x0-2,y-2,w+4,hh+4);
+  [[0,0.45,'#7A3036','#E83B3B'],[0.45,0.85,'#8A7A2E','#FFD23F'],[0.85,1,'#2E6B3A','#6CC24A']].forEach(([a,b,dim,lit])=>{
+    const xa=Math.min(at(a),at(b)),xb=Math.max(at(a),at(b));rect(dim,xa,y,xb-xa,hh);
+    const fb=Math.min(b,f);if(fb>a){const xa2=Math.min(at(a),at(fb)),xb2=Math.max(at(a),at(fb));rect(lit,xa2,y,xb2-xa2,hh)}});
+  const m=at(f);rect('#FFFFFF',m-1,y-3,2,hh+6);
+  // a little wall at the end the rider is heading to
+  const e=r.dir>0?x0+w+3:x0-6;rect('#1B1F3B',e,y-6,3,hh+8);rect('#FFFFFF',e+1,y-5,1,hh+6);
 }
 function drawFx(){
   parts.forEach(p=>rect('#FFFFFF',SX(p.x),SY(p.y),1,1));
@@ -633,7 +692,7 @@ function paintChar(){
     row.append(sw);rows.append(row)});
   drawPrev();
 }
-function drawPrev(){['#charCv','#charMini'].forEach(id=>{const g=$(id).getContext('2d');g.clearRect(0,0,16,16);g.drawImage(SPR_ME,0,0)})}
+function drawPrev(){['#charCv','#charMini'].forEach(id=>{const g=$(id).getContext('2d');g.clearRect(0,0,16,16);g.drawImage(SPR_ME.side,0,0)})}
 const DIALOGS=[['#charOv','#charBtn','#charDone','#charRows'],['#lvlOv','#lvlBtn','#lvlDone','#lvRow']];
 function openDlg(ov,btn,done,rows){$('#startOv').hidden=true;$(ov).hidden=false;fitTitles();const on=$(rows+' button[aria-pressed="true"]');
   if(on){on.scrollIntoView({block:'nearest'});on.focus()}else $(done).focus()}
@@ -678,7 +737,7 @@ function frame(ts){
   camUp+=(want-camUp)*Math.min(1,dt*(want>camUp?8:3));
   drawSky();drawBg();drawDeck();drawPipe();
   if(rider)drawRider(rider);
-  drawFx();updHud();
+  drawMeter(rider);drawFx();updHud();
   requestAnimationFrame(frame);
 }
 (function init(){
