@@ -35,6 +35,7 @@ Conway's Game of Life in the pixel look of Skiing. Not on the game list: tap the
 
 A pixel-art snowboard halfpipe contest in the same look as Skiing. Players take turns: 2 rounds, each run is 6 jumps (right wall, left wall, …). Most points wins.
 
+- The start menu keeps it short: three one-line rules.
 - **Jump:** tap while riding up the wall. The jump height depends only on how close to the edge you tap. A bar at the top of the screen fills as you ride up (red = too early, yellow = ok, green = big air), and the edge of the wall flashes green at the best moment. No tap = only a tiny hop.
 - **Tricks:** swipe in the air (or on the way up after tapping) — left/right = a 360 spin, up = front flip, down = backflip. One swipe = one trick, however long it is (swipe twice for two). Swipes queue up and run one after another, so you can combine them. Arrows above the rider show the queue: green = done, gold = doing, white = coming, red = won't finish before landing.
 - **Height:** the height counts up next to the rider; at the top it pops (white, gold from 3 m, orange from about 5 m) and stays a moment after the landing.
