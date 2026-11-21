@@ -385,7 +385,7 @@ function update(dt){
     else P.vx=0;
   }else P.x=nx;
   if(P.ground){
-    P.walk+=Math.abs(P.vx)*dt*.09;
+    P.walk+=Math.abs(P.vx)*dt*.016;   // about three steps a second at full speed
     const s=support(P.x,P.y);
     if(s){P.y=s.y;P.on=s.p}else{P.ground=false;P.on=null;P.coy=.1;P.vy=0}
   }else{
@@ -506,10 +506,10 @@ function drawChar(){
   else if(P.ground){
     // walking like an inchworm: the hump bunches up and stretches out, its peak rolls from back to front, leaning into the run
     const ph=P.walk*6.2832,sp=Math.min(1,Math.abs(P.vx)/SPEED);
-    h=moving?8+1.2*Math.sin(ph):8+.6*Math.sin(t*3);
+    h=moving?8.5+2.4*Math.sin(ph):8+.6*Math.sin(t*3);
     sk=moving?Math.max(.65,1+.2*sp+.28*Math.cos(ph)):.85;
     if(P.squash>0)h*=1-P.squash*2.2;
-    len=CL+(8-h)*.7+(moving?2.2*Math.cos(ph):0);
+    len=CL+(8-h)*.6+(moving?3.6*Math.cos(ph):0);
   }else{drawBlob();return}
   // after a gravity switch the hump swings through the line to the other side
   const side=P.flipT>0?P.g*(1-2*P.flipT/.25):P.g;
