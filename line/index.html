@@ -231,7 +231,7 @@ function gen(n){
     }
   }
   // the last stretch: a small ring on the line puts you back on top (if you're upside down), then the door
-  flat(60);endFlip={x:cx,y:cy,p:{pts:cur,ox:0,oy:0}};flat(170);goal={x:cx,y:cy};flat(170);end();
+  flat(60);endFlip={x:cx,y:cy,p:{pts:cur,ox:0,oy:0}};flat(170);goal={x:cx,y:cy,p:{pts:cur,ox:0,oy:0}};flat(170);end();
   // checkpoints: one in the middle, two on long levels
   const cpN=target>4200?2:1;
   for(let i=1;i<=cpN;i++){const want=target*i/(cpN+1);let b=null;for(const f of flats)if(f[0]>300&&(!b||Math.abs(f[0]-want)<Math.abs(b[0]-want)))b=f;if(b&&!cps.some(c=>c.x===b[0]))cps.push({x:b[0],y:b[1],g:b[2],p:{pts:b[3],ox:0,oy:0},on:false})}
@@ -581,6 +581,7 @@ function render(){
     if(c.on){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(x+sw,hy,r,0,6.2832);ctx.fill()}}
   // the door at the end: when you walk in it lights up and its colour floods the screen
   {const gx=goal.x,gy=goal.y,dw=13,dh=42,lit=state==='win'?Math.min(1,P.win/.3):0;
+    strokeAlong(goal.p,gx-dw,gx+dw,BG,LW+3);   // no line under the door: it's an opening
     if(lit>0){ctx.fillStyle=FG;ctx.fillRect(gx-dw,gy-dh*lit,dw*2,dh*lit)}
     ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.moveTo(gx-dw,gy);ctx.lineTo(gx-dw,gy-dh);ctx.lineTo(gx+dw,gy-dh);ctx.lineTo(gx+dw,gy);ctx.stroke();
     if(lit<1){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(gx+dw-5,gy-dh*.45,2,0,6.2832);ctx.fill()}
