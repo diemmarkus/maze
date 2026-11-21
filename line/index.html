@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#1E3440">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>The Line</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&display=swap">
+<style>
+/* One colour per level: a dark background and the line, a lighter shade of the same colour. Everything else is drawn with the line colour too. */
+:root{--bg:#1E3440;--fg:#9ED6F2;--font:"Comfortaa",ui-rounded,"Trebuchet MS",sans-serif;color-scheme:dark}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:var(--font);color:var(--fg);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;overscroll-behavior:none}
+/* The stage is always landscape. In a portrait window it is turned by 90°, so the game plays sideways. */
+#stage{position:fixed;left:0;top:0;transform-origin:0 0;overflow:hidden;background:var(--bg);--sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px);--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
+#stage.rot{--sl:env(safe-area-inset-top,0px);--sr:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-right,0px);--sb:env(safe-area-inset-left,0px)}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.hud{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:20px;padding:calc(12px + var(--st)) max(18px,var(--sr)) 0 max(18px,var(--sl));font-size:13px;font-weight:700;letter-spacing:.16em;pointer-events:none}
+.dots{display:flex;gap:7px}
+.dots i{width:10px;height:10px;border-radius:50%;border:2px solid var(--fg);box-sizing:border-box;opacity:.55}
+.dots i.on{background:var(--fg);opacity:1}
+.hud .falls{opacity:.7}
+#pauseBtn{margin-left:auto;pointer-events:auto;width:38px;height:38px;border-radius:50%;border:2px solid var(--fg);background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;padding:0}
+#pauseBtn svg{width:14px;height:14px}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:calc(10px + var(--st)) max(14px,var(--sr)) calc(10px + var(--sb)) max(14px,var(--sl));background:color-mix(in srgb,var(--bg) 78%,transparent)}
+.card{box-sizing:border-box;width:min(560px,100%);max-height:100%;overflow-y:auto;text-align:center;padding:14px 22px 16px;border:2px solid var(--fg);border-radius:22px;background:var(--bg)}
+.logo{display:block;width:min(300px,80%);height:auto;margin:2px auto 4px}
+h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
+.card p{margin:4px 0;font-size:14px;line-height:1.4;font-weight:500}
+.rules{list-style:none;margin:8px auto 10px;padding:0;display:grid;gap:5px;text-align:left;width:max-content;max-width:100%;font-size:13px;line-height:1.35}
+.rules li{display:flex;gap:10px;align-items:center}
+.rules svg{flex:none;width:30px;height:16px}
+.lvl{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:6px 0 2px;font-size:11px;letter-spacing:.16em;font-weight:700}
+.lv{display:flex;gap:6px;max-width:100%;overflow-x:auto;padding:3px}
+.lv button{flex:none;font:inherit;font-size:13px;letter-spacing:0;width:34px;height:34px;border-radius:50%;border:2px solid var(--fg);background:none;color:var(--fg);cursor:pointer;padding:0}
+.lv button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.btns{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:10px}
+.btn{font:inherit;font-weight:700;letter-spacing:.18em;font-size:15px;color:var(--bg);background:var(--fg);border:2px solid var(--fg);border-radius:999px;padding:11px 28px;cursor:pointer}
+.btn.alt{background:none;color:var(--fg)}
+.btn:active{transform:scale(.96)}
+.btn:focus-visible,.lv button:focus-visible,#pauseBtn:focus-visible,.home:focus-visible{outline:2px dashed var(--fg);outline-offset:3px}
+.home{display:inline-block;margin-top:12px;font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--fg);text-decoration:none;opacity:.8}
+.stats{display:flex;justify-content:center;gap:26px;margin:6px 0 4px;font-size:12px;letter-spacing:.14em;font-weight:700}
+.stats b{display:block;font-size:22px;letter-spacing:.04em;margin-top:3px}
+.stats .dots{justify-content:center;margin-top:8px}
+.stats .dots i{width:14px;height:14px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c" aria-label="The Line"></canvas>
+  <div class="hud" id="hud" hidden>
+    <span id="lvChip">LEVEL 1</span>
+    <span class="dots" id="dots"><i></i><i></i><i></i></span>
+    <span class="falls" id="fallChip"></span>
+    <button type="button" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.5" height="12" rx="1.5" fill="currentColor"/><rect x="8.5" y="1" width="3.5" height="12" rx="1.5" fill="currentColor"/></svg></button>
+  </div>
+
+  <div class="overlay" id="startOv">
+    <div class="card">
+      <svg class="logo" viewBox="0 0 300 70" aria-label="THE LINE" role="img">
+        <text x="150" y="30" text-anchor="middle" font-family="Comfortaa,ui-rounded,sans-serif" font-weight="700" font-size="30" letter-spacing="9" fill="currentColor">THE LINE</text>
+        <path d="M6 56H128C134 56 136 45 145 45C153 45 155 56 161 56H200M222 56H294" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="152" cy="49.5" r="1.8" fill="var(--bg)"/>
+      </svg>
+      <p data-i18n="intro"></p>
+      <ul class="rules">
+        <li><svg viewBox="0 0 30 16" aria-hidden="true"><circle cx="15" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 8h4M23 8h4M5 6l-2 2 2 2M25 6l2 2-2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="r1"></span></li>
+        <li><svg viewBox="0 0 30 16" aria-hidden="true"><circle cx="15" cy="8" r="6.5" fill="currentColor"/></svg><span data-i18n="r2"></span></li>
+        <li><svg viewBox="0 0 30 16" aria-hidden="true"><path d="M1 13h7l3-7 3 7 3-7 3 7h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="r3"></span></li>
+      </ul>
+      <div class="lvl" id="lvlRow"><span data-i18n="level">LEVEL</span><div class="lv" id="lv" role="group"></div></div>
+      <div class="btns"><button type="button" class="btn" id="playBtn" data-i18n="play">SPIELEN</button></div>
+      <a class="home" href="../" data-i18n="home">← ALLE SPIELE</a>
+    </div>
+  </div>
+
+  <div class="overlay" id="pauseOv" hidden>
+    <div class="card">
+      <h1 data-i18n="paused">PAUSE</h1>
+      <div class="btns"><button type="button" class="btn" id="resumeBtn" data-i18n="resume">WEITER</button><button type="button" class="btn alt" id="restartBtn" data-i18n="restart">NEU STARTEN</button></div>
+      <div class="btns"><button type="button" class="btn alt" id="menuBtn" data-i18n="menu">MENÜ</button></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="doneOv" hidden>
+    <div class="card">
+      <h1 id="doneTitle">LEVEL 1</h1>
+      <p data-i18n="done"></p>
+      <div class="stats">
+        <div><span data-i18n="dotsL">PUNKTE</span><div class="dots" id="doneDots"><i></i><i></i><i></i></div></div>
+        <div><span data-i18n="time">ZEIT</span><b id="doneTime">0:00</b></div>
+        <div><span data-i18n="falls">STÜRZE</span><b id="doneFalls">0</b></div>
+      </div>
+      <div class="btns"><button type="button" class="btn" id="nextBtn" data-i18n="next">WEITER</button><button type="button" class="btn alt" id="againBtn" data-i18n="again">NOCHMAL</button></div>
+      <a class="home" href="../" data-i18n="home">← ALLE SPIELE</a>
+    </div>
+  </div>
+</div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+
+/* ---------- languages (shared with the other games) ---------- */
+const LANG={
+  de:{intro:'Du bist ein Stück der Linie. Lauf bis zum Ring am Ende.',r1:'Linker Daumen: nach links oder rechts ziehen = laufen',r2:'Anderer Finger: tippen = aus der Linie springen',r3:'Spring über Lücken und Zacken, sammle die Punkte',level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',hMove:'← ziehen →',hJump:'tippen = springen',fall:'✕'},
+  en:{intro:'You are a piece of the line. Run to the ring at the end.',r1:'Left thumb: drag left or right to run',r2:'Other finger: tap to jump out of the line',r3:'Jump over gaps and spikes, collect the dots',level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',hMove:'← drag →',hJump:'tap = jump',fall:'✕'},
+  fr:{intro:'Tu es un morceau de la ligne. Cours jusqu’à l’anneau au bout.',r1:'Pouce gauche : glisse à gauche ou à droite pour courir',r2:'Autre doigt : tape pour sauter hors de la ligne',r3:'Saute par-dessus les trous et les pics, ramasse les points',level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',hMove:'← glisse →',hJump:'tape = saute',fall:'✕'},
+  es:{intro:'Eres un trozo de la línea. Corre hasta el anillo del final.',r1:'Pulgar izquierdo: desliza a izquierda o derecha para correr',r2:'Otro dedo: toca para saltar fuera de la línea',r3:'Salta huecos y pinchos, recoge los puntos',level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',hMove:'← desliza →',hJump:'toca = salta',fall:'✕'},
+  it:{intro:'Sei un pezzo della linea. Corri fino all’anello alla fine.',r1:'Pollice sinistro: trascina a sinistra o a destra per correre',r2:'Altro dito: tocca per saltare fuori dalla linea',r3:'Salta buchi e punte, raccogli i punti',level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',hMove:'← trascina →',hJump:'tocca = salta',fall:'✕'},
+  pt:{intro:'Você é um pedaço da linha. Corra até o anel no final.',r1:'Polegar esquerdo: arraste para a esquerda ou direita para correr',r2:'Outro dedo: toque para pular para fora da linha',r3:'Pule buracos e espinhos, pegue os pontos',level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',hMove:'← arraste →',hJump:'toque = pula',fall:'✕'}
+};
+let lang='de',T=LANG.de;
+function setLang(k){lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=T[el.dataset.i18n]})}
+
+/* ---------- storage ---------- */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(_){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}}};
+let unlocked=Math.max(1,store.get('line.unlocked',1)|0);
+let bestDots=store.get('line.dots',{});
+
+/* ---------- landscape stage ---------- */
+const stage=$('stage'),cv=$('c'),ctx=cv.getContext('2d');
+const VIEW_H=300;               // world units that fit the screen height
+let SW=640,SH=360,rot=false,DPR=1,K=1,viewW=640;
+function layout(){
+  const vw=innerWidth,vh=innerHeight;rot=vh>vw;
+  SW=rot?vh:vw;SH=rot?vw:vh;
+  stage.style.width=SW+'px';stage.style.height=SH+'px';
+  stage.style.transform=rot?`translate(${vw}px,0) rotate(90deg)`:'none';
+  stage.classList.toggle('rot',rot);
+  DPR=Math.min(2,devicePixelRatio||1);
+  cv.width=Math.round(SW*DPR);cv.height=Math.round(SH*DPR);
+  K=SH/VIEW_H;viewW=SW/K;
+}
+addEventListener('resize',layout);
+if(screen.orientation&&screen.orientation.addEventListener)screen.orientation.addEventListener('change',()=>setTimeout(layout,50));
+layout();
+// screen point → stage point (undo the 90° turn)
+function toStage(e){return rot?{x:e.clientY,y:innerWidth-e.clientX}:{x:e.clientX,y:e.clientY}}
+// Android: go full screen and lock to landscape. iOS can't, there the turned stage does the job.
+function goLandscape(){
+  const d=document.documentElement;
+  try{
+    if(!document.fullscreenElement&&d.requestFullscreen){
+      d.requestFullscreen({navigationUI:'hide'}).then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape')).then(()=>setTimeout(layout,60)).catch(()=>{});
+    }else if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{});
+  }catch(_){}
+}
+
+/* ---------- colours ---------- */
+let BG='#1E3440',FG='#9ED6F2';
+function hslHex(h,s,l){s/=100;l/=100;const f=n=>{const k=(n+h/30)%12,c=l-s*Math.min(l,1-l)*Math.max(-1,Math.min(k-3,9-k,1));return Math.round(c*255).toString(16).padStart(2,'0')};return '#'+f(0)+f(8)+f(4)}
+function setTheme(n){
+  const h=(200+(n-1)*47)%360;
+  BG=hslHex(h,36,19);FG=hslHex(h,72,77);
+  const r=document.documentElement.style;r.setProperty('--bg',BG);r.setProperty('--fg',FG);
+  document.querySelector('meta[name=theme-color]').setAttribute('content',BG);
+}
+
+/* ---------- level generator ---------- */
+function rng(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+let plats=[],spikes=[],sparks=[],cps=[],goal=null,killY=400,levelN=1;
+function mkPlat(pts,solid,mv){return{pts,solid,mv:mv||null,ox:0,oy:0,dx:0,dy:0}}
+function gen(n){
+  const R=rng(n*7919+13),ri=(a,b)=>a+R()*(b-a);
+  const d=Math.min(1,(n-1)/12);
+  const target=Math.min(7200,1900+n*380);
+  plats=[];spikes=[];sparks=[];cps=[];
+  let cx=0,cy=0,cur=[[-500,0]];
+  const cands=[],flats=[];
+  const end=()=>{if(cur.length>1)plats.push(mkPlat(cur,true))};
+  const flat=L=>{if(L>=70)flats.push([cx+L/2,cy]);cx+=L;cur.push([cx,cy])};
+  flat(380);
+  const W={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:n>=2?2.2:0,floats:n>=3?1.4:0,mover:n>=4?1.2:0};
+  const pick=last=>{let tot=0;for(const k in W)if(k!==last)tot+=W[k];let r=R()*tot;for(const k in W){if(k===last)continue;if((r-=W[k])<0)return k}return 'flat'};
+  let last='';
+  while(cx<target){
+    const k=pick(last);last=k;
+    if(k==='flat')flat(ri(90,200));
+    else if(k==='slope'){const L=ri(120,260),dy=ri(25,Math.min(110,L*.55))*(R()<.5?-1:1);cx+=L;cy+=dy;cur.push([cx,cy]);flat(ri(50,100))}
+    else if(k==='step'){const up=R()<.55,dy=up?-ri(18,28+34*d):ri(25,60+40*d);cur.push([cx,cy+dy]);cy+=dy;flat(ri(80,150))}
+    else if(k==='stairs'){const up=R()<.5,m=3+(R()<.5?1:0);for(let i=0;i<m;i++){const dy=ri(14,22)*(up?-1:1);cur.push([cx,cy+dy]);cy+=dy;flat(ri(44,64))}flat(70)}
+    else if(k==='gap'){
+      const dy=ri(-30-22*d,50),up=Math.max(0,-dy),w=ri(48,Math.min(130,72+58*d)-up*.6);
+      end();cands.push([cx+w/2,Math.min(cy,cy+dy)-58]);cx+=w;cy+=dy;cur=[[cx,cy]];flat(ri(100,160));
+    }
+    else if(k==='spikes'){flat(60);const t=Math.round(ri(2,3.4+4*d)),w=t*12;spikes.push({x0:cx,x1:cx+w,y:cy,n:t});cands.push([cx+w/2,cy-62]);cx+=w;cur.push([cx,cy]);flat(ri(80,130))}
+    else if(k==='floats'){
+      end();const m=1+(R()<.3+.4*d?1:0);let x=cx;let fy=cy;
+      for(let i=0;i<m;i++){const sub=ri(58,82+22*d),pw=ri(55,85);x+=sub;fy=cy-ri(8,44);plats.push(mkPlat([[x,fy],[x+pw,fy]],false));cands.push([x+pw/2,fy-42]);x+=pw}
+      x+=ri(58,80+20*d);cx=x;cy=fy+ri(-20,35);cur=[[cx,cy]];flat(ri(100,150));
+    }
+    else if(k==='mover'){
+      end();const G=ri(250,330+60*d),pw=72,c=cx+G/2,amp=G/2-pw/2-2;
+      plats.push(mkPlat([[c-pw/2,cy],[c+pw/2,cy]],false,{amp,per:ri(3.9,3.1-.5*d),ph:R()*6.283}));
+      cands.push([c,cy-48]);cx+=G;cur=[[cx,cy]];flat(ri(110,160));
+    }
+  }
+  flat(170);goal={x:cx,y:cy};flat(170);end();
+  // checkpoints: one in the middle, two on long levels
+  const cpN=target>4200?2:1;
+  for(let i=1;i<=cpN;i++){const want=target*i/(cpN+1);let b=null;for(const f of flats)if(f[0]>300&&(!b||Math.abs(f[0]-want)<Math.abs(b[0]-want)))b=f;if(b&&!cps.some(c=>c.x===b[0]))cps.push({x:b[0],y:b[1],on:false})}
+  cps.sort((a,b)=>a.x-b.x);
+  // three dots, spread out over the level
+  cands.sort((a,b)=>a[0]-b[0]);
+  const idx=cands.length>=3?[.15,.5,.85].map(f=>Math.floor(f*(cands.length-1))):cands.map((_,i)=>i);
+  [...new Set(idx)].forEach(i=>sparks.push({x:cands[i][0],y:cands[i][1],got:false,pop:0}));
+  while(sparks.length<3){const f=flats[(sparks.length*7+3)%flats.length];sparks.push({x:f[0],y:f[1]-60,got:false,pop:0})}
+  let maxY=-1e9;for(const p of plats)for(const q of p.pts)maxY=Math.max(maxY,q[1]);killY=maxY+300;
+}
+
+/* ---------- physics ---------- */
+const SPEED=205,ACC_G=1700,ACC_A=950,G=1500,JV=545,STEP=7,SNAP=10,CL=26;
+function floorAt(p,x){
+  const q=p.pts,lx=x-p.ox;
+  if(lx<q[0][0]||lx>q[q.length-1][0])return null;
+  for(let i=0;i<q.length-1;i++){const a=q[i],b=q[i+1];if(b[0]===a[0])continue;
+    if(lx>=a[0]&&lx<=b[0])return a[1]+(b[1]-a[1])*(lx-a[0])/(b[0]-a[0])+p.oy}
+  return null;
+}
+function support(x,y){let best=null;for(const p of plats){const f=floorAt(p,x);if(f===null)continue;if(f>=y-STEP&&f<=y+SNAP&&(!best||f<best.y))best={y:f,p}}return best}
+function ledgeAt(x,y){let b=null;for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f!==null&&f<y-STEP&&f>=y-18&&(b===null||f<b))b=f}return b}
+function wallAt(x,y){for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f!==null&&f<y-STEP)return true}return false}
+
+const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0};
+let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0};
+let camX=0,camY=0,hintMoved=false,hintJumped=false;
+
+function placeAt(x,y){const s=support(x,y)||support(x,y-60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0}
+function startLevel(n){
+  levelN=n;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];
+  for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
+  spawn={x:40,y:0};placeAt(40,0);P.face=1;P.win=0;
+  camX=P.x-viewW*.35;camY=P.y-VIEW_H*.6;
+  hintMoved=hintJumped=n>1;
+  updateHud();
+}
+function die(){
+  if(state!=='play')return;
+  state='dead';P.dead=0;falls++;updateHud();buzz(40);
+  for(let i=0;i<7;i++)shards.push({x:P.x+(i-3)*4,y:Math.min(P.y,killY-40)-6,vx:(Math.random()-.5)*240+P.vx*.3,vy:-160-Math.random()*220,a:Math.random()*6,va:(Math.random()-.5)*14,l:4+Math.random()*4});
+}
+function respawn(){
+  shards=[];holes=[];
+  for(const p of plats)if(p.mv)p.dx=p.dy=0;
+  placeAt(spawn.x,spawn.y);camY=P.y-VIEW_H*.6;state='play';
+}
+function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(_){}}
+
+/* ---------- input ---------- */
+const joy={id:null,ox:0,oy:0,x:0,y:0};const keys={l:0,r:0};
+const JR=44;
+cv.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  if(state!=='play'&&state!=='dead')return;
+  const p=toStage(e);
+  if(joy.id===null&&p.x<SW*.5){joy.id=e.pointerId;joy.ox=joy.x=p.x;joy.oy=joy.y=p.y}
+  else{P.buf=.14;hintJumped=true}
+  try{cv.setPointerCapture(e.pointerId)}catch(_){}
+},{passive:false});
+cv.addEventListener('pointermove',e=>{
+  if(e.pointerId!==joy.id)return;const p=toStage(e);joy.x=p.x;joy.y=p.y;
+  // the ring follows a finger that went too far, so turning around is quick
+  const dx=joy.x-joy.ox;if(dx>JR*1.4)joy.ox=joy.x-JR*1.4;else if(dx<-JR*1.4)joy.ox=joy.x+JR*1.4;
+});
+const up=e=>{if(e.pointerId===joy.id)joy.id=null};
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+function joyDir(){if(joy.id===null)return 0;const dx=joy.x-joy.ox;if(Math.abs(dx)<6)return 0;return Math.max(-1,Math.min(1,(dx-Math.sign(dx)*6)/(JR-10)))}
+addEventListener('keydown',e=>{
+  const c=e.code;
+  if(c==='ArrowLeft'||c==='KeyA')keys.l=1;
+  else if(c==='ArrowRight'||c==='KeyD')keys.r=1;
+  else if(c==='Space'||c==='ArrowUp'||c==='KeyW'){if(!e.repeat&&state==='play'){P.buf=.14;hintJumped=true}}
+  else if(c==='Escape'||c==='KeyP'){if(state==='play')pause();else if(state==='paused')resume()}
+  else if(c==='Enter'){const ov=[...document.querySelectorAll('.overlay')].find(o=>!o.hidden);if(ov){const b=ov.querySelector('.btn');b&&b.click()}return}
+  else return;
+  e.preventDefault();
+});
+addEventListener('keyup',e=>{const c=e.code;if(c==='ArrowLeft'||c==='KeyA')keys.l=0;if(c==='ArrowRight'||c==='KeyD')keys.r=0});
+
+/* ---------- update ---------- */
+function update(dt){
+  t+=dt;
+  for(const p of plats)if(p.mv){const nx=p.mv.amp*Math.sin(t*6.2832/p.mv.per+p.mv.ph);p.dx=nx-p.ox;p.ox=nx}
+  for(const h of holes)h.t+=dt;holes=holes.filter(h=>h.t<.5);
+  for(const s of sparks)if(s.pop>0)s.pop+=dt;
+  for(const q of pops)q.t+=dt;pops=pops.filter(q=>q.t<.6);
+  if(state==='dead'){
+    P.dead+=dt;for(const s of shards){s.vy+=G*.8*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.a+=s.va*dt}
+    if(P.dead>.85)respawn();return;
+  }
+  if(state==='win'){P.win+=dt;P.x+=(goal.x-P.x)*Math.min(1,dt*8);return}
+  if(state!=='play')return;
+  lvTime+=dt;
+  const dir=joy.id!==null?joyDir():keys.r-keys.l;
+  if(dir!==0){P.face=dir>0?1:-1;hintMoved=true}
+  const tgt=dir*SPEED,acc=P.ground?ACC_G:ACC_A;
+  P.vx+=Math.max(-acc*dt,Math.min(acc*dt,tgt-P.vx));
+  if(P.buf>0)P.buf-=dt;if(P.coy>0)P.coy-=dt;if(P.squash>0)P.squash-=dt;
+  // ride along on moving bits
+  if(P.ground&&P.on&&P.on.mv)P.x+=P.on.dx;
+  // horizontal move, walls are just higher ground
+  const nx=P.x+P.vx*dt,probe=nx+Math.sign(P.vx)*(P.ground?9:4);
+  if(Math.abs(P.vx)>1&&wallAt(probe,P.y)){
+    // just short of an edge in the air: pop up onto it instead of sliding down the wall
+    const lf=P.ground?null:ledgeAt(probe,P.y);
+    if(lf!==null&&P.vy>-80&&!wallAt(probe,lf)){P.x=nx;P.y=lf;P.vy=0;P.ground=true;P.on=support(P.x,P.y+1)?.p||null;P.squash=.18;if(!P.on)P.ground=false}
+    else P.vx=0;
+  }else P.x=nx;
+  if(P.ground){
+    P.walk+=Math.abs(P.vx)*dt*.09;
+    const s=support(P.x,P.y);
+    if(s){P.y=s.y;P.on=s.p}else{P.ground=false;P.on=null;P.coy=.1;P.vy=0}
+  }else{
+    const py=P.y;P.vy=Math.min(P.vy+G*dt,1100);P.y+=P.vy*dt;
+    if(P.vy>=0){let best=null;
+      for(const p of plats){const f=floorAt(p,P.x);if(f===null)continue;if(py<=f-p.dy+STEP&&P.y>=f&&(!best||f<best.y))best={y:f,p}}
+      if(best){P.y=best.y;P.on=best.p;P.ground=true;P.squash=.18;P.vy=0}}
+  }
+  // jump: the piece lifts out of the line and leaves a hole that closes again
+  if(P.buf>0&&(P.ground||P.coy>0)){
+    if(P.ground&&P.on)holes.push({p:P.on,x:P.x-P.on.ox,t:0});
+    P.vy=-JV;P.ground=false;P.on=null;P.coy=0;P.buf=0;
+  }
+  // spikes, falling, dots, checkpoints, goal
+  for(const s of spikes)if(P.x+8>s.x0&&P.x-8<s.x1&&P.y>s.y-11&&P.y<s.y+30){die();return}
+  if(P.y>killY){die();return}
+  for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-9-s.y)<20){s.got=true;s.pop=.001;buzz(12);updateHud()}
+  for(const c of cps)if(!c.on&&P.x>=c.x&&P.ground){c.on=true;spawn={x:c.x,y:c.y};pops.push({x:c.x,y:c.y-22,t:0})}
+  if(P.ground&&P.x>=goal.x-4){state='win';P.win=0;P.vx=0;pops.push({x:goal.x,y:goal.y-14,t:0});buzz([20,40,20]);setTimeout(levelDone,1000)}
+}
+
+/* ---------- drawing ---------- */
+const LW=4;
+function strokeAlong(p,x0,x1,col,w){
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();let first=true;
+  for(let x=x0;x<=x1+.01;x+=3){const f=floorAt(p,Math.min(x,x1));if(f===null){first=true;continue}if(first){ctx.moveTo(x,f);first=false}else ctx.lineTo(x,f)}
+  ctx.stroke();
+}
+// the character: a hump in the line, peak a little to the front, one small eye
+function humpPts(x,baseFn,h,len,face){
+  const pts=[],n=12;
+  for(let i=0;i<=n;i++){let s=i/n;const u=face>0?Math.pow(s,.85):1-Math.pow(1-s,.85);
+    const px=x-len/2+s*len;pts.push([px,baseFn(px)-h*Math.pow(Math.sin(Math.PI*u),1.4)])}
+  return pts;
+}
+function drawChar(){
+  if(state==='dead'){
+    ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.globalAlpha=Math.max(0,1-P.dead/.8);
+    for(const s of shards){ctx.beginPath();ctx.moveTo(s.x-Math.cos(s.a)*s.l,s.y-Math.sin(s.a)*s.l);ctx.lineTo(s.x+Math.cos(s.a)*s.l,s.y+Math.sin(s.a)*s.l);ctx.stroke()}
+    ctx.globalAlpha=1;return;
+  }
+  let h,len=CL,base,ang=0;
+  const moving=Math.abs(P.vx)>15;
+  if(state==='win'){const k=Math.min(1,P.win/.5);h=9*(1-k);len=CL*(1-k*.9);if(k>=1)return}
+  else if(P.ground){
+    h=moving?9+3.2*Math.sin(P.walk*6.2832):9+.8*Math.sin(t*3);
+    if(P.squash>0)h*=1-P.squash*2.2;
+    len=CL+(9-h)*1.3;
+  }else{h=10.5;len=CL-3;ang=Math.max(-.25,Math.min(.25,P.vy/2000))*P.face*-1}
+  const on=P.ground&&P.on?P.on:null;
+  if(on){
+    base=px=>{const f=floorAt(on,px);return f===null||Math.abs(f-P.y)>12?P.y:f};
+    strokeAlong(on,P.x-len/2+1.5,P.x+len/2-1.5,BG,LW+3);
+  }else base=()=>P.y;
+  let pts=humpPts(P.x,base,h,len,P.face);
+  if(ang){const cx=P.x,cy=P.y-5,c=Math.cos(ang),s=Math.sin(ang);pts=pts.map(([x,y])=>[cx+(x-cx)*c-(y-cy)*s,cy+(x-cx)*s+(y-cy)*c])}
+  ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();
+  if(h>4){const e=pts[P.face>0?8:4];ctx.fillStyle=BG;ctx.beginPath();ctx.arc(e[0],e[1]+3,1.7,0,6.2832);ctx.fill()}
+}
+function render(){
+  const k=DPR*K;
+  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=BG;ctx.fillRect(0,0,cv.width,cv.height);
+  if(!goal)return;
+  // camera: a bit ahead of where you run
+  if(state==='play'||state==='win'){
+    const tx=P.x-viewW*.38+P.vx*.35,ty=P.y-VIEW_H*.6;
+    camX+=(tx-camX)*.08;camY+=(ty-camY)*.06;
+  }
+  ctx.setTransform(k,0,0,k,-camX*k,-camY*k);
+  ctx.lineCap='round';ctx.lineJoin='round';
+  const vx0=camX-40,vx1=camX+viewW+40;
+  // the line
+  ctx.strokeStyle=FG;ctx.lineWidth=LW;
+  for(const p of plats){const q=p.pts;if(q[q.length-1][0]+p.ox<vx0||q[0][0]+p.ox>vx1)continue;
+    ctx.beginPath();q.forEach(([x,y],i)=>i?ctx.lineTo(x+p.ox,y+p.oy):ctx.moveTo(x+p.ox,y+p.oy));ctx.stroke()}
+  // spikes: zig-zags cut into the line
+  for(const s of spikes){if(s.x1<vx0||s.x0>vx1)continue;
+    ctx.strokeStyle=BG;ctx.lineWidth=LW+3;ctx.beginPath();ctx.moveTo(s.x0+1,s.y);ctx.lineTo(s.x1-1,s.y);ctx.stroke();
+    ctx.strokeStyle=FG;ctx.lineWidth=LW-.5;ctx.beginPath();ctx.moveTo(s.x0,s.y);
+    for(let i=0;i<s.n;i++){ctx.lineTo(s.x0+i*12+6,s.y-12);ctx.lineTo(s.x0+i*12+12,s.y)}ctx.stroke()}
+  // holes left behind by a jump, closing up
+  for(const h of holes){const w=CL*(1-Math.pow(h.t/.5,2));if(w<1)continue;const x=h.x+h.p.ox;strokeAlong(h.p,x-w/2+1,x+w/2-1,BG,LW+3)}
+  // checkpoints: a little post, the dot fills when you pass
+  ctx.lineWidth=2.5;
+  for(const c of cps){if(c.x<vx0||c.x>vx1)continue;ctx.strokeStyle=FG;ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x,c.y-18);ctx.stroke();
+    ctx.beginPath();ctx.arc(c.x,c.y-23,5,0,6.2832);if(c.on){ctx.fillStyle=FG;ctx.fill()}else ctx.stroke()}
+  // dots to collect
+  for(const s of sparks){if(s.x<vx0||s.x>vx1)continue;
+    if(!s.got){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(s.x,s.y+Math.sin(t*2.6+s.x)*3,5,0,6.2832);ctx.fill()}
+    else if(s.pop<.5){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-s.pop*2;ctx.beginPath();ctx.arc(s.x,s.y,5+s.pop*40,0,6.2832);ctx.stroke();ctx.globalAlpha=1}}
+  // the ring at the end
+  {const r=11+Math.sin(t*3)*1.2+(state==='win'?Math.min(1,P.win*2)*4:0);ctx.strokeStyle=FG;ctx.lineWidth=3;ctx.beginPath();ctx.arc(goal.x,goal.y-r-3,r,0,6.2832);ctx.stroke();
+    if(state==='win'&&P.win>.45){ctx.fillStyle=FG;ctx.globalAlpha=Math.min(1,(P.win-.45)*3);ctx.beginPath();ctx.arc(goal.x,goal.y-r-3,r-4,0,6.2832);ctx.fill();ctx.globalAlpha=1}}
+  for(const q of pops){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-q.t/.6;ctx.beginPath();ctx.arc(q.x,q.y,8+q.t*70,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
+  if(state!=='menu')drawChar();
+  // screen space: joystick and first-level hints
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(joy.id!==null&&state==='play'){
+    ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=.35;
+    ctx.beginPath();ctx.arc(joy.ox,joy.oy,JR,0,6.2832);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(joy.ox-JR-10,joy.oy);ctx.lineTo(joy.ox-JR-4,joy.oy-5);ctx.lineTo(joy.ox-JR-4,joy.oy+5);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(joy.ox+JR+10,joy.oy);ctx.lineTo(joy.ox+JR+4,joy.oy-5);ctx.lineTo(joy.ox+JR+4,joy.oy+5);ctx.closePath();ctx.fill();
+    ctx.globalAlpha=.6;const kx=Math.max(-JR,Math.min(JR,joy.x-joy.ox));ctx.beginPath();ctx.arc(joy.ox+kx,joy.oy,17,0,6.2832);ctx.fill();ctx.globalAlpha=1;
+  }
+  if(state==='play'&&(!hintMoved||!hintJumped)){
+    ctx.fillStyle=FG;ctx.font='700 14px '+getComputedStyle(document.body).fontFamily;ctx.textAlign='center';ctx.textBaseline='middle';
+    const pulse=.45+.25*Math.sin(t*4),y=SH-44;
+    if(!hintMoved&&joy.id===null){ctx.globalAlpha=pulse;ctx.fillText(T.hMove,SW*.2,y)}
+    if(!hintJumped){ctx.globalAlpha=pulse;ctx.beginPath();ctx.arc(SW*.8,y-36,16,0,6.2832);ctx.lineWidth=2;ctx.strokeStyle=FG;ctx.stroke();ctx.fillText(T.hJump,SW*.8,y)}
+    ctx.globalAlpha=1;
+  }
+}
+
+/* ---------- loop ---------- */
+let lastT=performance.now(),accT=0;
+function frame(now){
+  let dt=Math.min(.1,(now-lastT)/1000);lastT=now;
+  if(state==='menu'){t+=dt;for(const p of plats)if(p.mv)p.ox=p.mv.amp*Math.sin(t*6.2832/p.mv.per+p.mv.ph);camX+=dt*30;if(goal&&camX>goal.x)camX=-viewW*.3;}
+  else if(state!=='paused'&&state!=='done'){accT+=dt;while(accT>=1/120){update(1/120);accT-=1/120}}
+  render();requestAnimationFrame(frame);
+}
+
+/* ---------- screens ---------- */
+const startOv=$('startOv'),pauseOv=$('pauseOv'),doneOv=$('doneOv'),hud=$('hud');
+let sel=Math.min(unlocked,store.get('line.last',unlocked)|0||1);
+function fmt(s){s=Math.floor(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function updateHud(){
+  $('lvChip').textContent=T.level+' '+levelN;
+  [...$('dots').children].forEach((el,i)=>el.classList.toggle('on',!!(sparks[i]&&sparks[i].got)));
+  $('fallChip').textContent=falls?T.fall+' '+falls:'';
+}
+function buildLevels(){
+  const box=$('lv');box.innerHTML='';
+  $('lvlRow').hidden=unlocked<2;
+  for(let i=1;i<=unlocked;i++){const b=document.createElement('button');b.type='button';b.textContent=i;b.setAttribute('aria-pressed',i===sel);
+    b.onclick=()=>{sel=i;buildLevels();preview()};box.append(b)}
+  const on=box.querySelector('[aria-pressed="true"]');if(on)box.scrollLeft=on.offsetLeft-box.clientWidth/2;
+}
+function preview(){setTheme(sel);gen(sel);levelN=sel;camX=-viewW*.3;camY=-VIEW_H*.6;t=0}
+function showMenu(){state='menu';hud.hidden=true;pauseOv.hidden=doneOv.hidden=true;startOv.hidden=false;buildLevels();preview()}
+function play(n){goLandscape();store.set('line.last',n);startOv.hidden=doneOv.hidden=pauseOv.hidden=true;hud.hidden=false;joy.id=null;startLevel(n);state='play';lastT=performance.now();accT=0}
+function pause(){if(state!=='play'&&state!=='dead')return;state='paused';joy.id=null;pauseOv.hidden=false}
+function resume(){pauseOv.hidden=true;state='play';lastT=performance.now();accT=0}
+function levelDone(){
+  if(state!=='win')return;state='done';
+  const got=sparks.filter(s=>s.got).length;
+  if(levelN+1>unlocked){unlocked=levelN+1;store.set('line.unlocked',unlocked)}
+  if(got>(bestDots[levelN]||0)){bestDots[levelN]=got;store.set('line.dots',bestDots)}
+  $('doneTitle').textContent=T.level+' '+levelN;
+  [...$('doneDots').children].forEach((el,i)=>el.classList.toggle('on',i<got));
+  $('doneTime').textContent=fmt(lvTime);$('doneFalls').textContent=falls;
+  hud.hidden=true;doneOv.hidden=false;$('nextBtn').focus({preventScroll:true});
+}
+$('playBtn').onclick=()=>play(sel);
+$('pauseBtn').onclick=pause;
+$('resumeBtn').onclick=resume;
+$('restartBtn').onclick=()=>play(levelN);
+$('menuBtn').onclick=()=>{sel=levelN;showMenu()};
+$('nextBtn').onclick=()=>{sel=levelN+1;play(sel)};
+$('againBtn').onclick=()=>play(levelN);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
+
+{let want='de';try{const s=localStorage.getItem('irrgarten.lang');if(LANG[s])want=s;else{const n=(navigator.language||'de').slice(0,2);if(LANG[n])want=n}}catch(_){}setLang(want)}
+showMenu();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

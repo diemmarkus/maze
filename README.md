@@ -7,6 +7,7 @@ Comic-style phone games by Jonas. The start page (`index.html`) lets you pick a 
 | Irrgarten | [`irrgarten/`](irrgarten/) | playable |
 | Skiing | [`skiing/`](skiing/) | playable |
 | Halfpipe | [`halfpipe/`](halfpipe/) | playable |
+| The Line | [`line/`](line/) | playable |
 
 There's also a secret one: the tiny glider under the language buttons opens **Leben** ([`life/`](life/)).
 
@@ -28,6 +29,20 @@ Conway's Game of Life in the pixel look of Skiing. Not on the game list: tap the
 - **+ / − (top right):** + doubles the number of cells (smaller cells), − halves it. What's alive stays in the middle.
 - In colour mode, cells change colour as they age (white newborn → gold → orange → red → purple, blue for cells that stay put); dying cells leave a short shadow. The edges wrap around.
 - Keyboard: Space = play/pause, → = one step, T = next tool, +/− = more/fewer cells, B = black & white, H = hide buttons.
+
+---
+
+## The Line
+
+A minimal jump and run. The background is one colour, the level is a single lighter line in the same colour — and you are a piece of that line.
+
+- **Landscape:** the game always plays sideways. On Android it goes full screen and locks to landscape when you tap *Play*; on iPhone (where pages can't lock the screen) the game turns itself by 90° if the phone is held upright.
+- **Run:** put your left thumb anywhere on the left half and drag left or right (a ring shows the joystick; the further you drag, the faster you run).
+- **Jump:** tap with the other finger (anywhere on the right half, or anywhere while the left thumb is on the joystick). The character lifts out of the line as a little arc and leaves a hole behind that closes again; it merges back into the line when it lands.
+- **The line** has steps, slopes and stairs, gaps to jump over, zig-zag spikes (touching them = fall), floating pieces (from level 3) and pieces sliding back and forth over a gap (from level 4). Falling off the line or into spikes sends you back to the last checkpoint (the small post — its dot fills when you pass).
+- **Dots:** three per level to collect. **Goal:** the ring at the end of the line.
+- **Levels** are generated from the level number (always the same layout for the same level), get longer and harder, and every level has its own colour. Reached levels can be picked on the start screen. A search bot checked that levels 1–30 can be finished.
+- Keyboard: ←/→ or A/D to run, Space/↑/W to jump, P or Esc to pause.
 
 ---
 
