@@ -140,6 +140,10 @@ function tone(f0,f1,dur,vol,at,shape){
 const sfx={
   jump(){tone(180,760,.15,.1);tone(360,1520,.15,.03,0,'square')},
   flip(){tone(880,220,.12,.08);tone(220,880,.12,.08,.1)},
+  gasp(){tone(660,990,.08,.06);tone(990,1320,.06,.05,.08)},
+  chomp(){tone(220,55,.14,.13,0,'square');tone(110,40,.18,.1,0,'sawtooth')},
+  chew(){tone(140,110,.05,.07,0,'square')},
+  burp(){tone(190,90,.28,.09,0,'sawtooth');tone(95,60,.28,.06,0,'square')},
   jump2(){tone(392,1568,.13,.09);tone(1568,1568,.05,.05,.13);tone(2093,2093,.06,.04,.18)},
   land(){tone(140,70,.06,.07,0,'triangle')},
   dot(){tone(1047,1047,.06,.08);tone(1568,1568,.1,.08,.065)},
@@ -280,12 +284,11 @@ function startLevel(n){
 }
 function die(){
   if(state!=='play')return;
-  state='dead';P.dead=0;falls++;updateHud();buzz([70,50,140]);sfx.fall();
+  state='dead';P.dead=0;falls++;updateHud();buzz([70,50,140]);if(!P.eat)sfx.fall();
   const g=P.g,fell=P.y>killY||P.y<killTop;
   // three ways to go: melt into the line (and shake it with three ripples), splash at the screen edge, or burst in the air
   let line=null;if(!fell)for(const p of plats){const f=floorAt(p,P.x);if(f!==null&&Math.abs(f-P.y)<=30&&(!line||Math.abs(f-P.y)<Math.abs(line.f-P.y)))line={p,f}}
   P.kind=P.eat?'eaten':fell?'fall':line?'line':'air';P.vx=0;P.ax=P.x;P.ay=P.y;
-  if(P.kind==='eaten'){shake=.15}
   if(P.kind==='line'){P.lp=line.p;P.lx=P.x-line.p.ox;P.dy0=line.f;P.rq=[0,.2,.4]}
   else if(P.kind==='fall'){
     const ye=g>0?camY+VIEW_H+4:camY-4;P.dx0=P.x;P.dy0=ye;
@@ -295,11 +298,16 @@ function die(){
     const yc=Math.max(camY+30,Math.min(camY+VIEW_H-30,P.y-g*8));P.dx0=P.x;P.dy0=yc;
     for(let i=0;i<16;i++){const a=Math.random()*6.2832,v=140+Math.random()*320;
       shards.push({x:P.x,y:yc,vx:Math.cos(a)*v,vy:Math.sin(a)*v-g*120,r:1.6+Math.random()*3.2,stuck:0,g,d:.12+Math.random()*.05})}}
+  P.endT=1.25;
+  if(P.kind==='eaten'){P.endT=EAT_CURTAIN+1.25;sfx.gasp();return}
+  startCurtain();shake=.3;
+}
+const EAT_CURTAIN=1.05;   // the monster gets about a second on screen before the blood comes down
+function startCurtain(){
   curtain={t:0,drips:[],ph:Math.random()*9};
   for(let x=Math.random()*20-10;x<SW+40;){const thin=Math.random()<.3,w=thin?4+Math.random()*6:14+Math.random()*26;
     curtain.drips.push({x,w,v:(thin?.6:.4)+Math.random()*.9,dl:Math.random()*.25,seed:Math.random()*99,asym:(Math.random()-.5)*.5,bulb:1.35+Math.random()*.35});
     x+=thin?w*2+Math.random()*20:w*(1.1+Math.random()*1.5)}
-  shake=.3;
 }
 function eyePos(e){return[e.x+10*Math.sin(t*1.3+e.ph),e.y-e.g*(88+58*Math.sin(t*6.2832/e.per+e.ph))]}
 function flipNow(x,y,f){
@@ -370,7 +378,12 @@ function update(dt){
     if(P.kind==='line')for(const q of P.rq)if(pd<.12+q&&P.dead>=.12+q)ripples.push({p:P.lp,x:P.lx,t:0,g:P.g,a:7,life:1.2,sp:240,w:24});
     for(const s of shards){if(P.dead<s.d||s.stuck)continue;s.vy+=s.g*G*.9*dt;const py=s.y;s.x+=s.vx*dt;s.y+=s.vy*dt;
       for(const p of plats){const f=floorAt(p,s.x);if(f!==null&&s.g*(py-f)<=0&&s.g*(s.y-f)>=0){s.y=f-s.g*s.r*.5;s.stuck=1;break}}}
-    if(P.dead>1.25)respawn();return;
+    if(P.kind==='eaten'){const at=(a)=>pd<a&&P.dead>=a;
+      if(at(.33)){shake=.28;sfx.chomp();buzz([60,30,60])}
+      for(const c of[.5,.66,.82])if(at(c))sfx.chew();
+      if(at(.95))sfx.burp();
+      if(at(EAT_CURTAIN)){startCurtain();shake=.2}}
+    if(P.dead>P.endT)respawn();return;
   }
   if(state==='win'){P.win+=dt;P.x+=(goal.x-P.x)*Math.min(1,dt*7);if(P.win>1.25)levelDone();return}
   if(state!=='play')return;
@@ -501,25 +514,55 @@ function drawEyes(ex,ey,g,sc,look,lid){
     const dx=look[0]-cx,dy=look[1]-ey,l=Math.hypot(dx,dy)||1;
     ctx.beginPath();ctx.arc(cx+dx/l*r*.45,ey+dy/l*r*.45,2.6*sc,0,6.2832);ctx.fill()}
 }
-// the eyes grow a head and a huge mouth, snap shut on you, then grin
+// eaten: the eyes stare, a head pops up round them, the mouth gapes and sucks you in, SNAP, chew chew chew, gulp, burp, gone
 function drawMonster(d){
-  const ex=P.ex,ey=P.ey,g=P.g,sc=Math.min(1.5,1+d*4),my=ey+g*20*sc;
-  const o=d<.14?d/.14:d<.26?1-(d-.14)/.12:0;            // mouth opens wide, then snaps shut
-  const W=27*sc,head=31*sc;
-  ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();
-  for(let i=0;i<=28;i++){const a=i/28*6.2832,w=1+.05*Math.sin(a*5+t*9);ctx.lineTo(ex+Math.cos(a)*head*w,ey+g*8*sc+Math.sin(a)*head*.95*w)}ctx.closePath();ctx.stroke();
-  // the character is pulled into the mouth
-  if(o>0||d<.14){const k=Math.min(1,d/.14),cx=P.ax+(ex-P.ax)*k,cy=P.ay-g*9+(my-(P.ay-g*9))*k,r=8*(1-k*.4);
-    ctx.lineWidth=LW;ctx.beginPath();ctx.arc(cx,cy,r,0,6.2832);ctx.stroke()}
-  // jaws with teeth
-  const up=o*16*sc,dn=o*20*sc;
-  const jaw=(dir,amt)=>{const pts=[];for(let i=0;i<=10;i++){const u=i/10,x=ex-W+u*2*W,yb=my+g*dir*amt*Math.sin(Math.PI*u);pts.push([x,yb]);
-      if(i<10&&amt>2){const xm=x+W/10,ym=my+g*dir*amt*Math.sin(Math.PI*(u+.05))-g*dir*5*sc*Math.min(1,o*2);pts.push([xm,ym])}}return pts};
-  ctx.lineWidth=LW*.8;ctx.lineJoin='miter';
-  if(o>.05){strokePts(jaw(-1,up),false);strokePts(jaw(1,dn),false)}
-  else{const pts=[];for(let i=0;i<=12;i++){const u=i/12;pts.push([ex-W+u*2*W,my+g*Math.sin(u*Math.PI)*4*sc+g*Math.sin(u*18+d*25)*1.5])}strokePts(pts,false)}   // chewing grin
-  ctx.lineJoin='round';
-  drawEyes(ex,ey,g,sc,[P.ax,P.ay],o===0&&d>.35&&d<.55?1:0);
+  const ex=P.ex,ey=P.ey,g=P.g;
+  const cl=x=>Math.max(0,Math.min(1,x)),ease=x=>{x=cl(x);return x*x*(3-2*x)};
+  const back=x=>{x=cl(x);const c=1.9;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};   // overshoots, then settles
+  const out=EAT_CURTAIN+.15;
+  const grow=d<out?back((d-.08)/.22):1-ease((d-out)/.25);
+  // mouth: gapes wide, holds a moment, snaps shut
+  const open=d<.12?0:d<.24?ease((d-.12)/.12):d<.3?1:d<.34?1-ease((d-.3)/.04):0;
+  // chewing squashes the head; the gulp stretches it
+  const ch=d>.36&&d<.9?Math.sin((d-.36)/.54*3*6.2832)*(1-(d-.36)/.54*.4):0,gulp=d>.9&&d<1.02?Math.sin((d-.9)/.12*Math.PI):0;
+  const sx=1-.1*ch+.06*open-.08*gulp,sy=1+.12*ch+.05*open+.14*gulp;
+  const R=30*grow,hx=ex,hy=ey+g*12*grow,my=ey+g*(20+4*open)*grow;
+  if(grow>.02){
+    // head: a wobbly round outline
+    ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();
+    for(let i=0;i<=32;i++){const a=i/32*6.2832,w=1+.045*Math.sin(a*4+t*8)+.03*Math.sin(a*7-t*5);ctx.lineTo(hx+Math.cos(a)*R*sx*w,hy+Math.sin(a)*R*sy*w)}
+    ctx.closePath();ctx.stroke();
+    // mouth
+    const W=(19+6*open)*grow*sx;
+    if(open>.03){
+      const top=my-g*open*9*grow,bot=my+g*open*24*grow;
+      const lip=(cy,n)=>{const o=[];for(let i=0;i<=n;i++){const u=i/n;o.push([ex-W+2*W*u,my+(cy-my)*Math.sin(Math.PI*u)])}return o};
+      const U=lip(top,16),L2=lip(bot,16);
+      ctx.fillStyle=BG;ctx.beginPath();U.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));for(let i=L2.length-1;i>=0;i--)ctx.lineTo(L2[i][0],L2[i][1]);ctx.closePath();ctx.fill();
+      ctx.lineWidth=LW*.85;strokePts(U,false);strokePts(L2,false);
+      // teeth: triangles hanging from the top lip and standing on the bottom one
+      ctx.fillStyle=FG;const tz=(P2,dir,n,sz)=>{for(let i=1;i<n;i++){const k=i/n,j=Math.round(k*16),[x,y]=P2[j],w2=W/n*.8;
+        ctx.beginPath();ctx.moveTo(x-w2,y);ctx.lineTo(x,y+g*dir*sz);ctx.lineTo(x+w2,y);ctx.closePath();ctx.fill()}};
+      tz(U,1,6,7*open*grow);tz(L2,-1,5,6*open*grow);
+    }else{
+      // closed: a wide grin that wobbles while chewing, a couple of teeth poking out
+      const pts=[];for(let i=0;i<=14;i++){const u=i/14;pts.push([ex-W+2*W*u,my+g*(4*Math.sin(u*Math.PI)+(ch?2.2*Math.sin(u*14+d*30):0))*grow])}
+      ctx.lineWidth=LW*.85;strokePts(pts,false);
+      ctx.fillStyle=FG;for(const u of[.3,.7]){const x=ex-W+2*W*u,y=my+g*4*Math.sin(u*Math.PI)*grow;ctx.beginPath();ctx.moveTo(x-2.5,y);ctx.lineTo(x,y+g*4.5);ctx.lineTo(x+2.5,y);ctx.closePath();ctx.fill()}
+      // cheeks bulge with you inside
+      if(ch){ctx.lineWidth=2;for(const s of[-1,1]){ctx.beginPath();ctx.arc(ex+s*(W+3),my-g*3,3+Math.abs(ch)*2,s<0?Math.PI*.6:-Math.PI*.4,s<0?Math.PI*1.4:Math.PI*.4);ctx.stroke()}}
+    }
+  }
+  // you: frozen for a moment, then sucked in, stretched towards the mouth
+  if(d<.32){const k=ease((d-.1)/.2),cx=P.ax+(ex-P.ax)*k,cy=(P.ay-g*9)+(my-(P.ay-g*9))*k,r=8.5*(1-.5*k),tr=d<.1?Math.sin(d*160)*1.4:0;
+    const ang=Math.atan2(my-cy,ex-cx);ctx.save();ctx.translate(cx+tr,cy);ctx.rotate(ang);ctx.strokeStyle=FG;ctx.lineWidth=LW;
+    ctx.beginPath();ctx.ellipse(0,0,r*(1+.7*k),r*(1-.35*k),0,0,6.2832);ctx.stroke();ctx.restore()}
+  // burp bubble
+  if(d>.95&&d<1.4){const k=(d-.95)/.45;ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-k;ctx.beginPath();ctx.arc(ex+8,my-g*(6+k*40),3+k*5,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
+  // eyes: wide with shock, then happy while chewing, a wink at the end
+  const es=(d<.1?1+.45*ease(d/.1):1.45-.2*ease((d-.3)/.2))*Math.max(.6,grow||.6),eyY=ey-g*4*grow;
+  if(d>.36&&d<.95){ctx.strokeStyle=FG;ctx.lineWidth=2.5;for(const s of[-1,1]){const cx=ex+s*8*es;ctx.beginPath();ctx.arc(cx,eyY+g*2,5*es,g>0?Math.PI*1.15:Math.PI*.15,g>0?Math.PI*1.85:Math.PI*.85);ctx.stroke()}}
+  else drawEyes(ex,eyY,g,es,d<.36?[P.ax,P.ay]:[ex+P.face*30,eyY],d>1.05&&d<1.2?1:0);
 }
 function drawChar(){
   if(state==='dead'){
