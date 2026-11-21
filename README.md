@@ -38,11 +38,13 @@ A minimal jump and run. The background is one colour, the level is a single ligh
 
 - **Landscape:** the game always plays sideways. On Android it goes full screen and locks to landscape when you tap *Play*; on iPhone (where pages can't lock the screen) the game turns itself by 90° if the phone is held upright.
 - **Run:** put your left thumb anywhere on the left half and drag left or right (a ring shows the joystick; the further you drag, the faster you run).
-- **Jump:** tap with the other finger (anywhere on the right half, or anywhere while the left thumb is on the joystick). The character lifts out of the line as a little arc and leaves a hole behind that closes again; it merges back into the line when it lands.
-- **The line** has steps, slopes and stairs, gaps to jump over, zig-zag spikes (touching them = fall), floating pieces (from level 3) and pieces sliding back and forth over a gap (from level 4). Falling off the line or into spikes sends you back to the last checkpoint (the small post — its dot fills when you pass).
-- **Dots:** three per level to collect. **Goal:** the ring at the end of the line.
+- **Jump:** tap with the other finger (anywhere on the right half, or anywhere while the left thumb is on the joystick). The character lifts out of the line and rolls up into a wobbly blob, leaving a hole in the line that closes again; it melts back into the line when it lands.
+- **Double jump:** tap once more in the air to jump even higher — but a little drop splits off the blob and falls away (the blob is smaller until it lands, then it's whole again).
+- **The line** has steps, slopes and stairs, gaps to jump over, zig-zag spikes (touching them = fall), floating pieces (from level 3) and pieces sliding back and forth over a gap (from level 4). Falling off the line or into spikes sends you back to the last checkpoint: the small posts with a circle on top. The circle fills when you pass one.
+- **Dots:** three per level to collect. **Goal:** the door at the end of the line. Walk in and it lights up, then its colour floods the whole screen — the result card is shown in the line colour.
 - **Levels** are generated from the level number (always the same layout for the same level), get longer and harder, and every level has its own colour. Reached levels can be picked on the start screen. A search bot checked that levels 1–30 can be finished.
-- Keyboard: ←/→ or A/D to run, Space/↑/W to jump, P or Esc to pause.
+- **Sound:** Commodore 64 style blips made with the SID chip's pulse wave — rising sweep for the jump, a higher one for the double jump, plus sounds for dots, checkpoints, falling and the door. The speaker button next to pause turns it off (remembered on the phone).
+- Keyboard: ←/→ or A/D to run, Space/↑/W to jump (again in the air for the double jump), P or Esc to pause.
 
 ---
 

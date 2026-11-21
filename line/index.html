@@ -26,8 +26,10 @@ body{font-family:var(--font);color:var(--fg);-webkit-user-select:none;user-selec
 .dots i{width:10px;height:10px;border-radius:50%;border:2px solid var(--fg);box-sizing:border-box;opacity:.55}
 .dots i.on{background:var(--fg);opacity:1}
 .hud .falls{opacity:.7}
-#pauseBtn{margin-left:auto;pointer-events:auto;width:38px;height:38px;border-radius:50%;border:2px solid var(--fg);background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;padding:0}
-#pauseBtn svg{width:14px;height:14px}
+#sndBtn{margin-left:auto}
+#pauseBtn,#sndBtn{pointer-events:auto;width:38px;height:38px;border-radius:50%;border:2px solid var(--fg);background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;padding:0}
+#pauseBtn svg{width:14px;height:14px}#sndBtn svg{width:18px;height:18px}
+#sndBtn[aria-pressed="false"] .wv{display:none}#sndBtn[aria-pressed="true"] .x{display:none}
 .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:calc(10px + var(--st)) max(14px,var(--sr)) calc(10px + var(--sb)) max(14px,var(--sl));background:color-mix(in srgb,var(--bg) 78%,transparent)}
 .card{box-sizing:border-box;width:min(560px,100%);max-height:100%;overflow-y:auto;text-align:center;padding:14px 22px 16px;border:2px solid var(--fg);border-radius:22px;background:var(--bg)}
 .logo{display:block;width:min(300px,80%);height:auto;margin:2px auto 4px}
@@ -59,6 +61,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
     <span id="lvChip">LEVEL 1</span>
     <span class="dots" id="dots"><i></i><i></i><i></i></span>
     <span class="falls" id="fallChip"></span>
+    <button type="button" id="sndBtn" aria-label="Sound" aria-pressed="true"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M2 7h3l4-3.5v11L5 11H2Z" fill="currentColor"/><path class="wv" d="M12 6.5a3.5 3.5 0 0 1 0 5M14 4.5a6.5 6.5 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="x" d="M12 7l4 4M16 7l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     <button type="button" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.5" height="12" rx="1.5" fill="currentColor"/><rect x="8.5" y="1" width="3.5" height="12" rx="1.5" fill="currentColor"/></svg></button>
   </div>
 
@@ -109,12 +112,12 @@ const $=id=>document.getElementById(id);
 
 /* ---------- languages (shared with the other games) ---------- */
 const LANG={
-  de:{intro:'Du bist ein Stück der Linie. Lauf bis zum Ring am Ende.',r1:'Linker Daumen: nach links oder rechts ziehen = laufen',r2:'Anderer Finger: tippen = aus der Linie springen',r3:'Spring über Lücken und Zacken, sammle die Punkte',level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',hMove:'← ziehen →',hJump:'tippen = springen',fall:'✕'},
-  en:{intro:'You are a piece of the line. Run to the ring at the end.',r1:'Left thumb: drag left or right to run',r2:'Other finger: tap to jump out of the line',r3:'Jump over gaps and spikes, collect the dots',level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',hMove:'← drag →',hJump:'tap = jump',fall:'✕'},
-  fr:{intro:'Tu es un morceau de la ligne. Cours jusqu’à l’anneau au bout.',r1:'Pouce gauche : glisse à gauche ou à droite pour courir',r2:'Autre doigt : tape pour sauter hors de la ligne',r3:'Saute par-dessus les trous et les pics, ramasse les points',level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',hMove:'← glisse →',hJump:'tape = saute',fall:'✕'},
-  es:{intro:'Eres un trozo de la línea. Corre hasta el anillo del final.',r1:'Pulgar izquierdo: desliza a izquierda o derecha para correr',r2:'Otro dedo: toca para saltar fuera de la línea',r3:'Salta huecos y pinchos, recoge los puntos',level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',hMove:'← desliza →',hJump:'toca = salta',fall:'✕'},
-  it:{intro:'Sei un pezzo della linea. Corri fino all’anello alla fine.',r1:'Pollice sinistro: trascina a sinistra o a destra per correre',r2:'Altro dito: tocca per saltare fuori dalla linea',r3:'Salta buchi e punte, raccogli i punti',level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',hMove:'← trascina →',hJump:'tocca = salta',fall:'✕'},
-  pt:{intro:'Você é um pedaço da linha. Corra até o anel no final.',r1:'Polegar esquerdo: arraste para a esquerda ou direita para correr',r2:'Outro dedo: toque para pular para fora da linha',r3:'Pule buracos e espinhos, pegue os pontos',level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',hMove:'← arraste →',hJump:'toque = pula',fall:'✕'}
+  de:{intro:'Du bist ein Stück der Linie. Lauf bis zur Tür am Ende.',r1:'Linker Daumen: nach links oder rechts ziehen = laufen',r2:'Anderer Finger: tippen = aus der Linie springen',r3:'Spring über Lücken und Zacken, sammle die Punkte',level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',hMove:'← ziehen →',hJump:'tippen = springen',fall:'✕'},
+  en:{intro:'You are a piece of the line. Run to the door at the end.',r1:'Left thumb: drag left or right to run',r2:'Other finger: tap to jump out of the line',r3:'Jump over gaps and spikes, collect the dots',level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',hMove:'← drag →',hJump:'tap = jump',fall:'✕'},
+  fr:{intro:'Tu es un morceau de la ligne. Cours jusqu’à la porte au bout.',r1:'Pouce gauche : glisse à gauche ou à droite pour courir',r2:'Autre doigt : tape pour sauter hors de la ligne',r3:'Saute par-dessus les trous et les pics, ramasse les points',level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',hMove:'← glisse →',hJump:'tape = saute',fall:'✕'},
+  es:{intro:'Eres un trozo de la línea. Corre hasta la puerta del final.',r1:'Pulgar izquierdo: desliza a izquierda o derecha para correr',r2:'Otro dedo: toca para saltar fuera de la línea',r3:'Salta huecos y pinchos, recoge los puntos',level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',hMove:'← desliza →',hJump:'toca = salta',fall:'✕'},
+  it:{intro:'Sei un pezzo della linea. Corri fino alla porta alla fine.',r1:'Pollice sinistro: trascina a sinistra o a destra per correre',r2:'Altro dito: tocca per saltare fuori dalla linea',r3:'Salta buchi e punte, raccogli i punti',level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',hMove:'← trascina →',hJump:'tocca = salta',fall:'✕'},
+  pt:{intro:'Você é um pedaço da linha. Corra até a porta no final.',r1:'Polegar esquerdo: arraste para a esquerda ou direita para correr',r2:'Outro dedo: toque para pular para fora da linha',r3:'Pule buracos e espinhos, pegue os pontos',level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',hMove:'← arraste →',hJump:'toque = pula',fall:'✕'}
 };
 let lang='de',T=LANG.de;
 function setLang(k){lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.lang=lang;
@@ -124,6 +127,34 @@ function setLang(k){lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.la
 const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(_){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}}};
 let unlocked=Math.max(1,store.get('line.unlocked',1)|0);
 let bestDots=store.get('line.dots',{});
+
+/* ---------- sound: Commodore-64-style blips (pulse wave like the SID chip) ---------- */
+let AC=null,PW=null,soundOn=store.get('line.sound',true)!==false;
+function audio(){
+  if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(_){return null}
+    const n=32,re=new Float32Array(n),im=new Float32Array(n),d=.25;
+    for(let k=1;k<n;k++){re[k]=2/(k*Math.PI)*Math.sin(2*Math.PI*k*d);im[k]=2/(k*Math.PI)*(1-Math.cos(2*Math.PI*k*d))}
+    PW=AC.createPeriodicWave(re,im)}
+  if(AC.state==='suspended')AC.resume().catch(()=>{});
+  return AC;
+}
+function tone(f0,f1,dur,vol,at,shape){
+  if(!soundOn)return;const a=audio();if(!a)return;
+  const t0=a.currentTime+(at||0),o=a.createOscillator(),g=a.createGain();
+  if(!shape||shape==='pulse')o.setPeriodicWave(PW);else o.type=shape;
+  o.frequency.setValueAtTime(f0,t0);if(f1!==f0)o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+.004);g.gain.setValueAtTime(vol,t0+dur*.55);g.gain.exponentialRampToValueAtTime(.0008,t0+dur);
+  o.connect(g).connect(a.destination);o.start(t0);o.stop(t0+dur+.03);
+}
+const sfx={
+  jump(){tone(180,760,.15,.1);tone(360,1520,.15,.03,0,'square')},
+  jump2(){tone(392,1568,.13,.09);tone(1568,1568,.05,.05,.13);tone(2093,2093,.06,.04,.18)},
+  land(){tone(140,70,.06,.07,0,'triangle')},
+  dot(){tone(1047,1047,.06,.08);tone(1568,1568,.1,.08,.065)},
+  fall(){tone(640,60,.5,.1,0,'sawtooth');tone(320,40,.5,.06,.04)},
+  check(){tone(784,784,.07,.07);tone(1175,1175,.1,.07,.075)},
+  door(){[523,659,784,1047,1319].forEach((f,i)=>tone(f,f,.09,.08,i*.075));tone(1047,2093,.45,.05,.38,'triangle')}
+};
 
 /* ---------- landscape stage ---------- */
 const stage=$('stage'),cv=$('c'),ctx=cv.getContext('2d');
@@ -229,11 +260,12 @@ function support(x,y){let best=null;for(const p of plats){const f=floorAt(p,x);i
 function ledgeAt(x,y){let b=null;for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f!==null&&f<y-STEP&&f>=y-18&&(b===null||f<b))b=f}return b}
 function wallAt(x,y){for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f!==null&&f<y-STEP)return true}return false}
 
-const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0};
+const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0,air:0,dj:true,split:0};
+let drops=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0};
 let camX=0,camY=0,hintMoved=false,hintJumped=false;
 
-function placeAt(x,y){const s=support(x,y)||support(x,y-60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0}
+function placeAt(x,y){const s=support(x,y)||support(x,y-60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;drops=[]}
 function startLevel(n){
   levelN=n;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
@@ -244,7 +276,7 @@ function startLevel(n){
 }
 function die(){
   if(state!=='play')return;
-  state='dead';P.dead=0;falls++;updateHud();buzz(40);
+  state='dead';P.dead=0;falls++;updateHud();buzz(40);sfx.fall();
   for(let i=0;i<7;i++)shards.push({x:P.x+(i-3)*4,y:Math.min(P.y,killY-40)-6,vx:(Math.random()-.5)*240+P.vx*.3,vy:-160-Math.random()*220,a:Math.random()*6,va:(Math.random()-.5)*14,l:4+Math.random()*4});
 }
 function respawn(){
@@ -297,13 +329,14 @@ function update(dt){
     P.dead+=dt;for(const s of shards){s.vy+=G*.8*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.a+=s.va*dt}
     if(P.dead>.85)respawn();return;
   }
-  if(state==='win'){P.win+=dt;P.x+=(goal.x-P.x)*Math.min(1,dt*8);return}
+  if(state==='win'){P.win+=dt;P.x+=(goal.x-P.x)*Math.min(1,dt*7);if(P.win>1.25)levelDone();return}
   if(state!=='play')return;
   lvTime+=dt;
   const dir=joy.id!==null?joyDir():keys.r-keys.l;
   if(dir!==0){P.face=dir>0?1:-1;hintMoved=true}
   const tgt=dir*SPEED,acc=P.ground?ACC_G:ACC_A;
   P.vx+=Math.max(-acc*dt,Math.min(acc*dt,tgt-P.vx));
+  if(!P.ground)P.air+=dt;
   if(P.buf>0)P.buf-=dt;if(P.coy>0)P.coy-=dt;if(P.squash>0)P.squash-=dt;
   // ride along on moving bits
   if(P.ground&&P.on&&P.on.mv)P.x+=P.on.dx;
@@ -323,19 +356,27 @@ function update(dt){
     const py=P.y;P.vy=Math.min(P.vy+G*dt,1100);P.y+=P.vy*dt;
     if(P.vy>=0){let best=null;
       for(const p of plats){const f=floorAt(p,P.x);if(f===null)continue;if(py<=f-p.dy+STEP&&P.y>=f&&(!best||f<best.y))best={y:f,p}}
-      if(best){P.y=best.y;P.on=best.p;P.ground=true;P.squash=.18;P.vy=0}}
+      if(best){P.y=best.y;P.on=best.p;P.ground=true;P.squash=.18;P.dj=true;P.split=0;if(P.vy>250)sfx.land();P.vy=0}}
   }
   // jump: the piece lifts out of the line and leaves a hole that closes again
   if(P.buf>0&&(P.ground||P.coy>0)){
     if(P.ground&&P.on)holes.push({p:P.on,x:P.x-P.on.ox,t:0});
-    P.vy=-JV;P.ground=false;P.on=null;P.coy=0;P.buf=0;
+    P.vy=-JV;P.ground=false;P.on=null;P.coy=0;P.buf=0;P.air=0;sfx.jump();
+  }else if(P.buf>0&&!P.ground&&P.dj&&P.air>.06){
+    // second jump in the air: higher, but a little drop splits off the blob
+    P.vy=-JV*.92;P.dj=false;P.split=1;P.buf=0;sfx.jump2();buzz(10);
+    drops.push({x:P.x-P.face*4,y:P.y-4,vx:-P.face*70+P.vx*.25,vy:160,r:3.3,t:0});
   }
+  for(const d of drops){d.t+=dt;d.vy+=G*dt;const py=d.y;d.x+=d.vx*dt;d.y+=d.vy*dt;
+    for(const p of plats){const f=floorAt(p,d.x);if(f!==null&&py<=f&&d.y>=f){d.dead=1;pops.push({x:d.x,y:f,t:.3,s:1});break}}
+    if(d.y>killY)d.dead=1}
+  drops=drops.filter(d=>!d.dead);
   // spikes, falling, dots, checkpoints, goal
   for(const s of spikes)if(P.x+8>s.x0&&P.x-8<s.x1&&P.y>s.y-11&&P.y<s.y+30){die();return}
   if(P.y>killY){die();return}
-  for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-9-s.y)<20){s.got=true;s.pop=.001;buzz(12);updateHud()}
-  for(const c of cps)if(!c.on&&P.x>=c.x&&P.ground){c.on=true;spawn={x:c.x,y:c.y};pops.push({x:c.x,y:c.y-22,t:0})}
-  if(P.ground&&P.x>=goal.x-4){state='win';P.win=0;P.vx=0;pops.push({x:goal.x,y:goal.y-14,t:0});buzz([20,40,20]);setTimeout(levelDone,1000)}
+  for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-9-s.y)<20){s.got=true;s.pop=.001;buzz(12);sfx.dot();updateHud()}
+  for(const c of cps)if(!c.on&&P.x>=c.x&&P.ground){c.on=true;spawn={x:c.x,y:c.y};sfx.check();pops.push({x:c.x,y:c.y-22,t:0})}
+  if(P.ground&&P.x>=goal.x-6){state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door()}
 }
 
 /* ---------- drawing ---------- */
@@ -352,6 +393,16 @@ function humpPts(x,baseFn,h,len,face){
     const px=x-len/2+s*len;pts.push([px,baseFn(px)-h*Math.pow(Math.sin(Math.PI*u),1.4)])}
   return pts;
 }
+// in the air the piece of line rolls up into a wobbly blob, stretched by the speed
+function drawBlob(){
+  const g=Math.min(1,P.air/.08),st=Math.max(-.3,Math.min(.3,-P.vy/1500));
+  const r=8.5*(.55+.45*g)*(P.split?.82:1),ry=r*(1+st),rx=r*(1-st*.7),cx=P.x,cy=P.y-ry-1;
+  ctx.fillStyle=FG;ctx.beginPath();
+  for(let i=0;i<=24;i++){const a=i/24*6.2832,w=1+.07*Math.sin(3*a+t*15)+.05*Math.sin(5*a-t*11);
+    const x=cx+Math.cos(a)*rx*w,y=cy+Math.sin(a)*ry*w;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+  ctx.fill();
+  ctx.fillStyle=BG;ctx.beginPath();ctx.arc(cx+P.face*rx*.42,cy-ry*.18,1.8,0,6.2832);ctx.fill();
+}
 function drawChar(){
   if(state==='dead'){
     ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.globalAlpha=Math.max(0,1-P.dead/.8);
@@ -360,12 +411,12 @@ function drawChar(){
   }
   let h,len=CL,base,ang=0;
   const moving=Math.abs(P.vx)>15;
-  if(state==='win'){const k=Math.min(1,P.win/.5);h=9*(1-k);len=CL*(1-k*.9);if(k>=1)return}
+  if(state==='win'){const k=Math.min(1,P.win/.3);h=9*(1-k);len=CL*(1-k*.9);if(k>=1)return}
   else if(P.ground){
     h=moving?9+3.2*Math.sin(P.walk*6.2832):9+.8*Math.sin(t*3);
     if(P.squash>0)h*=1-P.squash*2.2;
     len=CL+(9-h)*1.3;
-  }else{h=10.5;len=CL-3;ang=Math.max(-.25,Math.min(.25,P.vy/2000))*P.face*-1}
+  }else{drawBlob();return}
   const on=P.ground&&P.on?P.on:null;
   if(on){
     base=px=>{const f=floorAt(on,px);return f===null||Math.abs(f-P.y)>12?P.y:f};
@@ -380,6 +431,7 @@ function render(){
   const k=DPR*K;
   ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=BG;ctx.fillRect(0,0,cv.width,cv.height);
   if(!goal)return;
+  if(state==='done'){ctx.fillStyle=FG;ctx.fillRect(0,0,cv.width,cv.height);return}
   // camera: a bit ahead of where you run
   if(state==='play'||state==='win'){
     const tx=P.x-viewW*.38+P.vx*.35,ty=P.y-VIEW_H*.6;
@@ -407,10 +459,15 @@ function render(){
   for(const s of sparks){if(s.x<vx0||s.x>vx1)continue;
     if(!s.got){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(s.x,s.y+Math.sin(t*2.6+s.x)*3,5,0,6.2832);ctx.fill()}
     else if(s.pop<.5){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-s.pop*2;ctx.beginPath();ctx.arc(s.x,s.y,5+s.pop*40,0,6.2832);ctx.stroke();ctx.globalAlpha=1}}
-  // the ring at the end
-  {const r=11+Math.sin(t*3)*1.2+(state==='win'?Math.min(1,P.win*2)*4:0);ctx.strokeStyle=FG;ctx.lineWidth=3;ctx.beginPath();ctx.arc(goal.x,goal.y-r-3,r,0,6.2832);ctx.stroke();
-    if(state==='win'&&P.win>.45){ctx.fillStyle=FG;ctx.globalAlpha=Math.min(1,(P.win-.45)*3);ctx.beginPath();ctx.arc(goal.x,goal.y-r-3,r-4,0,6.2832);ctx.fill();ctx.globalAlpha=1}}
-  for(const q of pops){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-q.t/.6;ctx.beginPath();ctx.arc(q.x,q.y,8+q.t*70,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
+  // the door at the end: when you walk in it lights up and its colour floods the screen
+  {const gx=goal.x,gy=goal.y,dw=13,dh=42,lit=state==='win'?Math.min(1,P.win/.3):0;
+    if(lit>0){ctx.fillStyle=FG;ctx.fillRect(gx-dw,gy-dh*lit,dw*2,dh*lit)}
+    ctx.strokeStyle=FG;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(gx-dw,gy);ctx.lineTo(gx-dw,gy-dh);ctx.lineTo(gx+dw,gy-dh);ctx.lineTo(gx+dw,gy);ctx.stroke();
+    if(lit<1){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(gx+dw-5,gy-dh*.45,2,0,6.2832);ctx.fill()}
+    if(state==='win'&&P.win>.3){const k=Math.min(1,(P.win-.3)/.8),e=k*k*(3-2*k);
+      ctx.fillStyle=FG;ctx.beginPath();ctx.arc(gx,gy-dh/2,8+e*(viewW+VIEW_H)*1.3,0,6.2832);ctx.fill()}}
+  for(const q of pops){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-q.t/.6;ctx.beginPath();ctx.arc(q.x,q.y,q.s?2+(q.t-.3)*30:8+q.t*70,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
+  ctx.fillStyle=FG;for(const d of drops){ctx.beginPath();ctx.ellipse(d.x,d.y,d.r*.85,d.r*(1+Math.min(.5,d.vy/1600)),0,0,6.2832);ctx.fill()}
   if(state!=='menu')drawChar();
   // screen space: joystick and first-level hints
   ctx.setTransform(DPR,0,0,DPR,0,0);
@@ -457,11 +514,13 @@ function buildLevels(){
 }
 function preview(){setTheme(sel);gen(sel);levelN=sel;camX=-viewW*.3;camY=-VIEW_H*.6;t=0}
 function showMenu(){state='menu';hud.hidden=true;pauseOv.hidden=doneOv.hidden=true;startOv.hidden=false;buildLevels();preview()}
-function play(n){goLandscape();store.set('line.last',n);startOv.hidden=doneOv.hidden=pauseOv.hidden=true;hud.hidden=false;joy.id=null;startLevel(n);state='play';lastT=performance.now();accT=0}
+function play(n){goLandscape();audio();store.set('line.last',n);startOv.hidden=doneOv.hidden=pauseOv.hidden=true;hud.hidden=false;joy.id=null;startLevel(n);state='play';lastT=performance.now();accT=0}
 function pause(){if(state!=='play'&&state!=='dead')return;state='paused';joy.id=null;pauseOv.hidden=false}
 function resume(){pauseOv.hidden=true;state='play';lastT=performance.now();accT=0}
 function levelDone(){
   if(state!=='win')return;state='done';
+  const r=document.documentElement.style;r.setProperty('--bg',FG);r.setProperty('--fg',BG);
+  document.querySelector('meta[name=theme-color]').setAttribute('content',FG);
   const got=sparks.filter(s=>s.got).length;
   if(levelN+1>unlocked){unlocked=levelN+1;store.set('line.unlocked',unlocked)}
   if(got>(bestDots[levelN]||0)){bestDots[levelN]=got;store.set('line.dots',bestDots)}
@@ -472,6 +531,9 @@ function levelDone(){
 }
 $('playBtn').onclick=()=>play(sel);
 $('pauseBtn').onclick=pause;
+function paintSnd(){$('sndBtn').setAttribute('aria-pressed',soundOn)}
+$('sndBtn').onclick=()=>{soundOn=!soundOn;store.set('line.sound',soundOn);paintSnd();if(soundOn)sfx.dot()};
+paintSnd();
 $('resumeBtn').onclick=resume;
 $('restartBtn').onclick=()=>play(levelN);
 $('menuBtn').onclick=()=>{sel=levelN;showMenu()};
