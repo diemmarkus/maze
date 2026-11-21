@@ -148,6 +148,7 @@ function tone(f0,f1,dur,vol,at,shape){
 }
 const sfx={
   jump(){tone(180,760,.15,.1);tone(360,1520,.15,.03,0,'square')},
+  flip(){tone(880,220,.12,.08);tone(220,880,.12,.08,.1)},
   jump2(){tone(392,1568,.13,.09);tone(1568,1568,.05,.05,.13);tone(2093,2093,.06,.04,.18)},
   land(){tone(140,70,.06,.07,0,'triangle')},
   dot(){tone(1047,1047,.06,.08);tone(1568,1568,.1,.08,.065)},
@@ -203,51 +204,58 @@ function gen(n){
   const R=rng(n*7919+13),ri=(a,b)=>a+R()*(b-a);
   const d=Math.min(1,(n-1)/12);
   const target=Math.min(7200,1900+n*380);
-  plats=[];spikes=[];sparks=[];cps=[];
-  let cx=0,cy=0,cur=[[-500,0]];
+  plats=[];spikes=[];sparks=[];cps=[];flips=[];sharks=[];
+  let cx=0,cy=0,cur=[[-500,0]],g=1;   // g: which side of the line you're on (1 = on top, -1 = underneath)
   const cands=[],flats=[];
   const end=()=>{if(cur.length>1)plats.push(mkPlat(cur,true))};
-  const flat=L=>{if(L>=70)flats.push([cx+L/2,cy]);cx+=L;cur.push([cx,cy])};
+  const flat=L=>{if(L>=70)flats.push([cx+L/2,cy,g]);cx+=L;cur.push([cx,cy])};
+  const flip=()=>{flat(70);flips.push({x:cx,y:cy,used:0});g=-g;flat(ri(110,150))};
   flat(380);
-  const W={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:n>=2?2.2:0,floats:n>=3?1.4:0,mover:n>=4?1.2:0};
+  const W={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:n>=2?2.2:0,flip:n>=3?1.3:0,shark:n>=2?1.4:0,floats:n>=3?1.4:0,mover:n>=4?1.2:0};
   const pick=last=>{let tot=0;for(const k in W)if(k!==last)tot+=W[k];let r=R()*tot;for(const k in W){if(k===last)continue;if((r-=W[k])<0)return k}return 'flat'};
   let last='';
+  // everything is built in "gravity frame": -g*… is away from the line on your side
   while(cx<target){
     const k=pick(last);last=k;
     if(k==='flat')flat(ri(90,200));
+    else if(k==='flip')flip();
+    else if(k==='shark'){flat(50);const L=ri(170,240+60*d);sharks.push({p:{pts:cur,ox:0,oy:0},x0:cx,x1:cx+L,y:cy,g,pos:cx+L*R(),dir:R()<.5?-1:1,sp:ri(45,70+45*d),rise:0});cands.push([cx+L/2,cy-g*75]);cx+=L;cur.push([cx,cy]);flat(ri(70,110))}
     else if(k==='slope'){const L=ri(120,260),dy=ri(25,Math.min(110,L*.55))*(R()<.5?-1:1);cx+=L;cy+=dy;cur.push([cx,cy]);flat(ri(50,100))}
-    else if(k==='step'){const up=R()<.55,dy=up?-ri(18,28+34*d):ri(25,60+40*d);cur.push([cx,cy+dy]);cy+=dy;flat(ri(80,150))}
+    else if(k==='step'){const up=R()<.55,dy=g*(up?-ri(18,28+34*d):ri(25,60+40*d));cur.push([cx,cy+dy]);cy+=dy;flat(ri(80,150))}
     else if(k==='stairs'){const up=R()<.5,m=3+(R()<.5?1:0);for(let i=0;i<m;i++){const dy=ri(14,22)*(up?-1:1);cur.push([cx,cy+dy]);cy+=dy;flat(ri(44,64))}flat(70)}
     else if(k==='gap'){
       const dy=ri(-30-22*d,50),up=Math.max(0,-dy),w=ri(48,Math.min(130,72+58*d)-up*.6);
-      end();cands.push([cx+w/2,Math.min(cy,cy+dy)-58]);cx+=w;cy+=dy;cur=[[cx,cy]];flat(ri(100,160));
+      end();cands.push([cx+w/2,cy+g*(Math.min(0,dy)-58)]);cx+=w;cy+=g*dy;cur=[[cx,cy]];flat(ri(100,160));
     }
-    else if(k==='spikes'){flat(60);const t=Math.round(ri(2,3.4+4*d)),w=t*12;spikes.push({x0:cx,x1:cx+w,y:cy,n:t});cands.push([cx+w/2,cy-62]);cx+=w;cur.push([cx,cy]);flat(ri(80,130))}
+    else if(k==='spikes'){flat(60);const t=Math.round(ri(2,3.4+4*d)),w=t*12;spikes.push({x0:cx,x1:cx+w,y:cy,n:t,g});cands.push([cx+w/2,cy-g*62]);cx+=w;cur.push([cx,cy]);flat(ri(80,130))}
     else if(k==='floats'){
       end();const m=1+(R()<.3+.4*d?1:0);let x=cx;let fy=cy;
-      for(let i=0;i<m;i++){const sub=ri(58,82+22*d),pw=ri(55,85);x+=sub;fy=cy-ri(8,44);plats.push(mkPlat([[x,fy],[x+pw,fy]],false));cands.push([x+pw/2,fy-42]);x+=pw}
-      x+=ri(58,80+20*d);cx=x;cy=fy+ri(-20,35);cur=[[cx,cy]];flat(ri(100,150));
+      for(let i=0;i<m;i++){const sub=ri(58,82+22*d),pw=ri(55,85);x+=sub;fy=cy-g*ri(8,44);plats.push(mkPlat([[x,fy],[x+pw,fy]],false));cands.push([x+pw/2,fy-g*42]);x+=pw}
+      x+=ri(58,80+20*d);cx=x;cy=fy+g*ri(-20,35);cur=[[cx,cy]];flat(ri(100,150));
     }
     else if(k==='mover'){
       end();const G=ri(250,330+60*d),pw=72,c=cx+G/2,amp=G/2-pw/2-2;
       plats.push(mkPlat([[c-pw/2,cy],[c+pw/2,cy]],false,{amp,per:ri(3.9,3.1-.5*d),ph:R()*6.283}));
-      cands.push([c,cy-48]);cx+=G;cur=[[cx,cy]];flat(ri(110,160));
+      cands.push([c,cy-g*48]);cx+=G;cur=[[cx,cy]];flat(ri(110,160));
     }
   }
+  if(g<0)flip();   // the door stands on top of the line
   flat(170);goal={x:cx,y:cy};flat(170);end();
   // checkpoints: one in the middle, two on long levels
   const cpN=target>4200?2:1;
-  for(let i=1;i<=cpN;i++){const want=target*i/(cpN+1);let b=null;for(const f of flats)if(f[0]>300&&(!b||Math.abs(f[0]-want)<Math.abs(b[0]-want)))b=f;if(b&&!cps.some(c=>c.x===b[0]))cps.push({x:b[0],y:b[1],on:false})}
+  for(let i=1;i<=cpN;i++){const want=target*i/(cpN+1);let b=null;for(const f of flats)if(f[0]>300&&(!b||Math.abs(f[0]-want)<Math.abs(b[0]-want)))b=f;if(b&&!cps.some(c=>c.x===b[0]))cps.push({x:b[0],y:b[1],g:b[2],on:false})}
   cps.sort((a,b)=>a.x-b.x);
   // three dots, spread out over the level
   cands.sort((a,b)=>a[0]-b[0]);
   const idx=cands.length>=3?[.15,.5,.85].map(f=>Math.floor(f*(cands.length-1))):cands.map((_,i)=>i);
   [...new Set(idx)].forEach(i=>sparks.push({x:cands[i][0],y:cands[i][1],got:false,pop:0}));
-  while(sparks.length<3){const f=flats[(sparks.length*7+3)%flats.length];sparks.push({x:f[0],y:f[1]-60,got:false,pop:0})}
-  let maxY=-1e9;for(const p of plats)for(const q of p.pts)maxY=Math.max(maxY,q[1]);killY=maxY+300;
+  while(sparks.length<3){const f=flats[(sparks.length*7+3)%flats.length];sparks.push({x:f[0],y:f[1]-f[2]*60,got:false,pop:0})}
+  let maxY=-1e9,minY=1e9;for(const p of plats)for(const q of p.pts){maxY=Math.max(maxY,q[1]);minY=Math.min(minY,q[1])}killY=maxY+300;killTop=minY-300;
 }
 
-/* ---------- physics ---------- */
+/* ---------- physics ----------
+   Gravity can point down (P.g=1, you run on top of the line) or up (P.g=-1, you hang underneath).
+   "Above" always means on your side of the line: g*(y-f)>0. */
 const SPEED=205,ACC_G=1700,ACC_A=950,G=1500,JV=545,STEP=7,SNAP=10,CL=26;
 function floorAt(p,x){
   const q=p.pts,lx=x-p.ox;
@@ -256,20 +264,20 @@ function floorAt(p,x){
     if(lx>=a[0]&&lx<=b[0])return a[1]+(b[1]-a[1])*(lx-a[0])/(b[0]-a[0])+p.oy}
   return null;
 }
-function support(x,y){let best=null;for(const p of plats){const f=floorAt(p,x);if(f===null)continue;if(f>=y-STEP&&f<=y+SNAP&&(!best||f<best.y))best={y:f,p}}return best}
-function ledgeAt(x,y){let b=null;for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f!==null&&f<y-STEP&&f>=y-18&&(b===null||f<b))b=f}return b}
-function wallAt(x,y){for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f!==null&&f<y-STEP)return true}return false}
+function support(x,y,g){g=g||P.g;let best=null;for(const p of plats){const f=floorAt(p,x);if(f===null)continue;const h=g*(y-f);if(h>=-SNAP&&h<=STEP&&(!best||g*f<g*best.y))best={y:f,p}}return best}
+function ledgeAt(x,y){const g=P.g;let b=null;for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f===null)continue;const h=g*(y-f);if(h>STEP&&h<=18&&(b===null||g*f<g*b))b=f}return b}
+function wallAt(x,y){const g=P.g;for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f!==null&&g*(y-f)>STEP)return true}return false}
 
-const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0,air:0,dj:true,split:0};
-let drops=[];
-let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0};
+const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0,air:0,dj:true,split:0,g:1,flipT:0};
+let drops=[],flips=[],sharks=[],killTop=-400;
+let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
 let camX=0,camY=0,hintMoved=false,hintJumped=false;
 
-function placeAt(x,y){const s=support(x,y)||support(x,y-60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;drops=[]}
+function placeAt(x,y,g){P.g=g||1;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;drops=[]}
 function startLevel(n){
   levelN=n;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
-  spawn={x:40,y:0};placeAt(40,0);P.face=1;P.win=0;
+  spawn={x:40,y:0,g:1};placeAt(40,0,1);P.face=1;P.win=0;
   camX=P.x-viewW*.35;camY=P.y-VIEW_H*.6;
   hintMoved=hintJumped=n>1;
   updateHud();
@@ -277,12 +285,15 @@ function startLevel(n){
 function die(){
   if(state!=='play')return;
   state='dead';P.dead=0;falls++;updateHud();buzz(40);sfx.fall();
-  for(let i=0;i<7;i++)shards.push({x:P.x+(i-3)*4,y:Math.min(P.y,killY-40)-6,vx:(Math.random()-.5)*240+P.vx*.3,vy:-160-Math.random()*220,a:Math.random()*6,va:(Math.random()-.5)*14,l:4+Math.random()*4});
+  const y0=P.g>0?Math.min(P.y,killY-40):Math.max(P.y,killTop+40);
+  for(let i=0;i<7;i++)shards.push({x:P.x+(i-3)*4,y:y0-P.g*6,vx:(Math.random()-.5)*240+P.vx*.3,vy:-P.g*(160+Math.random()*220),a:Math.random()*6,va:(Math.random()-.5)*14,l:4+Math.random()*4,g:P.g});
 }
 function respawn(){
   shards=[];holes=[];
   for(const p of plats)if(p.mv)p.dx=p.dy=0;
-  placeAt(spawn.x,spawn.y);camY=P.y-VIEW_H*.6;state='play';
+  for(const f of flips)f.used=0;
+  for(const k of sharks)k.rise=0;
+  placeAt(spawn.x,spawn.y,spawn.g);camY=P.y-VIEW_H*(P.g>0?.6:.4);state='play';
 }
 function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(_){}}
 
@@ -325,27 +336,35 @@ function update(dt){
   for(const h of holes)h.t+=dt;holes=holes.filter(h=>h.t<.5);
   for(const s of sparks)if(s.pop>0)s.pop+=dt;
   for(const q of pops)q.t+=dt;pops=pops.filter(q=>q.t<.6);
+  for(const f of flips)if(f.used>0)f.used=Math.max(0,f.used-dt);
+  // sharks swim along under the line, only the fin sticks out; they jump up with open mouth when you fly over them
+  for(const k of sharks){
+    k.pos+=k.dir*k.sp*dt;if(k.pos<k.x0+14){k.pos=k.x0+14;k.dir=1}if(k.pos>k.x1-14){k.pos=k.x1-14;k.dir=-1}
+    const above=state==='play'&&!P.ground&&P.g===k.g&&Math.abs(P.x-k.pos)<75&&k.g*(k.y-P.y)>8;
+    k.rise+=((above?1:0)-k.rise)*Math.min(1,dt*(above?9:4));
+  }
   if(state==='dead'){
-    P.dead+=dt;for(const s of shards){s.vy+=G*.8*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.a+=s.va*dt}
+    P.dead+=dt;for(const s of shards){s.vy+=s.g*G*.8*dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.a+=s.va*dt}
     if(P.dead>.85)respawn();return;
   }
   if(state==='win'){P.win+=dt;P.x+=(goal.x-P.x)*Math.min(1,dt*7);if(P.win>1.25)levelDone();return}
   if(state!=='play')return;
   lvTime+=dt;
+  const g=P.g;
   const dir=joy.id!==null?joyDir():keys.r-keys.l;
   if(dir!==0){P.face=dir>0?1:-1;hintMoved=true}
   const tgt=dir*SPEED,acc=P.ground?ACC_G:ACC_A;
   P.vx+=Math.max(-acc*dt,Math.min(acc*dt,tgt-P.vx));
   if(!P.ground)P.air+=dt;
-  if(P.buf>0)P.buf-=dt;if(P.coy>0)P.coy-=dt;if(P.squash>0)P.squash-=dt;
+  if(P.buf>0)P.buf-=dt;if(P.coy>0)P.coy-=dt;if(P.squash>0)P.squash-=dt;if(P.flipT>0)P.flipT-=dt;
   // ride along on moving bits
   if(P.ground&&P.on&&P.on.mv)P.x+=P.on.dx;
-  // horizontal move, walls are just higher ground
-  const nx=P.x+P.vx*dt,probe=nx+Math.sign(P.vx)*(P.ground?9:4);
+  // horizontal move, walls are just higher ground (on your side of the line)
+  const px0=P.x,nx=P.x+P.vx*dt,probe=nx+Math.sign(P.vx)*(P.ground?9:4);
   if(Math.abs(P.vx)>1&&wallAt(probe,P.y)){
     // just short of an edge in the air: pop up onto it instead of sliding down the wall
     const lf=P.ground?null:ledgeAt(probe,P.y);
-    if(lf!==null&&P.vy>-80&&!wallAt(probe,lf)){P.x=nx;P.y=lf;P.vy=0;P.ground=true;P.on=support(P.x,P.y+1)?.p||null;P.squash=.18;if(!P.on)P.ground=false}
+    if(lf!==null&&g*P.vy>-80&&!wallAt(probe,lf)){P.x=nx;P.y=lf;P.vy=0;P.ground=true;P.on=support(P.x,P.y+g)?.p||null;P.squash=.18;if(!P.on)P.ground=false}
     else P.vx=0;
   }else P.x=nx;
   if(P.ground){
@@ -353,30 +372,41 @@ function update(dt){
     const s=support(P.x,P.y);
     if(s){P.y=s.y;P.on=s.p}else{P.ground=false;P.on=null;P.coy=.1;P.vy=0}
   }else{
-    const py=P.y;P.vy=Math.min(P.vy+G*dt,1100);P.y+=P.vy*dt;
-    if(P.vy>=0){let best=null;
-      for(const p of plats){const f=floorAt(p,P.x);if(f===null)continue;if(py<=f-p.dy+STEP&&P.y>=f&&(!best||f<best.y))best={y:f,p}}
-      if(best){P.y=best.y;P.on=best.p;P.ground=true;P.squash=.18;P.dj=true;P.split=0;if(P.vy>250)sfx.land();P.vy=0}}
+    const py=P.y;P.vy+=g*G*dt;if(g*P.vy>1100)P.vy=g*1100;P.y+=P.vy*dt;
+    if(g*P.vy>=0){let best=null;
+      for(const p of plats){const f=floorAt(p,P.x);if(f===null)continue;if(g*(py-(f-p.dy))>=-STEP&&g*(f-P.y)<=0&&(!best||g*f<g*best.y))best={y:f,p}}
+      if(best){P.y=best.y;P.on=best.p;P.ground=true;P.squash=.18;P.dj=true;P.split=0;if(g*P.vy>250)sfx.land();P.vy=0}}
   }
   // jump: the piece lifts out of the line and leaves a hole that closes again
   if(P.buf>0&&(P.ground||P.coy>0)){
     if(P.ground&&P.on)holes.push({p:P.on,x:P.x-P.on.ox,t:0});
-    P.vy=-JV;P.ground=false;P.on=null;P.coy=0;P.buf=0;P.air=0;sfx.jump();
+    P.vy=-g*JV;P.ground=false;P.on=null;P.coy=0;P.buf=0;P.air=0;sfx.jump();
   }else if(P.buf>0&&!P.ground&&P.dj&&P.air>.06){
     // second jump in the air: higher, but a little drop splits off the blob
-    P.vy=-JV*.92;P.dj=false;P.split=1;P.buf=0;sfx.jump2();buzz(10);
-    drops.push({x:P.x-P.face*4,y:P.y-4,vx:-P.face*70+P.vx*.25,vy:160,r:3.3,t:0});
+    P.vy=-g*JV*.92;P.dj=false;P.split=1;P.buf=0;sfx.jump2();buzz(10);
+    drops.push({x:P.x-P.face*4,y:P.y-g*4,vx:-P.face*70+P.vx*.25,vy:g*160,r:3.3,t:0,g});
   }
-  for(const d of drops){d.t+=dt;d.vy+=G*dt;const py=d.y;d.x+=d.vx*dt;d.y+=d.vy*dt;
-    for(const p of plats){const f=floorAt(p,d.x);if(f!==null&&py<=f&&d.y>=f){d.dead=1;pops.push({x:d.x,y:f,t:.3,s:1});break}}
-    if(d.y>killY)d.dead=1}
+  for(const d of drops){d.t+=dt;d.vy+=d.g*G*dt;const py=d.y;d.x+=d.vx*dt;d.y+=d.vy*dt;
+    for(const p of plats){const f=floorAt(p,d.x);if(f!==null&&d.g*(py-f)<=0&&d.g*(d.y-f)>=0){d.dead=1;pops.push({x:d.x,y:f,t:.3,s:1});break}}
+    if(d.y>killY||d.y<killTop)d.dead=1}
   drops=drops.filter(d=>!d.dead);
-  // spikes, falling, dots, checkpoints, goal
-  for(const s of spikes)if(P.x+8>s.x0&&P.x-8<s.x1&&P.y>s.y-11&&P.y<s.y+30){die();return}
-  if(P.y>killY){die();return}
-  for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-9-s.y)<20){s.got=true;s.pop=.001;buzz(12);sfx.dot();updateHud()}
-  for(const c of cps)if(!c.on&&P.x>=c.x&&P.ground){c.on=true;spawn={x:c.x,y:c.y};sfx.check();pops.push({x:c.x,y:c.y-22,t:0})}
-  if(P.ground&&P.x>=goal.x-6){state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door()}
+  // gravity switch: walk through it and you're on the other side of the line
+  for(const f of flips){
+    if(f.used>0)continue;
+    if((px0<f.x&&P.x>=f.x)||(px0>f.x&&P.x<=f.x)){
+      if(Math.abs(P.y-f.y)<160){P.g=-P.g;P.y=f.y;P.vy=0;P.ground=true;P.on=support(P.x,P.y)?.p||null;P.flipT=.25;P.dj=true;P.split=0;f.used=.4;sfx.flip();buzz(15);pops.push({x:f.x,y:f.y,t:0});if(!P.on)P.ground=false}
+    }
+  }
+  // spikes, sharks, falling, dots, checkpoints, goal
+  for(const s of spikes)if(s.g===P.g&&P.x+8>s.x0&&P.x-8<s.x1){const h=s.g*(s.y-P.y);if(h<11&&h>-30){die();return}}
+  for(const k of sharks){if(k.g!==P.g)continue;const h=k.g*(k.y-P.y),dx=Math.abs(P.x-k.pos);
+    if(dx<11&&h<14&&h>-6){die();return}                     // the fin
+    if(k.rise>.2&&dx<15&&h>-6&&h<k.rise*38+4){die();return}  // the mouth
+  }
+  if(P.y>killY||P.y<killTop){die();return}
+  for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-P.g*9-s.y)<20){s.got=true;s.pop=.001;buzz(12);sfx.dot();updateHud()}
+  for(const c of cps)if(!c.on&&P.x>=c.x&&P.ground&&P.g===c.g){c.on=true;spawn={x:c.x,y:c.y,g:c.g};sfx.check();pops.push({x:c.x,y:c.y-c.g*22,t:0})}
+  if(P.ground&&P.g>0&&P.x>=goal.x-6){state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door()}
 }
 
 /* ---------- drawing ---------- */
@@ -386,22 +416,31 @@ function strokeAlong(p,x0,x1,col,w){
   for(let x=x0;x<=x1+.01;x+=3){const f=floorAt(p,Math.min(x,x1));if(f===null){first=true;continue}if(first){ctx.moveTo(x,f);first=false}else ctx.lineTo(x,f)}
   ctx.stroke();
 }
-// the character: a hump in the line, peak a little to the front, one small eye
+// the character: a hump in the line (on your side of it), peak a little to the front, one small eye
 function humpPts(x,baseFn,h,len,face){
   const pts=[],n=12;
   for(let i=0;i<=n;i++){let s=i/n;const u=face>0?Math.pow(s,.85):1-Math.pow(1-s,.85);
     const px=x-len/2+s*len;pts.push([px,baseFn(px)-h*Math.pow(Math.sin(Math.PI*u),1.4)])}
   return pts;
 }
-// in the air the piece of line rolls up into a wobbly blob, stretched by the speed
+function strokePts(pts,close){ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));if(close)ctx.closePath();ctx.stroke()}
+// in the air the piece of line curls up: both ends swing round and meet, and it's a round outline (a blob)
 function drawBlob(){
-  const g=Math.min(1,P.air/.08),st=Math.max(-.3,Math.min(.3,-P.vy/1500));
-  const r=8.5*(.55+.45*g)*(P.split?.82:1),ry=r*(1+st),rx=r*(1-st*.7),cx=P.x,cy=P.y-ry-1;
-  ctx.fillStyle=FG;ctx.beginPath();
-  for(let i=0;i<=24;i++){const a=i/24*6.2832,w=1+.07*Math.sin(3*a+t*15)+.05*Math.sin(5*a-t*11);
-    const x=cx+Math.cos(a)*rx*w,y=cy+Math.sin(a)*ry*w;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
-  ctx.fill();
-  ctx.fillStyle=BG;ctx.beginPath();ctx.arc(cx+P.face*rx*.42,cy-ry*.18,1.8,0,6.2832);ctx.fill();
+  const g=P.g,k0=Math.min(1,P.air/.16),k=1-Math.pow(1-k0,2.2);
+  const sz=P.split?.82:1,Rf=8.5*sz;
+  ctx.strokeStyle=FG;ctx.lineWidth=LW;
+  if(k<1){
+    // an arc of a circle: its length grows from the hump to the full ring, the opening closes towards your side of the line
+    const A=.7+k*(6.2832-.7),Lc=CL+(6.2832*Rf-CL)*k,R=Lc/A;
+    const top=P.y-g*(10+(2*Rf-9)*k),cy=top+g*R,a0=-g*Math.PI/2,pts=[];
+    for(let i=0;i<=20;i++){const a=a0+(i/20-.5)*A;pts.push([P.x+Math.cos(a)*R,cy+Math.sin(a)*R])}
+    strokePts(pts,false);return;
+  }
+  const st=Math.max(-.3,Math.min(.3,-g*P.vy/1500)),wob=Math.min(1,(P.air-.16)/.15);
+  const ry=Rf*(1+st),rx=Rf*(1-st*.7),cx=P.x,cy=P.y-g*(ry+1),pts=[];
+  for(let i=0;i<24;i++){const a=i/24*6.2832,w=1+wob*(.07*Math.sin(3*a+t*15)+.05*Math.sin(5*a-t*11));pts.push([cx+Math.cos(a)*rx*w,cy+Math.sin(a)*ry*w])}
+  strokePts(pts,true);
+  ctx.fillStyle=FG;ctx.beginPath();ctx.arc(cx+P.face*rx*.38,cy-g*ry*.2,1.9,0,6.2832);ctx.fill();
 }
 function drawChar(){
   if(state==='dead'){
@@ -409,7 +448,7 @@ function drawChar(){
     for(const s of shards){ctx.beginPath();ctx.moveTo(s.x-Math.cos(s.a)*s.l,s.y-Math.sin(s.a)*s.l);ctx.lineTo(s.x+Math.cos(s.a)*s.l,s.y+Math.sin(s.a)*s.l);ctx.stroke()}
     ctx.globalAlpha=1;return;
   }
-  let h,len=CL,base,ang=0;
+  let h,len=CL,base;
   const moving=Math.abs(P.vx)>15;
   if(state==='win'){const k=Math.min(1,P.win/.3);h=9*(1-k);len=CL*(1-k*.9);if(k>=1)return}
   else if(P.ground){
@@ -417,15 +456,39 @@ function drawChar(){
     if(P.squash>0)h*=1-P.squash*2.2;
     len=CL+(9-h)*1.3;
   }else{drawBlob();return}
+  // after a gravity switch the hump swings through the line to the other side
+  const side=P.flipT>0?P.g*(1-2*P.flipT/.25):P.g;
+  h*=side;
   const on=P.ground&&P.on?P.on:null;
   if(on){
     base=px=>{const f=floorAt(on,px);return f===null||Math.abs(f-P.y)>12?P.y:f};
     strokeAlong(on,P.x-len/2+1.5,P.x+len/2-1.5,BG,LW+3);
   }else base=()=>P.y;
-  let pts=humpPts(P.x,base,h,len,P.face);
-  if(ang){const cx=P.x,cy=P.y-5,c=Math.cos(ang),s=Math.sin(ang);pts=pts.map(([x,y])=>[cx+(x-cx)*c-(y-cy)*s,cy+(x-cx)*s+(y-cy)*c])}
-  ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();
-  if(h>4){const e=pts[P.face>0?8:4];ctx.fillStyle=BG;ctx.beginPath();ctx.arc(e[0],e[1]+3,1.7,0,6.2832);ctx.fill()}
+  const pts=humpPts(P.x,base,h,len,P.face);
+  ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts,false);
+  if(Math.abs(h)>4){const e=pts[P.face>0?8:4];ctx.fillStyle=BG;ctx.beginPath();ctx.arc(e[0],e[1]+3*Math.sign(h),1.7,0,6.2832);ctx.fill()}
+}
+// a shark under the line: just the fin, or (when you fly over it) its head with the jaws wide open
+function drawShark(k){
+  const g=k.g,x=k.pos,y=k.y,r=k.rise;
+  ctx.strokeStyle=FG;ctx.lineWidth=3;
+  if(r<.15){
+    const b=k.dir;   // fin leans back against the swimming direction
+    strokePts([[x-b*10,y],[x-b*7,y-g*7],[x-b*1,y-g*14],[x+b*3,y-g*13],[x+b*4,y-g*6],[x+b*9,y]],false);
+    return;
+  }
+  const H=r*38,sp=r*10;
+  strokeAlong(k.p,x-17,x+17,BG,LW+3);ctx.strokeStyle=FG;ctx.lineWidth=3;
+  // the head breaks through the line: two jaws, wide open towards you
+  const qb=(p0,c,p1,n)=>{const o=[];for(let i=0;i<=n;i++){const u=i/n,v=1-u;o.push([v*v*p0[0]+2*u*v*c[0]+u*u*p1[0],v*v*p0[1]+2*u*v*c[1]+u*u*p1[1]])}return o};
+  const tl=[x-12-sp,y-g*H],tr=[x+12+sp,y-g*H];
+  strokePts(qb([x-17,y],[x-22-sp*.6,y-g*H*.5],tl,10),false);
+  strokePts(qb([x+17,y],[x+22+sp*.6,y-g*H*.5],tr,10),false);
+  // the inside of the mouth, lined with teeth
+  const U=qb(tl,[x,y+g*H*.35],tr,14);
+  ctx.lineWidth=2.2;
+  strokePts(U.map(([px,py],i)=>{if(i===0||i===U.length-1||i%2===0)return[px,py];const dx=x-px,dy=(y-g*H)-py,l=Math.hypot(dx,dy)||1;return[px+dx/l*4.5,py+dy/l*4.5]}),false);
+  ctx.fillStyle=FG;ctx.beginPath();ctx.arc(x-19-sp*.5,y-g*H*.35,1.9,0,6.2832);ctx.fill();ctx.beginPath();ctx.arc(x+19+sp*.5,y-g*H*.35,1.9,0,6.2832);ctx.fill();
 }
 function render(){
   const k=DPR*K;
@@ -434,7 +497,7 @@ function render(){
   if(state==='done'){ctx.fillStyle=FG;ctx.fillRect(0,0,cv.width,cv.height);return}
   // camera: a bit ahead of where you run
   if(state==='play'||state==='win'){
-    const tx=P.x-viewW*.38+P.vx*.35,ty=P.y-VIEW_H*.6;
+    const tx=P.x-viewW*.38+P.vx*.35,ty=P.y-VIEW_H*(P.g>0?.6:.4);
     camX+=(tx-camX)*.08;camY+=(ty-camY)*.06;
   }
   ctx.setTransform(k,0,0,k,-camX*k,-camY*k);
@@ -448,13 +511,21 @@ function render(){
   for(const s of spikes){if(s.x1<vx0||s.x0>vx1)continue;
     ctx.strokeStyle=BG;ctx.lineWidth=LW+3;ctx.beginPath();ctx.moveTo(s.x0+1,s.y);ctx.lineTo(s.x1-1,s.y);ctx.stroke();
     ctx.strokeStyle=FG;ctx.lineWidth=LW-.5;ctx.beginPath();ctx.moveTo(s.x0,s.y);
-    for(let i=0;i<s.n;i++){ctx.lineTo(s.x0+i*12+6,s.y-12);ctx.lineTo(s.x0+i*12+12,s.y)}ctx.stroke()}
+    for(let i=0;i<s.n;i++){ctx.lineTo(s.x0+i*12+6,s.y-s.g*12);ctx.lineTo(s.x0+i*12+12,s.y)}ctx.stroke()}
+  // gravity switches: a ring on the line with arrows through it
+  for(const f of flips){if(f.x<vx0||f.x>vx1)continue;const p=.5+.5*Math.sin(t*4);
+    ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(f.x,f.y,9,0,6.2832);ctx.stroke();
+    ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.x,f.y-24);ctx.lineTo(f.x,f.y-13);ctx.moveTo(f.x,f.y+24);ctx.lineTo(f.x,f.y+13);ctx.stroke();
+    ctx.globalAlpha=.55+.45*p;
+    ctx.beginPath();ctx.moveTo(f.x-4,f.y-17);ctx.lineTo(f.x+4,f.y-17);ctx.lineTo(f.x,f.y-12);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(f.x-4,f.y+17);ctx.lineTo(f.x+4,f.y+17);ctx.lineTo(f.x,f.y+12);ctx.closePath();ctx.fill();ctx.globalAlpha=1}
+  for(const k of sharks)if(k.x1>vx0&&k.x0<vx1)drawShark(k);
   // holes left behind by a jump, closing up
   for(const h of holes){const w=CL*(1-Math.pow(h.t/.5,2));if(w<1)continue;const x=h.x+h.p.ox;strokeAlong(h.p,x-w/2+1,x+w/2-1,BG,LW+3)}
   // checkpoints: a little post, the dot fills when you pass
   ctx.lineWidth=2.5;
-  for(const c of cps){if(c.x<vx0||c.x>vx1)continue;ctx.strokeStyle=FG;ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x,c.y-18);ctx.stroke();
-    ctx.beginPath();ctx.arc(c.x,c.y-23,5,0,6.2832);if(c.on){ctx.fillStyle=FG;ctx.fill()}else ctx.stroke()}
+  for(const c of cps){if(c.x<vx0||c.x>vx1)continue;ctx.strokeStyle=FG;ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x,c.y-c.g*18);ctx.stroke();
+    ctx.beginPath();ctx.arc(c.x,c.y-c.g*23,5,0,6.2832);if(c.on){ctx.fillStyle=FG;ctx.fill()}else ctx.stroke()}
   // dots to collect
   for(const s of sparks){if(s.x<vx0||s.x>vx1)continue;
     if(!s.got){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(s.x,s.y+Math.sin(t*2.6+s.x)*3,5,0,6.2832);ctx.fill()}
@@ -467,7 +538,7 @@ function render(){
     if(state==='win'&&P.win>.3){const k=Math.min(1,(P.win-.3)/.8),e=k*k*(3-2*k);
       ctx.fillStyle=FG;ctx.beginPath();ctx.arc(gx,gy-dh/2,8+e*(viewW+VIEW_H)*1.3,0,6.2832);ctx.fill()}}
   for(const q of pops){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-q.t/.6;ctx.beginPath();ctx.arc(q.x,q.y,q.s?2+(q.t-.3)*30:8+q.t*70,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
-  ctx.fillStyle=FG;for(const d of drops){ctx.beginPath();ctx.ellipse(d.x,d.y,d.r*.85,d.r*(1+Math.min(.5,d.vy/1600)),0,0,6.2832);ctx.fill()}
+  ctx.strokeStyle=FG;ctx.lineWidth=2;for(const d of drops){ctx.beginPath();ctx.ellipse(d.x,d.y,d.r*.85,d.r*(1+Math.min(.5,Math.abs(d.vy)/1600)),0,0,6.2832);ctx.stroke()}
   if(state!=='menu')drawChar();
   // screen space: joystick and first-level hints
   ctx.setTransform(DPR,0,0,DPR,0,0);
