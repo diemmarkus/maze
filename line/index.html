@@ -230,8 +230,8 @@ function gen(n){
       cands.push([c,cy-g*48]);cx+=G;cur=[[cx,cy]];flat(ri(110,160));
     }
   }
-  if(g<0)flip();   // the door stands on top of the line
-  flat(170);goal={x:cx,y:cy};flat(170);end();
+  // the last stretch: a small ring on the line puts you back on top (if you're upside down), then the door
+  flat(60);endFlip={x:cx,y:cy,p:{pts:cur,ox:0,oy:0}};flat(170);goal={x:cx,y:cy};flat(170);end();
   // checkpoints: one in the middle, two on long levels
   const cpN=target>4200?2:1;
   for(let i=1;i<=cpN;i++){const want=target*i/(cpN+1);let b=null;for(const f of flats)if(f[0]>300&&(!b||Math.abs(f[0]-want)<Math.abs(b[0]-want)))b=f;if(b&&!cps.some(c=>c.x===b[0]))cps.push({x:b[0],y:b[1],g:b[2],p:{pts:b[3],ox:0,oy:0},on:false})}
@@ -260,7 +260,7 @@ function ledgeAt(x,y){const g=P.g;let b=null;for(const p of plats){if(!p.solid)c
 function wallAt(x,y){const g=P.g;for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f!==null&&g*(y-f)>STEP)return true}return false}
 
 const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0,air:0,dj:true,split:0,g:1,flipT:0};
-let drops=[],flips=[],sharks=[],killTop=-400;
+let drops=[],flips=[],sharks=[],killTop=-400,endFlip=null;
 let curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
 let camX=0,camY=0,hintMoved=false,hintJumped=false,touchedEarly=false;
@@ -276,7 +276,7 @@ function startLevel(n){
 }
 function die(){
   if(state!=='play')return;
-  state='dead';P.dead=0;falls++;updateHud();buzz(40);sfx.fall();
+  state='dead';P.dead=0;falls++;updateHud();buzz([70,50,140]);sfx.fall();
   const y0=P.g>0?Math.min(P.y,killY-40):Math.max(P.y,killTop+40);
   const yc=Math.max(camY+30,Math.min(camY+VIEW_H-30,y0-P.g*8));
   P.dx0=P.x;P.dy0=yc;P.vx=0;
@@ -288,6 +288,10 @@ function die(){
       drops:full&&Math.random()<.6?[{off:20+Math.random()*60,r:w*.35+1.5,v:0}]:[]});
     x+=w+Math.random()*30}
   shake=.3;
+}
+function flipNow(x,y,f){
+  P.g=-P.g;P.y=y;P.vy=0;P.flipT=.25;P.dj=true;P.split=0;if(f)f.used=.4;
+  sfx.flip();buzz(15);pops.push({x,y,t:0});
 }
 function respawn(){
   shards=[];holes=[];
@@ -400,10 +404,11 @@ function update(dt){
   // gravity switch: walk through it and you're on the other side of the line
   for(const f of flips){
     if(f.used>0)continue;
-    if((px0<f.x&&P.x>=f.x)||(px0>f.x&&P.x<=f.x)){
-      if(Math.abs(P.y-f.y)<160){P.g=-P.g;P.y=f.y;P.vy=0;P.ground=true;P.on=support(P.x,P.y)?.p||null;P.flipT=.25;P.dj=true;P.split=0;f.used=.4;sfx.flip();buzz(15);pops.push({x:f.x,y:f.y,t:0});if(!P.on)P.ground=false}
-    }
+    // only when you walk through it on the line - jumping over it does nothing
+    if(P.ground&&Math.abs(P.y-f.y)<4&&((px0<f.x&&P.x>=f.x)||(px0>f.x&&P.x<=f.x)))flipNow(f.x,f.y,f);
   }
+  // the ring before the door always puts you back on top
+  if(endFlip&&P.g<0&&P.ground&&Math.abs(P.y-endFlip.y)<4&&px0<endFlip.x&&P.x>=endFlip.x)flipNow(endFlip.x,endFlip.y,null);
   // spikes, sharks, falling, dots, checkpoints, goal
   for(const s of spikes)if(s.g===P.g&&P.x+8>s.x0&&P.x-8<s.x1){const h=s.g*(s.y-P.y);if(h<11&&h>-30){die();return}}
   for(const k of sharks){if(k.g!==P.g)continue;const h=k.g*(k.y-P.y),dx=Math.abs(P.x-k.pos);
@@ -553,6 +558,8 @@ function render(){
     strokeAlong(f.p,f.x-a,f.x+a,BG,LW+3);
     for(let i=0;i<=40;i++){const u=Math.PI+i/40*6.2832,d=1+Math.sin(u)**2;pts.push([f.x+a*Math.cos(u)/d,f.y+sy*a*Math.sin(u)*Math.cos(u)/d])}
     ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts,false)}
+  if(endFlip&&endFlip.x>vx0&&endFlip.x<vx1){const f=endFlip,r=5.5+.6*Math.sin(t*4);
+    strokeAlong(f.p,f.x-r,f.x+r,BG,LW+3);ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.arc(f.x,f.y,r,0,6.2832);ctx.stroke()}
   for(const k of sharks)if(k.x1>vx0&&k.x0<vx1)drawShark(k);
   // ripples running along the line away from where you landed
   for(const r of ripples){const amp=r.a*(1-r.t/.6),w=16;if(amp<.3)continue;
