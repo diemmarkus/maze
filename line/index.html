@@ -431,7 +431,7 @@ function update(dt){
   for(const s of spikes)if(s.g===P.g&&P.x+8>s.x0&&P.x-8<s.x1){const h=s.g*(s.y-P.y);if(h<11&&h>-30){die();return}}
   for(const k of sharks){if(k.g!==P.g)continue;const h=k.g*(k.y-P.y),dx=Math.abs(P.x-k.pos);
     if(dx<11&&h<14&&h>-6){die();return}                     // the fin
-    if(k.rise>.2&&dx<18&&h>-6&&h<k.rise*72+4){die();return}  // the mouth
+    if(k.rise>.2&&dx<18&&h>-6&&h<k.rise*50+4){die();return}  // the mouth
   }
   // floating eyes: touch them and they turn into a monster that eats you
   for(const e of eyes){const [ex,ey]=eyePos(e);if(Math.hypot(P.x-ex,P.y-P.g*9-ey)<16){P.eat=e;P.ex=ex;P.ey=ey;die();return}}
@@ -447,17 +447,21 @@ function update(dt){
 /* ---------- drawing ---------- */
 const LW=4;
 function strokeAlong(p,x0,x1,col,w){
-  if(x1<=x0)return;ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='butt';ctx.beginPath();let first=true;
-  for(let x=x0;x<=x1+.01;x+=3){const f=floorAt(p,Math.min(x,x1));if(f===null){first=true;continue}if(first){ctx.moveTo(x,f);first=false}else ctx.lineTo(x,f)}
-  ctx.stroke();
-  ctx.lineCap='round';
+  if(x1<=x0)return;ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='butt';ctx.lineJoin='round';ctx.beginPath();
+  const q=p.pts,ox=p.ox||0,oy=p.oy||0,f0=floorAt(p,x0),f1=floorAt(p,x1);let started=false;
+  if(f0!==null){ctx.moveTo(x0,f0);started=true}
+  for(const [vx,vy] of q){const X=vx+ox;if(X>x0&&X<x1){if(started)ctx.lineTo(X,vy+oy);else{ctx.moveTo(X,vy+oy);started=true}}}
+  if(f1!==null&&started)ctx.lineTo(x1,f1);
+  ctx.stroke();ctx.lineCap='round';
 }
+
 // the character: a hump in the line (on your side of it), peak a little to the front, one small eye
 function lineSpan(p,x,half){
   const g=P.g,f0=floorAt(p,x),r={el:x,er:x,wl:x-half,wr:x+half};if(f0===null)return r;
   for(const s of[-1,1]){let prev=f0,ok=true;
     for(let d=1;d<=half;d++){const f=floorAt(p,x+s*d);
-      if(f!==null&&g*(prev-f)>2){if(s<0)r.wl=x-d+1;else r.wr=x+d-1;break}   // a step up on your side: a wall
+      if(f===null){if(s<0)r.wl=x-d+1;else r.wr=x+d-1;break}                 // the edge of a gap: the hump stops there too
+      if(g*(prev-f)>2){if(s<0)r.wl=x-d+1;else r.wr=x+d-1;break}   // a step up on your side: a wall
       if(f===null||Math.abs(f-prev)>2)ok=false;
       if(ok){prev=f;if(s<0)r.el=x-d;else r.er=x+d}}}
   return r;
@@ -584,7 +588,7 @@ function drawShark(k){
   const sd=k.dir;
   strokeAlong(k.p,x-15,x+15,BG,LW+3);
   ctx.save();ctx.beginPath();if(g>0)ctx.rect(x-120,y-220,240,220);else ctx.rect(x-120,y,240,220);ctx.clip();
-  ctx.translate(x,y);ctx.scale(1,g);ctx.translate(0,52-r*92);ctx.rotate(-Math.PI/2+sd*.28*(1-r*.5));ctx.scale(1.35,1.35*sd);
+  ctx.translate(x,y);ctx.scale(1,g);ctx.translate(0,56-r*72);ctx.rotate(-Math.PI/2+sd*.28*(1-r*.5));ctx.scale(1.35,1.35*sd);
   const op=r,jaw=[[15,11],[25,11+4*op]];
   const T=(a,b,n,sz)=>{const o=[];for(let i=0;i<n;i++){const u=i/n,m=(i+.5)/n;o.push([a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u],[a[0]+(b[0]-a[0])*m,a[1]+(b[1]-a[1])*m+sz])}o.push(b);return o};
   const body=[[31,-1],[25,-6],[13,-9.5],[4,-10],[-5,-25],[-9,-10.5],[-20,-7.5],[-27,-3.5],[-39,-17],[-32,0],[-37,11],[-27,3.5],[-16,8],[-2,9],[-9,18],[4,10.5],
@@ -638,16 +642,14 @@ function render(){
       ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts,false)}}
   // holes left behind by a jump, closing up
   for(const h of holes){const w=CL*(1-Math.pow(h.t/.5,2));if(w<1)continue;const o=h.p.ox,x=h.x+o;strokeAlong(h.p,Math.max(x-w/2,h.l+o),Math.min(x+w/2,h.r+o),BG,LW+3)}
-  // checkpoints: the line runs up into a little lollipop; its head fills when you pass
-  for(const c of cps){if(c.x<vx0||c.x>vx1)continue;const g=c.g,x=c.x,y=c.y,r=6.5,hy=y-g*24.5,sw=Math.sin(t*2.2+c.x*.01)*2.2;
-    strokeAlong(c.p,x-3,x+3,BG,LW+3);
-    const pts=[[x-3,y],[x-3+sw*.3,y-g*9],[x-3+sw,y-g*17.5]];
-    const a0=Math.atan2(-g*17.5-(hy-y),-3),a1=Math.atan2(-g*17.5-(hy-y),3);   // where the stem meets the head
-    let st=a0,en=a1;if(g>0){if(en<st)en+=6.2832}else{if(en>st)en-=6.2832}
-    for(let i=0;i<=24;i++){const u=st+(en-st)*i/24;pts.push([x+sw+Math.cos(u)*r,hy+Math.sin(u)*r])}
-    pts.push([x+3+sw,y-g*17.5],[x+3+sw*.3,y-g*9],[x+3,y]);
-    ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts,false);
-    if(c.on){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(x+sw,hy,r,0,6.2832);ctx.fill()}}
+  // checkpoints: a pole growing out of the line with a ball on top; the ball fills when you pass
+  for(const c of cps){if(c.x<vx0||c.x>vx1)continue;const g=c.g,x=c.x,y=c.y,r=5.5,sw=Math.sin(t*2.2+c.x*.01)*1.6,hy=y-g*25;
+    ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x,y-g*12,x+sw,y-g*(25-r));ctx.stroke();
+    ctx.beginPath();ctx.arc(x+sw,hy,r,0,6.2832);if(c.on){ctx.fillStyle=FG;ctx.fill()}ctx.lineWidth=LW*.75;ctx.stroke()}
+  // the three dots to collect
+  for(const s of sparks){if(s.x<vx0||s.x>vx1)continue;
+    if(!s.got){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(s.x,s.y+Math.sin(t*2.6+s.x)*3,5,0,6.2832);ctx.fill()}
+    else if(s.pop<.5){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-s.pop*2;ctx.beginPath();ctx.arc(s.x,s.y,5+s.pop*40,0,6.2832);ctx.stroke();ctx.globalAlpha=1}}
   // the door at the end: when you walk in it lights up and its colour floods the screen
   {const gx=goal.x,gy=goal.y,dw=13,dh=42,lit=state==='win'?Math.min(1,P.win/.3):0;
     strokeAlong(goal.p,gx-dw,gx+dw,BG,LW+3);   // no line under the door: it's an opening
