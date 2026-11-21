@@ -231,7 +231,7 @@ function gen(n){
     }
   }
   // the last stretch: a small ring on the line puts you back on top (if you're upside down), then the door
-  flat(60);endFlip={x:cx,y:cy,p:{pts:cur,ox:0,oy:0}};flat(170);goal={x:cx,y:cy,p:{pts:cur,ox:0,oy:0}};flat(170);end();
+  flat(230);goal={x:cx,y:cy,p:{pts:cur,ox:0,oy:0}};flat(150);endFlip={x:cx,y:cy};end();
   // checkpoints: one in the middle, two on long levels
   const cpN=target>4200?2:1;
   for(let i=1;i<=cpN;i++){const want=target*i/(cpN+1);let b=null;for(const f of flats)if(f[0]>300&&(!b||Math.abs(f[0]-want)<Math.abs(b[0]-want)))b=f;if(b&&!cps.some(c=>c.x===b[0]))cps.push({x:b[0],y:b[1],g:b[2],p:{pts:b[3],ox:0,oy:0},on:false})}
@@ -277,16 +277,22 @@ function startLevel(n){
 function die(){
   if(state!=='play')return;
   state='dead';P.dead=0;falls++;updateHud();buzz([70,50,140]);sfx.fall();
-  const y0=P.g>0?Math.min(P.y,killY-40):Math.max(P.y,killTop+40);
-  const yc=Math.max(camY+30,Math.min(camY+VIEW_H-30,y0-P.g*8));
-  P.dx0=P.x;P.dy0=yc;P.vx=0;
-  for(let i=0;i<16;i++){const a=Math.random()*6.2832,v=140+Math.random()*320;
-    shards.push({x:P.x,y:yc,vx:Math.cos(a)*v+P.vx*.2,vy:Math.sin(a)*v-P.g*120,r:1.6+Math.random()*3.2,stuck:0,g:P.g,d:.12+Math.random()*.05})}
+  const g=P.g,fell=P.y>killY||P.y<killTop;
+  // three ways to go: melt into the line (and shake it with three ripples), splash at the screen edge, or burst in the air
+  let line=null;if(!fell)for(const p of plats){const f=floorAt(p,P.x);if(f!==null&&Math.abs(f-P.y)<=30&&(!line||Math.abs(f-P.y)<Math.abs(line.f-P.y)))line={p,f}}
+  P.kind=fell?'fall':line?'line':'air';P.vx=0;
+  if(P.kind==='line'){P.lp=line.p;P.lx=P.x-line.p.ox;P.dy0=line.f;P.rq=[0,.2,.4]}
+  else if(P.kind==='fall'){
+    const ye=g>0?camY+VIEW_H+4:camY-4;P.dx0=P.x;P.dy0=ye;
+    for(let i=0;i<26;i++){const sp=(Math.random()-.5),v=380+Math.random()*520;
+      shards.push({x:P.x+sp*14,y:ye,vx:sp*520+(Math.random()-.5)*80,vy:-g*v*(1-Math.abs(sp)*.6),r:1.4+Math.random()*3.6,stuck:0,g,d:0})}}
+  else{
+    const yc=Math.max(camY+30,Math.min(camY+VIEW_H-30,P.y-g*8));P.dx0=P.x;P.dy0=yc;
+    for(let i=0;i<16;i++){const a=Math.random()*6.2832,v=140+Math.random()*320;
+      shards.push({x:P.x,y:yc,vx:Math.cos(a)*v,vy:Math.sin(a)*v-g*120,r:1.6+Math.random()*3.2,stuck:0,g,d:.12+Math.random()*.05})}}
   curtain={t:0,drips:[],ph:Math.random()*9};
-  for(let x=Math.random()*10;x<SW+20;){const w=5+Math.random()*Math.random()*22,full=Math.random()<.38;
-    curtain.drips.push({x,w,full,max:full?SH+80:SH*(.12+Math.random()*.6),sp:full?250+Math.random()*350:0,acc:full?700+Math.random()*1600:0,k:2+Math.random()*3,dl:Math.random()*.3,
-      drops:full&&Math.random()<.6?[{off:20+Math.random()*60,r:w*.35+1.5,v:0}]:[]});
-    x+=w+Math.random()*30}
+  for(let x=Math.random()*20-10;x<SW+40;){const w=14+Math.random()*30;
+    curtain.drips.push({x,w,v:.45+Math.random()*.9,dl:Math.random()*.25,bulb:1.05+Math.random()*.3});x+=w*(1.2+Math.random()*1.6)}
   shake=.3;
 }
 function flipNow(x,y,f){
@@ -298,7 +304,7 @@ function respawn(){
   for(const p of plats)if(p.mv)p.dx=p.dy=0;
   for(const f of flips)f.used=0;
   for(const k of sharks)k.rise=0;
-  placeAt(spawn.x,spawn.y,spawn.g);camY=P.y-VIEW_H*(P.g>0?.6:.4);state='play';
+  placeAt(spawn.x,spawn.y,spawn.g);camX=P.x-viewW*.38;camY=P.y-VIEW_H*(P.g>0?.6:.4);state='play';
 }
 function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(_){}}
 
@@ -341,7 +347,7 @@ function update(dt){
   t+=dt;
   for(const p of plats)if(p.mv){const nx=p.mv.amp*Math.sin(t*6.2832/p.mv.per+p.mv.ph);p.dx=nx-p.ox;p.ox=nx}
   for(const h of holes)h.t+=dt;holes=holes.filter(h=>h.t<.5);
-  for(const r of ripples)r.t+=dt;ripples=ripples.filter(r=>r.t<.6);
+  for(const r of ripples)r.t+=dt;ripples=ripples.filter(r=>r.t<(r.life||.6));
   for(const s of sparks)if(s.pop>0)s.pop+=dt;
   for(const q of pops)q.t+=dt;pops=pops.filter(q=>q.t<.6);
   for(const f of flips)if(f.used>0)f.used=Math.max(0,f.used-dt);
@@ -352,10 +358,11 @@ function update(dt){
     k.rise+=((above?1:0)-k.rise)*Math.min(1,dt*(above?9:4));
   }
   if(state==='dead'){
-    P.dead+=dt;
+    const pd=P.dead;P.dead+=dt;
+    if(P.kind==='line')for(const q of P.rq)if(pd<.12+q&&P.dead>=.12+q)ripples.push({p:P.lp,x:P.lx,t:0,g:P.g,a:7,life:1.2,sp:240,w:24});
     for(const s of shards){if(P.dead<s.d||s.stuck)continue;s.vy+=s.g*G*.9*dt;const py=s.y;s.x+=s.vx*dt;s.y+=s.vy*dt;
       for(const p of plats){const f=floorAt(p,s.x);if(f!==null&&s.g*(py-f)<=0&&s.g*(s.y-f)>=0){s.y=f-s.g*s.r*.5;s.stuck=1;break}}}
-    if(P.dead>.9)respawn();return;
+    if(P.dead>1.25)respawn();return;
   }
   if(state==='win'){P.win+=dt;P.x+=(goal.x-P.x)*Math.min(1,dt*7);if(P.win>1.25)levelDone();return}
   if(state!=='play')return;
@@ -408,7 +415,10 @@ function update(dt){
     if(P.ground&&Math.abs(P.y-f.y)<4&&((px0<f.x&&P.x>=f.x)||(px0>f.x&&P.x<=f.x)))flipNow(f.x,f.y,f);
   }
   // the ring before the door always puts you back on top
-  if(endFlip&&P.g<0&&P.ground&&Math.abs(P.y-endFlip.y)<4&&px0<endFlip.x&&P.x>=endFlip.x)flipNow(endFlip.x,endFlip.y,null);
+  // upside down at the very end of the line: you wrap round the end onto the top, facing the door
+  if(endFlip&&P.g<0&&P.ground&&Math.abs(P.y-endFlip.y)<4&&P.x>=endFlip.x-8){flipNow(P.x,endFlip.y,null);P.vx=0;P.face=-1}
+  // the ring at the end is a stop: you can't walk off the end of the line
+  if(endFlip&&P.ground&&Math.abs(P.y-endFlip.y)<4&&P.x>endFlip.x-6){P.x=endFlip.x-6;if(P.vx>0)P.vx=0}
   // spikes, sharks, falling, dots, checkpoints, goal
   for(const s of spikes)if(s.g===P.g&&P.x+8>s.x0&&P.x-8<s.x1){const h=s.g*(s.y-P.y);if(h<11&&h>-30){die();return}}
   for(const k of sharks){if(k.g!==P.g)continue;const h=k.g*(k.y-P.y),dx=Math.abs(P.x-k.pos);
@@ -418,7 +428,7 @@ function update(dt){
   if(P.y>killY||P.y<killTop){die();return}
   for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-P.g*9-s.y)<20){s.got=true;s.pop=.001;buzz(12);sfx.dot();updateHud()}
   for(const c of cps)if(!c.on&&P.x>=c.x&&P.ground&&P.g===c.g){c.on=true;spawn={x:c.x,y:c.y,g:c.g};sfx.check();pops.push({x:c.x,y:c.y-c.g*22,t:0})}
-  if(P.ground&&P.g>0&&P.x>=goal.x-6){state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door()}
+  if(P.ground&&P.g>0&&(Math.abs(P.x-goal.x)<6||(px0-goal.x)*(P.x-goal.x)<0)){state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door()}
 }
 
 /* ---------- drawing ---------- */
@@ -468,6 +478,15 @@ function drawBlob(){
 function drawChar(){
   if(state==='dead'){
     const d=P.dead;
+    if(P.kind==='line'){   // the hump sinks back into the line and is gone
+      const k=Math.min(1,d/.14);if(k>=1)return;const p=P.lp,x=P.lx+p.ox,len=CL*(1+k*.6),h=P.g*9*(1-k)*(1-k);
+      strokeAlong(p,x-len/2,x+len/2,BG,LW+3);const pts=humpPts(x-len/2,x+len/2,px=>{const f=floorAt(p,px);return f===null?P.dy0:f},h,P.face,.85);
+      ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts,false);return}
+    if(P.kind==='fall'){   // a splash at the edge of the screen
+      const k=Math.min(1,d/.35);ctx.strokeStyle=FG;ctx.lineWidth=3*(1-k);
+      if(k<1){ctx.beginPath();ctx.ellipse(P.dx0,P.dy0,10+k*60,6+k*30,0,0,6.2832);ctx.stroke()}
+      ctx.fillStyle=FG;for(const s of shards){ctx.beginPath();ctx.ellipse(s.x,s.y,s.r,s.r*(1+Math.min(.9,Math.abs(s.vy)/700)),0,0,6.2832);ctx.fill()}
+      return}
     if(d<.12){   // swells up, trembling, then pops
       const r=9+d/.12*7,j=1.5*Math.sin(d*180);ctx.strokeStyle=FG;ctx.lineWidth=LW;
       ctx.beginPath();ctx.ellipse(P.dx0+j,P.dy0,r*1.1,r*.9,0,0,6.2832);ctx.stroke();
@@ -562,12 +581,12 @@ function render(){
     strokeAlong(f.p,f.x-a,f.x+a,BG,LW+3);
     for(let i=0;i<=40;i++){const u=Math.PI+i/40*6.2832,d=1+Math.sin(u)**2;pts.push([f.x+a*Math.cos(u)/d,f.y+sy*a*Math.sin(u)*Math.cos(u)/d])}
     ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts,false)}
-  if(endFlip&&endFlip.x>vx0&&endFlip.x<vx1){const f=endFlip,r=5.5+.6*Math.sin(t*4);
-    strokeAlong(f.p,f.x-r,f.x+r,BG,LW+3);ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.arc(f.x,f.y,r,0,6.2832);ctx.stroke()}
+  if(endFlip&&endFlip.x>vx0&&endFlip.x<vx1){const f=endFlip,r=5+.6*Math.sin(t*4);   // the line ends in a little ring
+    ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.arc(f.x+r,f.y,r,0,6.2832);ctx.stroke()}
   for(const k of sharks)if(k.x1>vx0&&k.x0<vx1)drawShark(k);
   // ripples running along the line away from where you landed
-  for(const r of ripples){const amp=r.a*(1-r.t/.6),w=16;if(amp<.3)continue;
-    for(const s of[-1,1]){const xc=r.x+r.p.ox+s*(18+r.t*170),x0=xc-w/2,x1=xc+w/2,f0=floorAt(r.p,x0),f1=floorAt(r.p,x1),fm=floorAt(r.p,xc);
+  for(const r of ripples){const life=r.life||.6,amp=r.a*(1-r.t/life),w=r.w||16;if(amp<.3)continue;
+    for(const s of[-1,1]){const xc=r.x+r.p.ox+s*(18+r.t*(r.sp||170)),x0=xc-w/2,x1=xc+w/2,f0=floorAt(r.p,x0),f1=floorAt(r.p,x1),fm=floorAt(r.p,xc);
       if(f0===null||f1===null||fm===null||Math.abs(fm-(f0+f1)/2)>1.5)continue;
       strokeAlong(r.p,x0,x1,BG,LW+3);const pts=[];for(let i=0;i<=8;i++){const u=i/8,x=x0+u*w;pts.push([x,f0+(f1-f0)*u-r.g*amp*Math.sin(Math.PI*u)**2])}
       ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts,false)}}
@@ -597,25 +616,18 @@ function render(){
   // screen space: joystick and first-level hints
   ctx.setTransform(DPR,0,0,DPR,0,0);
   // blood running down the whole screen, in the line colour
-  if(curtain){const c=curtain,a=c.t<1?1:Math.max(0,1-(c.t-1)/.7);
+  if(curtain){const c=curtain,a=c.t<1.35?1:Math.max(0,1-(c.t-1.35)/.5);
     ctx.globalAlpha=a;ctx.fillStyle=FG;
-    // the band at the top with a wobbly lower edge
-    const B=Math.min(1,c.t/.18)*(14+SH*.02),edge=x=>B+3*Math.sin(x*.045+c.ph)+2*Math.sin(x*.13+c.ph*2);
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(SW,0);for(let x=SW;x>=0;x-=6)ctx.lineTo(x,edge(x));ctx.closePath();ctx.fill();
-    for(const d of c.drips){const tt=c.t-d.dl;if(tt<=0)continue;
-      const L=d.full?Math.min(d.max,B+d.sp*tt+d.acc*tt*tt):B+(d.max-B)*(1-Math.exp(-d.k*tt)),w=d.w,cx=d.x,hw=w/2,fl=w*.9,top=edge(cx)-1;
-      if(L<top+w*2.2){ctx.beginPath();ctx.ellipse(cx,top,hw+fl*.5,Math.max(1,L-top),0,0,Math.PI);ctx.fill();continue}
-      // a stream that runs out of the band, thins a little and ends in a heavy drop
-      ctx.beginPath();ctx.moveTo(cx-hw-fl,top);ctx.quadraticCurveTo(cx-hw,top,cx-hw,top+fl);
-      ctx.lineTo(cx-hw*.8,L-w*1.7);
-      ctx.bezierCurveTo(cx-hw*.8,L-w*1.2,cx-w*.66,L-w*1.15,cx-w*.66,L-w*.6);
-      ctx.bezierCurveTo(cx-w*.66,L-w*.12,cx-w*.32,L,cx,L);
-      ctx.bezierCurveTo(cx+w*.32,L,cx+w*.66,L-w*.12,cx+w*.66,L-w*.6);
-      ctx.bezierCurveTo(cx+w*.66,L-w*1.15,cx+hw*.8,L-w*1.2,cx+hw*.8,L-w*1.7);
-      ctx.lineTo(cx+hw,top+fl);ctx.quadraticCurveTo(cx+hw,top,cx+hw+fl,top);ctx.closePath();ctx.fill();
-      // loose drops falling off the fast ones
-      for(const q of d.drops){if(tt<.25)continue;q.v+=dtFrame*1400;q.off+=q.v*dtFrame;const y=L+q.off;if(y>SH+20)continue;
-        ctx.beginPath();ctx.moveTo(cx,y-q.r*2.6);ctx.bezierCurveTo(cx+q.r*.3,y-q.r*1.4,cx+q.r,y-q.r*.9,cx+q.r,y);ctx.arc(cx,y,q.r,0,Math.PI);ctx.bezierCurveTo(cx-q.r,y-q.r*.9,cx-q.r*.3,y-q.r*1.4,cx,y-q.r*2.6);ctx.fill()}}
+    // the curtain: its wavy lower edge sinks until the whole screen is covered
+    const e=Math.max(0,Math.min(1,(c.t-.05)/1.05)),B=(SH+60)*e*e*(1.4-.4*e)+Math.min(1,c.t/.12)*18;
+    const drip=d=>{const tt=Math.max(0,c.t-d.dl);return Math.min(SH*1.3,SH*d.v*(tt*1.1+tt*tt*.9))};
+    const edge=x=>{let y=B+5*Math.sin(x*.03+c.ph)+3*Math.sin(x*.09+c.ph*2);
+      for(const d of c.drips){const u=(x-d.x)/d.w;if(Math.abs(u)<1){const L=drip(d);y=Math.max(y,B+L-d.w*(1-Math.sqrt(1-u*u)))}}
+      return y};
+    ctx.beginPath();ctx.moveTo(-5,0);ctx.lineTo(SW+5,0);for(let x=SW+5;x>=-5;x-=3)ctx.lineTo(x,edge(x));ctx.closePath();ctx.fill();
+    // heavy drops at the ends of the runs
+    for(const d of c.drips){const L=drip(d);if(L<d.w)continue;const y=B+L-d.w*.15;
+      ctx.beginPath();ctx.ellipse(d.x,y,d.w*d.bulb,d.w*d.bulb*1.12,0,0,6.2832);ctx.fill()}
     ctx.globalAlpha=1}
   if(joy.id!==null&&state==='play'){
     ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=.35;
@@ -647,7 +659,7 @@ function frame(now){
   if(state==='menu'){t+=dt;for(const p of plats)if(p.mv)p.ox=p.mv.amp*Math.sin(t*6.2832/p.mv.per+p.mv.ph);camX+=dt*30;if(goal&&camX>goal.x)camX=-viewW*.3;}
   else if(state!=='paused'&&state!=='done'){accT+=dt;while(accT>=1/120){update(1/120);accT-=1/120}}
   dtFrame=state==='paused'?0:dt;
-  if(curtain&&state!=='paused'){curtain.t+=dt;if(curtain.t>1.75)curtain=null}
+  if(curtain&&state!=='paused'){curtain.t+=dt;if(curtain.t>1.9)curtain=null}
   if(shake>0)shake=Math.max(0,shake-dt);
   render();requestAnimationFrame(frame);
 }
