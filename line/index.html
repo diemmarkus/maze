@@ -439,9 +439,10 @@ function lineSpan(p,x,half){
       if(ok){prev=f;if(s<0)r.el=x-d;else r.er=x+d}}}
   return r;
 }
-function humpPts(x0,x1,baseFn,h,face){
+function humpPts(x0,x1,baseFn,h,face,sk){
+  sk=sk||.85;
   const pts=[],n=12,len=x1-x0;
-  for(let i=0;i<=n;i++){let s=i/n;const u=face>0?Math.pow(s,.85):1-Math.pow(1-s,.85);
+  for(let i=0;i<=n;i++){let s=i/n;const u=face>0?Math.pow(s,sk):1-Math.pow(1-s,sk);
     const px=x0+s*len;pts.push([px,baseFn(px)-h*Math.pow(Math.sin(Math.PI*u),1.4)])}
   return pts;
 }
@@ -480,13 +481,16 @@ function drawChar(){
       if(s.stuck)ctx.ellipse(s.x,s.y,s.r*1.5,s.r*.6,0,0,6.2832);else ctx.ellipse(s.x,s.y,s.r,s.r*(1+Math.min(.8,Math.abs(s.vy)/900)),0,0,6.2832);ctx.fill()}
     return;
   }
-  let h,len=CL,base;
+  let h,len=CL,base,sk=.85;
   const moving=Math.abs(P.vx)>15;
   if(state==='win'){const k=Math.min(1,P.win/.3);h=9*(1-k);len=CL*(1-k*.9);if(k>=1)return}
   else if(P.ground){
-    h=moving?8+1.3*Math.sin(P.walk*6.2832):8+.6*Math.sin(t*3);
+    // walking like an inchworm: the hump bunches up and stretches out, its peak rolls from back to front, leaning into the run
+    const ph=P.walk*6.2832,sp=Math.min(1,Math.abs(P.vx)/SPEED);
+    h=moving?8+1.2*Math.sin(ph):8+.6*Math.sin(t*3);
+    sk=moving?Math.max(.65,1+.2*sp+.28*Math.cos(ph)):.85;
     if(P.squash>0)h*=1-P.squash*2.2;
-    len=CL+(8-h)*.7;
+    len=CL+(8-h)*.7+(moving?2.2*Math.cos(ph):0);
   }else{drawBlob();return}
   // after a gravity switch the hump swings through the line to the other side
   const side=P.flipT>0?P.g*(1-2*P.flipT/.25):P.g;
@@ -499,7 +503,7 @@ function drawChar(){
     base=px=>{const f=floorAt(on,Math.max(sp.el,Math.min(sp.er,px)));return f===null?P.y:f};
     strokeAlong(on,Math.max(x0,sp.el),Math.min(x1,sp.er),BG,LW+3);
   }else base=()=>P.y;
-  const pts=humpPts(x0,x1,base,h,P.face);
+  const pts=humpPts(x0,x1,base,h,P.face,sk);
   ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts,false);
   if(Math.abs(h)>4){const e=pts[P.face>0?8:4],bl=(t%3.3)<.13;ctx.fillStyle=BG;ctx.beginPath();if(bl)ctx.ellipse(e[0],e[1]+3*Math.sign(h),1.9,.5,0,0,6.2832);else ctx.arc(e[0],e[1]+3*Math.sign(h),1.7,0,6.2832);ctx.fill()}
 }
