@@ -35,9 +35,6 @@ body{font-family:var(--font);color:var(--fg);-webkit-user-select:none;user-selec
 .logo{display:block;width:min(300px,80%);height:auto;margin:2px auto 4px}
 h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
 .card p{margin:4px 0;font-size:14px;line-height:1.4;font-weight:500}
-.rules{list-style:none;margin:8px auto 10px;padding:0;display:grid;gap:5px;text-align:left;width:max-content;max-width:100%;font-size:13px;line-height:1.35}
-.rules li{display:flex;gap:10px;align-items:center}
-.rules svg{flex:none;width:30px;height:16px}
 .lvl{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:6px 0 2px;font-size:11px;letter-spacing:.16em;font-weight:700}
 .lv{display:flex;gap:6px;max-width:100%;overflow-x:auto;padding:3px}
 .lv button{flex:none;font:inherit;font-size:13px;letter-spacing:0;width:34px;height:34px;border-radius:50%;border:2px solid var(--fg);background:none;color:var(--fg);cursor:pointer;padding:0}
@@ -72,12 +69,6 @@ h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
         <path d="M6 56H128C134 56 136 45 145 45C153 45 155 56 161 56H200M222 56H294" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
         <circle cx="152" cy="49.5" r="1.8" fill="var(--bg)"/>
       </svg>
-      <p data-i18n="intro"></p>
-      <ul class="rules">
-        <li><svg viewBox="0 0 30 16" aria-hidden="true"><circle cx="15" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 8h4M23 8h4M5 6l-2 2 2 2M25 6l2 2-2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="r1"></span></li>
-        <li><svg viewBox="0 0 30 16" aria-hidden="true"><circle cx="15" cy="8" r="6.5" fill="currentColor"/></svg><span data-i18n="r2"></span></li>
-        <li><svg viewBox="0 0 30 16" aria-hidden="true"><path d="M1 13h7l3-7 3 7 3-7 3 7h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="r3"></span></li>
-      </ul>
       <div class="lvl" id="lvlRow"><span data-i18n="level">LEVEL</span><div class="lv" id="lv" role="group"></div></div>
       <div class="btns"><button type="button" class="btn" id="playBtn" data-i18n="play">SPIELEN</button></div>
       <a class="home" href="../" data-i18n="home">← ALLE SPIELE</a>
@@ -112,12 +103,12 @@ const $=id=>document.getElementById(id);
 
 /* ---------- languages (shared with the other games) ---------- */
 const LANG={
-  de:{intro:'Du bist ein Stück der Linie. Lauf bis zur Tür am Ende.',r1:'Linker Daumen: nach links oder rechts ziehen = laufen',r2:'Anderer Finger: tippen = aus der Linie springen',r3:'Spring über Lücken und Zacken, sammle die Punkte',level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',hMove:'← ziehen →',hJump:'tippen = springen',fall:'✕'},
-  en:{intro:'You are a piece of the line. Run to the door at the end.',r1:'Left thumb: drag left or right to run',r2:'Other finger: tap to jump out of the line',r3:'Jump over gaps and spikes, collect the dots',level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',hMove:'← drag →',hJump:'tap = jump',fall:'✕'},
-  fr:{intro:'Tu es un morceau de la ligne. Cours jusqu’à la porte au bout.',r1:'Pouce gauche : glisse à gauche ou à droite pour courir',r2:'Autre doigt : tape pour sauter hors de la ligne',r3:'Saute par-dessus les trous et les pics, ramasse les points',level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',hMove:'← glisse →',hJump:'tape = saute',fall:'✕'},
-  es:{intro:'Eres un trozo de la línea. Corre hasta la puerta del final.',r1:'Pulgar izquierdo: desliza a izquierda o derecha para correr',r2:'Otro dedo: toca para saltar fuera de la línea',r3:'Salta huecos y pinchos, recoge los puntos',level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',hMove:'← desliza →',hJump:'toca = salta',fall:'✕'},
-  it:{intro:'Sei un pezzo della linea. Corri fino alla porta alla fine.',r1:'Pollice sinistro: trascina a sinistra o a destra per correre',r2:'Altro dito: tocca per saltare fuori dalla linea',r3:'Salta buchi e punte, raccogli i punti',level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',hMove:'← trascina →',hJump:'tocca = salta',fall:'✕'},
-  pt:{intro:'Você é um pedaço da linha. Corra até a porta no final.',r1:'Polegar esquerdo: arraste para a esquerda ou direita para correr',r2:'Outro dedo: toque para pular para fora da linha',r3:'Pule buracos e espinhos, pegue os pontos',level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',hMove:'← arraste →',hJump:'toque = pula',fall:'✕'}
+  de:{level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',fall:'✕'},
+  en:{level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',fall:'✕'},
+  fr:{level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',fall:'✕'},
+  es:{level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',fall:'✕'},
+  it:{level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',fall:'✕'},
+  pt:{level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',fall:'✕'}
 };
 let lang='de',T=LANG.de;
 function setLang(k){lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.lang=lang;
@@ -272,7 +263,7 @@ const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:
 let drops=[],flips=[],sharks=[],killTop=-400;
 let curtain=null,shake=0;
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
-let camX=0,camY=0,hintMoved=false,hintJumped=false;
+let camX=0,camY=0,hintMoved=false,hintJumped=false,touchedEarly=false;
 
 function placeAt(x,y,g){P.g=g||1;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;drops=[]}
 function startLevel(n){
@@ -280,7 +271,7 @@ function startLevel(n){
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
   spawn={x:40,y:0,g:1};placeAt(40,0,1);P.face=1;P.win=0;
   camX=P.x-viewW*.35;camY=P.y-VIEW_H*.6;
-  hintMoved=hintJumped=n>1;
+  hintMoved=hintJumped=false;touchedEarly=false;
   updateHud();
 }
 function die(){
@@ -310,6 +301,7 @@ const JR=44;
 cv.addEventListener('pointerdown',e=>{
   e.preventDefault();
   if(state!=='play'&&state!=='dead')return;
+  if(lvTime<1.2)touchedEarly=true;
   const p=toStage(e);
   if(joy.id===null&&p.x<SW*.5){joy.id=e.pointerId;joy.ox=joy.x=p.x;joy.oy=joy.y=p.y}
   else{P.buf=.14;hintJumped=true}
@@ -326,6 +318,7 @@ cv.addEventListener('contextmenu',e=>e.preventDefault());
 function joyDir(){if(joy.id===null)return 0;const dx=joy.x-joy.ox;if(Math.abs(dx)<6)return 0;return Math.max(-1,Math.min(1,(dx-Math.sign(dx)*6)/(JR-10)))}
 addEventListener('keydown',e=>{
   const c=e.code;
+  if(state==='play'&&lvTime<1.2)touchedEarly=true;
   if(c==='ArrowLeft'||c==='KeyA')keys.l=1;
   else if(c==='ArrowRight'||c==='KeyD')keys.r=1;
   else if(c==='Space'||c==='ArrowUp'||c==='KeyW'){if(!e.repeat&&state==='play'){P.buf=.14;hintJumped=true}}
@@ -592,11 +585,18 @@ function render(){
     ctx.beginPath();ctx.moveTo(joy.ox+JR+10,joy.oy);ctx.lineTo(joy.ox+JR+4,joy.oy-5);ctx.lineTo(joy.ox+JR+4,joy.oy+5);ctx.closePath();ctx.fill();
     ctx.globalAlpha=.6;const kx=Math.max(-JR,Math.min(JR,joy.x-joy.ox));ctx.beginPath();ctx.arc(joy.ox+kx,joy.oy,17,0,6.2832);ctx.fill();ctx.globalAlpha=1;
   }
-  if(state==='play'&&(!hintMoved||!hintJumped)){
-    ctx.fillStyle=FG;ctx.font='700 14px '+getComputedStyle(document.body).fontFamily;ctx.textAlign='center';ctx.textBaseline='middle';
-    const pulse=.45+.25*Math.sin(t*4),y=SH-44;
-    if(!hintMoved&&joy.id===null){ctx.globalAlpha=pulse;ctx.fillText(T.hMove,SW*.2,y)}
-    if(!hintJumped){ctx.globalAlpha=pulse;ctx.beginPath();ctx.arc(SW*.8,y-36,16,0,6.2832);ctx.lineWidth=2;ctx.strokeStyle=FG;ctx.stroke();ctx.fillText(T.hJump,SW*.8,y)}
+  // nobody touched the screen at the start: show the controls (a joystick moving left/right, a tap button)
+  if(state==='play'&&!touchedEarly&&lvTime>1.2&&(!hintMoved||!hintJumped)){
+    const fade=Math.min(1,(lvTime-1.2)/.4),y=SH*.72;
+    ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=2;
+    if(!hintMoved&&joy.id===null){const x=Math.max(90,SW*.18),kx=Math.sin(t*2.6)*JR*.75;
+      ctx.globalAlpha=.35*fade;ctx.beginPath();ctx.arc(x,y,JR,0,6.2832);ctx.stroke();
+      for(const s of[-1,1]){ctx.beginPath();ctx.moveTo(x+s*(JR+10),y);ctx.lineTo(x+s*(JR+4),y-5);ctx.lineTo(x+s*(JR+4),y+5);ctx.closePath();ctx.fill()}
+      ctx.globalAlpha=.6*fade;ctx.beginPath();ctx.arc(x+kx,y,17,0,6.2832);ctx.fill()}
+    if(!hintJumped){const x=Math.min(SW-90,SW*.82),ph=(t*1.1)%1;
+      ctx.globalAlpha=.35*fade;ctx.beginPath();ctx.arc(x,y,24,0,6.2832);ctx.stroke();
+      ctx.globalAlpha=.6*fade*(ph<.15?1:.55);ctx.beginPath();ctx.arc(x,y,ph<.15?13:11,0,6.2832);ctx.fill();
+      ctx.globalAlpha=.45*fade*(1-ph);ctx.beginPath();ctx.arc(x,y,24+ph*26,0,6.2832);ctx.stroke()}
     ctx.globalAlpha=1;
   }
 }
