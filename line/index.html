@@ -250,25 +250,24 @@ function sidChord(t0,dur,notes,vol,lp0,lp1){
   o.connect(q).connect(g).connect(MUS.out);o.start(t0);o.stop(t0+dur+.12);
 }
 
-/* the talking synth: a buzzing voice through three vowel filters, plus hiss for s, f and t, crushed to a few bits like a C64 sample */
+/* the talking synth: a flat, robot-like buzzing voice (one pitch, no melody) through three vowel filters, plus hiss for s, f and t, crushed to a few bits like a C64 sample */
 const PH={s:{h:[5200,.2]},t:{h:[3600,.3]},f:{n:[3000,.13]},
   b:{v:[260,700,2200],a:.12},l:{v:[380,1000,2700],a:.5},w:{v:[300,650,2200],a:.45},
   o:{v:[620,980,2550],a:1},ou:{v:[480,880,2450],a:1,to:[340,760,2350]},er:{v:[470,1300,1650],a:.9}};
 const WORDS={softer:[['s',.13],['o',.2],['f',.1],['t',.035],['er',.34]],
              slower:[['s',.13],['l',.07],['ou',.3],['w',.06],['er',.36]],
-             blobber:[['b',.05],['l',.06],['o',.17],['b',.07],['er',.36]],
-             sof:[['s',.08],['o',.12],['f',.05]],slo:[['s',.08],['l',.04],['ou',.14]],blob:[['b',.035],['l',.045],['o',.11],['b',.04]]};
+             blobber:[['b',.05],['l',.06],['o',.17],['b',.07],['er',.36]]};
 let crush=null;
 function say(word,t0,note,o){
   o=o||{};const c=MUS.ac,st=o.stretch||1,ph=WORDS[word];let len=0;for(const p of ph)len+=p[1]*st;
   const src=c.createOscillator();src.type='sawtooth';const f=mf(note);
-  src.frequency.setValueAtTime(f,t0);src.frequency.exponentialRampToValueAtTime(f*Math.pow(2,(o.drop||-3)/12),t0+len);
+  src.frequency.setValueAtTime(f,t0);src.frequency.exponentialRampToValueAtTime(f*Math.pow(2,(o.drop||0)/12),t0+len);
   if(o.wob){const l=c.createOscillator(),lg=c.createGain();l.frequency.value=o.wob;lg.gain.value=f*.07;l.connect(lg).connect(src.frequency);l.start(t0);l.stop(t0+len+.1)}
   const vg=c.createGain(),bp=[0,1,2].map(i=>{const q=c.createBiquadFilter(),g=c.createGain();q.type='bandpass';q.Q.value=[7,11,13][i];g.gain.value=[3.2,2.6,1.6][i];src.connect(q).connect(g).connect(vg);return q});
   const hs=c.createBufferSource();hs.buffer=noiseBuf();hs.loop=true;
   const hp=c.createBiquadFilter(),hg=c.createGain(),np=c.createBiquadFilter(),ng=c.createGain();hp.type='highpass';np.type='bandpass';np.Q.value=.8;np.frequency.value=3000;
   hs.connect(hp).connect(hg);hs.connect(np).connect(ng);
-  if(!crush||crush.context!==c){crush=c.createWaveShaper();const cv=new Float32Array(1024);for(let i=0;i<1024;i++)cv[i]=Math.round((i/511.5-1)*32)/32;crush.curve=cv;
+  if(!crush||crush.context!==c){crush=c.createWaveShaper();const cv=new Float32Array(1024);for(let i=0;i<1024;i++)cv[i]=Math.round((i/511.5-1)*16)/16;crush.curve=cv;
     crush.out=c.createGain();crush.out.gain.value=.55;crush.connect(crush.out);crush.out.connect(MUS.out);const s=c.createGain();s.gain.value=.5;crush.out.connect(s);s.connect(MUS.echo)}
   const pre=c.createGain();pre.gain.value=.9*(o.amp||1);vg.connect(pre);hg.connect(pre);ng.connect(pre);pre.connect(crush);
   for(const g of [vg,hg,ng])g.gain.setValueAtTime(0,t0);
@@ -282,8 +281,8 @@ function say(word,t0,note,o){
   src.start(t0);src.stop(t+.1);hs.start(t0,Math.random()*.5);hs.stop(t+.1);
 }
 
-// which tune plays in which bar: the old catchy one in the groove and the first half of the drop, the new one in the theme and after
-function tuneAt(b){if(b>=4&&b<8)return [OLD,(b-4)*16];if(b>=8&&b<16)return [LEAD,(b-8)*16];if(b>=24&&b<28)return [OLD,(b-24)*16];if(b>=28)return [LEAD,64+(b-28)*16];return null}
+// which tune plays in which bar: the old catchy one in the groove, the new one in the theme and the drop
+function tuneAt(b){if(b>=4&&b<8)return [OLD,(b-4)*16];if(b>=8&&b<16)return [LEAD,(b-8)*16];if(b>=24)return [LEAD,(b-24)*16];return null}
 function tuneNote(arr,k,st,o){const n=arr[k];if(!n)return;let l=1;while(l<4&&!arr[(k+l)%arr.length])l++;
   voice(o.t0,SPS*l*.92,{f:mf(n+(o.up||0)),f0:MUS.prev?mf(MUS.prev+(o.up||0)):0,glide:.035,duty:o.duty,vol:o.vol,vib:.007,rel:.08,echo:.45});
   if(o.dbl)voice(o.t0,SPS*l*.92,{f:mf(n+12),duty:.5-o.duty*.6,vol:.03,vib:.007,rel:.06,echo:.3});
@@ -291,7 +290,7 @@ function tuneNote(arr,k,st,o){const n=arr[k];if(!n)return;let l=1;while(l<4&&!ar
 function musStep(i,t0){
   const b=(i>>4)%32,st=i%16,ci=b%4,ch=CHORDS[ci],root=ROOTS[ci],sec=SECTION(b);
   // how loud the whole band is: the voice asks for "softer", the drop brings it back
-  if(st===0){const tgt={soft:.8,slow:.85,blob:.9,rise:1}[sec]||1;MUS.out.gain.setTargetAtTime(tgt,t0,sec==='rise'?.9:.2)}
+  if(st===0){const tgt={soft:.62,slow:.62,blob:.7,rise:1}[sec]||1;MUS.out.gain.setTargetAtTime(tgt,t0,sec==='rise'?.9:.2)}
   // back from a quiet moment: in with a crash
   if(MUS.comeback){MUS.comeback=false;noise(t0,1.4,.16,'highpass',5000);kick(t0,.7)}
   const duty=.12+.33*(.5+.5*Math.sin(t0*.8));   // slow pulse-width sweep, like a SID patch
@@ -313,14 +312,10 @@ function musStep(i,t0){
     if(sec==='drop'&&st%4===2)sidChord(t0,SPS*.9,ch.map(x=>x+12),.05,3500,900);
     return;
   }
-  // ---- breakdown: the talking synth chops its words like a 90s vocal sample ("sof – sof – softer"),
-  //      and the band answers with bits of the old tune; each word changes the groove ----
-  const W={soft:['sof','softer',64,{drop:-2}],slow:['slo','slower',62,{stretch:1.6,drop:-8}],blob:['blob','blobber',60,{wob:9,drop:-3}]}[sec];
+  // ---- breakdown: a flat robot voice says one word, the band answers with bits of the old tune; each word changes the groove ----
+  const W={soft:'softer',slow:'slower',blob:'blobber'}[sec];
   if(W){
-    if(b%2===0){MUS.prev=0;
-      if(st===0||st===3)say(W[0],t0,W[2],{drop:0,amp:.85});
-      if(st===6)say(W[1],t0,W[2],W[3]);
-      if(st===13&&sec!=='slow')say(W[0],t0,W[2]+5,{drop:0,amp:.7})}
+    if(b%2===0){MUS.prev=0;if(st===0&&(b===16||b===18||b===20))say(W,t0,55,{stretch:W==='slower'?1.6:1})}
     else tuneNote(OLD,((b-17)>>1)*16+st,st,{t0,duty,vol:.07,up:12});
     if(sec==='soft'){   // no kick, just hats and claps, bright chord stabs
       if(st%4===2)hat(t0,true);if(st===4||st===12)clap(t0);
@@ -338,23 +333,26 @@ function musStep(i,t0){
     }
     return;
   }
-  // ---- the riser: the last word stutters faster and higher, snare roll, noise sweep, then a breath before the drop ----
+  // ---- the riser: snare roll, noise sweep, then a breath before the drop ----
   MUS.prev=0;
   if(b===22&&st===0){noise(t0,BAR*2-SPS*2,.16,'bandpass',300,2,9000,BAR*1.6);
     voice(t0,BAR*2-SPS*2,{f:mf(root+36),f0:mf(root+12),glide:BAR*2-SPS*2,duty:.2,vol:.04,att:BAR,rel:.02})}
-  if(st===0)sidChord(t0,BAR,ch,.04,600,6000);
-  if(b===22?st%2===0:st<12)say('blob',t0,60+(b-22)*6+(st>>2),{drop:0,amp:.55+st*.02});
+  if(st===0)sidChord(t0,BAR,ch,.05,600,6000);
   if(b===22?st%2===0:st<14)snare(t0,b===22?.07+st*.004:.09+st*.006);
   if(b===23&&st%4===0&&st<12)kick(t0,.45);
 }
-function musWanted(){return MUS.on&&AC&&!document.hidden&&state!=='paused'&&!MUS.quiet}
-/* now and then the music stops at the end of a bar and stays quiet for a while;
-   after that, the next jump brings it back with a crash */
+function musWanted(){return MUS.on&&AC&&!document.hidden&&state!=='paused'}
+/* now and then the music stops at the end of a bar and only a heartbeat goes on, in time with the song;
+   after a while, the next jump brings the music back with a crash, right on the beat */
 MUS.bars=0;MUS.quietIn=14+Math.random()*16|0;
-function musQuiet(t0){MUS.quiet=true;MUS.quietUntil=AC.currentTime+3+Math.random()*9;
+function musQuiet(t0){MUS.quiet=true;MUS.back=false;MUS.hb=0;MUS.quietUntil=AC.currentTime+3+Math.random()*9;
   voice(t0,.45,{f:mf(31),f0:mf(67),glide:.45,duty:.3,vol:.08,rel:.05,echo:.6})}   // a falling C64 'power-down'
+// lub-dub, two beats apart = 68 beats a minute, half the song's tempo
+function heartbeat(t0){for(const [d,v] of [[0,.5],[.16,.32]]){const c=MUS.ac,o=c.createOscillator(),g=c.createGain();o.type='sine';
+  o.frequency.setValueAtTime(70,t0+d);o.frequency.exponentialRampToValueAtTime(38,t0+d+.12);g.gain.setValueAtTime(0,t0+d);g.gain.linearRampToValueAtTime(v,t0+d+.01);
+  g.gain.exponentialRampToValueAtTime(.001,t0+d+.2);o.connect(g).connect(MUS.out);o.start(t0+d);o.stop(t0+d+.22)}}
 function musJump(){if(!MUS.quiet||!AC||AC.currentTime<MUS.quietUntil)return;
-  MUS.quiet=false;MUS.live=false;MUS.bars=0;MUS.quietIn=12+Math.random()*20|0;MUS.comeback=true}
+  MUS.back=true}
 // phones put the audio to sleep now and then (a call, a notification, a long quiet moment): wake it at the next touch
 function wakeAudio(){if(AC&&AC.state!=='running'&&!document.hidden&&(MUS.on||soundOn))AC.resume().catch(()=>{})}
 for(const ev of ['pointerdown','touchstart','touchend','keydown'])document.addEventListener(ev,wakeAudio,{capture:true,passive:true});
@@ -364,9 +362,11 @@ setInterval(()=>{
   if(MUS.ac!==AC)musInit(AC);
   if(!MUS.live||MUS.next<AC.currentTime){MUS.next=AC.currentTime+.06;MUS.live=true}
   while(MUS.next<AC.currentTime+.2){
+    if(MUS.quiet&&MUS.back&&MUS.hb%4===0){MUS.quiet=MUS.back=false;MUS.bars=0;MUS.quietIn=12+Math.random()*20|0;MUS.comeback=true}   // back on the next beat
+    if(MUS.quiet){if(MUS.hb%8===4)heartbeat(MUS.next);MUS.hb++;MUS.next+=SPS;continue}
     if(MUS.step%16===0){const s=SECTION(MUS.step>>4);
       // stop only between bars, never in the middle of the talking part or right at the drop
-      if(++MUS.bars>MUS.quietIn&&s!=='soft'&&s!=='slow'&&s!=='blob'&&s!=='rise'&&MUS.step!==384){musQuiet(MUS.next);return}}
+      if(++MUS.bars>MUS.quietIn&&s!=='soft'&&s!=='slow'&&s!=='blob'&&s!=='rise'&&MUS.step!==384){musQuiet(MUS.next);continue}}
     musStep(MUS.step,MUS.next);MUS.next+=SPS;MUS.step=(MUS.step+1)%SONG;if(MUS.step%16===0)store.set('line.musPos',MUS.step)}
 },25);
 const sfx={
