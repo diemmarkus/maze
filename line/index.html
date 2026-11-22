@@ -370,12 +370,13 @@ function wallAt(x,y){const g=P.g;for(const p of plats){if(!p.solid)continue;cons
 
 const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0,air:0,dj:true,split:0,g:1,flipT:0};
 let sandParts=[];
+const START={x:-500,y:0,armed:true};
 let drops=[],flips=[],sharks=[],eyes=[],ghosts=[],killTop=-400,endFlip=null;
 let curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
 let camX=0,camY=0,hintMoved=false,hintJumped=false,touchedEarly=false;
 
-function placeAt(x,y,g){P.g=g||1;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;drops=[]}
+function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;drops=[]}
 function startLevel(n){
   ripples=[];levelN=n;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];curtain=null;shake=0;
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
@@ -562,6 +563,10 @@ function update(dt){
   // the ring before the door always puts you back on top
   // upside down at the very end of the line: you wrap round the end onto the top, facing the door
   if(endFlip&&P.g<0&&P.ground&&Math.abs(P.y-endFlip.y)<4&&P.x>=endFlip.x-8){flipNow(P.x,endFlip.y,null);P.vx=0;P.face=-1}
+  // the ring at the very start works the same way, in both directions: walk into it and you wrap round onto the other side
+  if(P.x>START.x+24)START.armed=true;   // walk away a little before it can wrap you again
+  if(START.armed&&P.ground&&Math.abs(P.y-START.y)<4&&P.x<START.x+6&&px0>=START.x+6){flipNow(P.x,START.y,null);P.x=START.x+8;P.vx=0;P.face=1;START.armed=false}
+  if(P.ground&&Math.abs(P.y-START.y)<4&&P.x<START.x+6){P.x=START.x+6;if(P.vx<0)P.vx=0}
   // the ring at the end is a stop: you can't walk off the end of the line
   if(endFlip&&P.ground&&Math.abs(P.y-endFlip.y)<4&&P.x>endFlip.x-6){P.x=endFlip.x-6;if(P.vx>0)P.vx=0}
   // spikes, sharks, falling, dots, checkpoints, goal
@@ -829,6 +834,7 @@ function render(){
     strokeAlong(f.p,f.x-a,f.x+a,BG,LW+3);
     for(let i=0;i<=40;i++){const u=Math.PI+i/40*6.2832,d=1+Math.sin(u)**2;pts.push([f.x+a*Math.cos(u)/d,f.y+sy*a*Math.sin(u)*Math.cos(u)/d])}
     ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts,false)}
+  if(START.x>vx0-20&&START.x<vx1){const r=5+.6*Math.sin(t*4+1);ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.arc(START.x-r,START.y,r,0,6.2832);ctx.stroke()}
   if(endFlip&&endFlip.x>vx0&&endFlip.x<vx1){const f=endFlip,r=5+.6*Math.sin(t*4);   // the line ends in a little ring
     ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.arc(f.x+r,f.y,r,0,6.2832);ctx.stroke()}
   for(const k of sharks)if(k.x1>vx0&&k.x0<vx1)drawShark(k);
