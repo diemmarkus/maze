@@ -217,8 +217,8 @@ function tone(f0,f1,dur,vol,at,shape){
    32 bars (about a minute), then it loops: groove – theme – breakdown, where a 4-bit talking synth says
    "softer … slower … blobber" and the music does what it says – a riser – the drop. */
 // the song runs on through levels, menus and pauses, and even picks up where it was after the game is closed
-const MUS={on:store.get('line.music',true)!==false,next:0,step:(store.get('line.musPos',0)|0)%512,live:false,ac:null,out:null,echo:null,noise:null,waves:{},prev:0};
-const BPM=136,SPS=60/BPM/4,BAR=16*SPS,SONG=512;   // one step = a sixteenth note, 32 bars
+const MUS={on:store.get('line.music',true)!==false,next:0,step:(store.get('line.musPos',0)|0)%864,live:false,ac:null,out:null,echo:null,noise:null,waves:{},prev:0};
+const BPM=136,SPS=60/BPM/4,BAR=16*SPS,SONG=864,BARS=SONG/16;   // one step = a sixteenth note, 54 bars (about 1½ minutes)
 const mf=m=>440*Math.pow(2,(m-69)/12);
 // G minor – E flat – B flat – F, one chord per bar
 const CHORDS=[[55,58,62],[55,58,63],[53,58,62],[53,57,60]],ROOTS=[43,39,46,41];
@@ -230,7 +230,9 @@ const LEAD=[74,0,0,74,0,0,77,0,79,0,77,0,74,0,0,0, 75,0,0,75,0,0,74,0,72,0,70,0,
 // the catchy tune from the first version of the music, moved down to G minor (4 bars)
 const OLD=[74,0,74,0,79,0,77,74,0,0,72,0,74,0,0,0, 70,0,70,0,75,0,74,70,0,0,67,0,70,0,0,0,
            65,0,70,0,74,0,72,70,0,0,74,0,77,0,0,0, 72,0,69,0,65,0,69,72,0,0,77,0,75,74,72,0];
-const SECTION=b=>b<4?'intro':b<8?'groove':b<16?'theme':b<18?'soft':b<20?'slow':b<22?'blob':b<24?'rise':'drop';
+// intro – groove – theme – "softer, slower, blobber" – riser – drop – theme again – "I walk the line" – riser – second drop
+const SECTION=b=>b<4?'intro':b<8?'groove':b<16?'theme':b<18?'soft':b<20?'slow':b<22?'blob':b<24?'rise':b<32?'drop':b<40?'theme':b<44?'line':b<46?'rise':'drop';
+const DROPS=[24,46];
 
 function musInit(c){
   MUS.ac=c;MUS.waves={};MUS.noise=null;
@@ -283,10 +285,11 @@ function sidChord(t0,dur,notes,vol,lp0,lp1){
 /* the talking synth: a flat, robot-like buzzing voice (one pitch, no melody) through three vowel filters, plus hiss for s, f and t, crushed to a few bits like a C64 sample */
 const PH={s:{h:[5200,.2]},t:{h:[3600,.3]},f:{n:[3000,.13]},
   b:{v:[260,700,2200],a:.12},l:{v:[380,1000,2700],a:.5},w:{v:[300,650,2200],a:.45},
-  o:{v:[620,980,2550],a:1},ou:{v:[480,880,2450],a:1,to:[340,760,2350]},er:{v:[470,1300,1650],a:.9}};
+  o:{v:[620,980,2550],a:1},aw:{v:[570,840,2410],a:1},ai:{v:[720,1200,2600],a:1,to:[320,2150,2900]},uh:{v:[520,1450,2500],a:.85},n:{v:[280,1700,2600],a:.35},dh:{v:[300,1300,2500],a:.25},k:{h:[1900,.35]},'_':{},ou:{v:[480,880,2450],a:1,to:[340,760,2350]},er:{v:[470,1300,1650],a:.9}};
 const WORDS={softer:[['s',.13],['o',.2],['f',.1],['t',.035],['er',.34]],
              slower:[['s',.13],['l',.07],['ou',.3],['w',.06],['er',.36]],
-             blobber:[['b',.05],['l',.06],['o',.17],['b',.07],['er',.36]]};
+             blobber:[['b',.05],['l',.06],['o',.17],['b',.07],['er',.36]],
+             line:[['ai',.26],['w',.07],['aw',.22],['_',.04],['k',.05],['_',.05],['dh',.05],['uh',.08],['l',.08],['ai',.3],['n',.18]]};
 let crush=null;
 function say(word,t0,note,o){
   o=o||{};const c=MUS.ac,st=o.stretch||1,ph=WORDS[word];let len=0;for(const p of ph)len+=p[1]*st;
@@ -311,16 +314,16 @@ function say(word,t0,note,o){
   src.start(t0);src.stop(t+.1);hs.start(t0,Math.random()*.5);hs.stop(t+.1);
 }
 
-// which tune plays in which bar: the old catchy one in the groove, the new one in the theme and the drop
-function tuneAt(b){if(b>=4&&b<8)return [OLD,(b-4)*16];if(b>=8&&b<16)return [LEAD,(b-8)*16];if(b>=24)return [LEAD,(b-24)*16];return null}
+// which tune plays in which bar: the old catchy one in the groove and the second theme, the new one in the theme and the first drop, both in the second drop
+function tuneAt(b){if(b>=4&&b<8)return [OLD,(b-4)*16];if(b>=8&&b<16)return [LEAD,(b-8)*16];if(b>=24&&b<32)return [LEAD,(b-24)*16];if(b>=32&&b<40)return [OLD,(b-32)%4*16];if(b>=46&&b<50)return [OLD,(b-46)*16];if(b>=50)return [LEAD,64+(b-50)*16];return null}
 function tuneNote(arr,k,st,o){const n=arr[k];if(!n)return;let l=1;while(l<4&&!arr[(k+l)%arr.length])l++;
   voice(o.t0,SPS*l*.92,{f:mf(n+(o.up||0)),f0:MUS.prev?mf(MUS.prev+(o.up||0)):0,glide:.035,duty:o.duty,vol:o.vol,vib:.007,rel:.08,echo:.45});
   if(o.dbl)voice(o.t0,SPS*l*.92,{f:mf(n+12),duty:.5-o.duty*.6,vol:.03,vib:.007,rel:.06,echo:.3});
   MUS.prev=n}
 function musStep(i,t0){
-  const b=(i>>4)%32,st=i%16,ci=b%4,ch=CHORDS[ci],root=ROOTS[ci],sec=SECTION(b);
+  const b=(i>>4)%BARS,st=i%16,ci=b%4,ch=CHORDS[ci],root=ROOTS[ci],sec=SECTION(b);
   // how loud the whole band is: the voice asks for "softer", the drop brings it back
-  if(st===0){const tgt={soft:.62,slow:.62,blob:.7,rise:1}[sec]||1;MUS.out.gain.setTargetAtTime(tgt,t0,sec==='rise'?.9:.2)}
+  if(st===0){const tgt={soft:.62,slow:.62,blob:.7,line:.62,rise:1}[sec]||1;MUS.out.gain.setTargetAtTime(tgt,t0,sec==='rise'?.9:.2)}
   // back from a quiet moment: in with a crash
   if(MUS.comeback){MUS.comeback=false;noise(t0,1.4,.16,'highpass',5000);kick(t0,.7)}
   const duty=.12+.33*(.5+.5*Math.sin(t0*.8));   // slow pulse-width sweep, like a SID patch
@@ -328,8 +331,8 @@ function musStep(i,t0){
     if(st%4===0)kick(t0,sec==='drop'?.8:.62);
     if(st%4===2)hat(t0,sec!=='intro');else if(st%2)hat(t0,false);
     if(sec!=='intro'&&(st===4||st===12))clap(t0);
-    if(st===0&&(b===8||b===24||b===28))noise(t0,1.6,.16,'highpass',5000);   // crash
-    if(b===24&&st===0)voice(t0,.7,{f:38,f0:95,glide:.6,type:'sine',vol:.55,rel:.1});   // the drop's boom
+    if(st===0&&(b===8||b===24||b===28||b===32||b===46||b===50))noise(t0,1.6,.16,'highpass',5000);   // crash
+    if(DROPS.includes(b)&&st===0)voice(t0,.7,{f:38,f0:95,glide:.6,type:'sine',vol:.55,rel:.1});   // the drop's boom
     // bouncing Italo bass: low – octave up – low after every beat, the filter snapping shut like on the SID
     if(st%4===2)voice(t0,SPS*.9,{f:mf(root+12),duty:.4,vol:.15,lp:[2400,300,9,SPS*.9]});
     else if(st%2)voice(t0,SPS*.5,{f:mf(root),duty:.45,vol:.1,lp:[900,200,6]});
@@ -363,13 +366,24 @@ function musStep(i,t0){
     }
     return;
   }
+  // ---- before the second drop: the robot says "I walk the line" over a bass heartbeat ----
+  if(sec==='line'){
+    if(b%2===0){MUS.prev=0;if(st===0&&b===40)say('line',t0,55,{stretch:1.1})}
+    else tuneNote(OLD,((b-41)>>1)*16+st,st,{t0,duty,vol:.07,up:12});
+    if(st===0||st===8){voice(t0,SPS*.9,{f:mf(root+12),duty:.4,vol:.15,lp:[2400,250,9,SPS*.9]});voice(t0+.16,SPS*.9,{f:mf(root),duty:.4,vol:.11,lp:[1200,250,9,SPS*.9]});voice(t0,SPS*.8,{f:mf(root),type:'sine',vol:.12})}
+    if(st%4===2)hat(t0,false);
+    if(st===2||st===10)sidChord(t0,SPS*2,ch.map(x=>x+12),.05,2600,900);
+    return;
+  }
   // ---- the riser: snare roll, noise sweep, then a breath before the drop ----
   MUS.prev=0;
-  if(b===22&&st===0){noise(t0,BAR*2-SPS*2,.16,'bandpass',300,2,9000,BAR*1.6);
+  const r0=b===22||b===44;   // first bar of a riser
+  if(b===45&&st===0)say('line',t0,55,{stretch:1.1,amp:1.2});   // once more, right before the second drop
+  if(r0&&st===0){noise(t0,BAR*2-SPS*2,.16,'bandpass',300,2,9000,BAR*1.6);
     voice(t0,BAR*2-SPS*2,{f:mf(root+36),f0:mf(root+12),glide:BAR*2-SPS*2,duty:.2,vol:.04,att:BAR,rel:.02})}
   if(st===0)sidChord(t0,BAR,ch,.05,600,6000);
-  if(b===22?st%2===0:st<14)snare(t0,b===22?.07+st*.004:.09+st*.006);
-  if(b===23&&st%4===0&&st<12)kick(t0,.45);
+  if(r0?st%2===0:st<14)snare(t0,r0?.07+st*.004:.09+st*.006);
+  if(!r0&&st%4===0&&st<12)kick(t0,.45);
 }
 function musWanted(){return MUS.on&&AC&&!document.hidden&&state!=='paused'}
 /* now and then the music stops at the end of a bar and only a heartbeat goes on, in time with the song;
@@ -397,7 +411,7 @@ setInterval(()=>{
     if(MUS.quiet){if(MUS.hb%8===4)heartbeat(MUS.next);MUS.hb++;MUS.next+=SPS;continue}
     if(MUS.step%16===0){const s=SECTION(MUS.step>>4);
       // stop only between bars, never in the middle of the talking part or right at the drop
-      if(++MUS.bars>MUS.quietIn&&s!=='soft'&&s!=='slow'&&s!=='blob'&&s!=='rise'&&MUS.step!==384){musQuiet(MUS.next);continue}}
+      if(++MUS.bars>MUS.quietIn&&s!=='soft'&&s!=='slow'&&s!=='blob'&&s!=='rise'&&s!=='line'&&!DROPS.includes(MUS.step>>4)){musQuiet(MUS.next);continue}}
     musStep(MUS.step,MUS.next);MUS.next+=SPS;MUS.step=(MUS.step+1)%SONG;if(MUS.step%16===0)store.set('line.musPos',MUS.step)}
 },25);
 const sfx={
