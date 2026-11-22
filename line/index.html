@@ -578,7 +578,7 @@ const START={x:-500,y:0,armed:true};
 let secret=null,winDoor=null;
 let pools=[],bubbles=[],zaps=[],flash=0;
 let drops=[],flips=[],sharks=[],eyes=[],ghosts=[],killTop=-400,endFlip=null;
-let curtain=null,shake=0,dtFrame=0,ripples=[];
+let skullFx=null,curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
 let camX=0,camY=0,hintMoved=false,hintJumped=false,touchedEarly=false;
 
@@ -630,7 +630,7 @@ function flipNow(x,y,f){
 }
 function respawnEat(){P.eat=null}
 function respawn(){respawnEat();P.zapped=0;
-  if(falls>=3){const c=curtain;startLevel(levelN);curtain=c;touchedEarly=true;state='play';toast(T.reset);return}
+  if(falls>=3){const c=curtain;startLevel(levelN);curtain=c;touchedEarly=true;state='play';skullFx={t:0};return}
   shards=[];holes=[];
   for(const p of plats)if(p.mv)p.dx=p.dy=0;
   resetGhosts();P.water=null;bubbles=[];
@@ -1144,6 +1144,20 @@ function render(){
   ctx.fillStyle=FG;for(const q of sandParts){if(q.x<vx0||q.x>vx1)continue;ctx.globalAlpha=1-q.t/.7;ctx.fillRect(q.x-.9,q.y-.9,1.8,1.8)}ctx.globalAlpha=1;
   ctx.strokeStyle=FG;ctx.lineWidth=LW;for(const d of drops){ctx.beginPath();ctx.ellipse(d.x,d.y,d.r*.85,d.r*(1+Math.min(.5,Math.abs(d.vy)/1600)),0,0,6.2832);ctx.stroke()}
   if(state!=='menu')drawChar();
+  // third fall: a skull pops up in the middle and blows away as smoke while the level starts over
+  if(skullFx){ctx.setTransform(DPR,0,0,DPR,0,0);const k=skullFx.t,cx=SW/2,cy=SH*.42,pop=Math.min(1,k/.25),sc=(1.4-.4*pop)*Math.min(SH,SW)/300,fade=Math.max(0,1-Math.max(0,k-.7)/.9);
+    ctx.save();ctx.translate(cx,cy-Math.max(0,k-.7)*25);ctx.scale(sc,sc);ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=4.5;ctx.lineCap='round';ctx.lineJoin='round';
+    // the skull breaks up from the top as it turns to smoke
+    ctx.globalAlpha=fade*pop;const cut=Math.max(0,k-.7)/.9;ctx.beginPath();ctx.rect(-60,-70+cut*130,120,140);ctx.clip();
+    ctx.beginPath();ctx.moveTo(-20,22);ctx.bezierCurveTo(-36,14,-40,-6,-38,-18);ctx.bezierCurveTo(-35,-44,-14,-52,0,-52);ctx.bezierCurveTo(14,-52,35,-44,38,-18);ctx.bezierCurveTo(40,-6,36,14,20,22);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-20,22);ctx.lineTo(-18,36);ctx.lineTo(18,36);ctx.lineTo(20,22);ctx.stroke();
+    for(const x of[-9,0,9]){ctx.beginPath();ctx.moveTo(x,26);ctx.lineTo(x,36);ctx.stroke()}
+    for(const sx of[-1,1]){ctx.beginPath();ctx.ellipse(sx*15,-12,9,10.5,0,0,6.2832);ctx.fill()}
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-5,11);ctx.lineTo(5,11);ctx.closePath();ctx.fill();
+    ctx.restore();
+    // smoke rising from where it dissolves
+    if(k>.6){ctx.save();ctx.strokeStyle=FG;ctx.lineWidth=3;for(let i=0;i<7;i++){const tt=k-.6-i*.08;if(tt<0)continue;const a=Math.max(0,.6-tt*.6);if(a<=0)continue;ctx.globalAlpha=a;
+      ctx.beginPath();ctx.arc(cx+(i-3)*12*sc+Math.sin(tt*5+i)*10*sc,cy-(20+tt*110)*sc,(6+tt*22)*sc,0,6.2832);ctx.stroke()}ctx.restore()}}
   // screen space: a white flash when you get zapped
   if(flash>0){ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=Math.min(.85,flash*3);ctx.fillStyle=FG;ctx.fillRect(0,0,cv.width,cv.height);ctx.globalAlpha=1}
   // screen space: joystick and first-level hints
@@ -1200,6 +1214,7 @@ function frame(now){
   dtFrame=state==='paused'?0:dt;
   if(curtain&&state!=='paused'){curtain.t+=dt;if(curtain.t>1.9)curtain=null}
   if(shake>0)shake=Math.max(0,shake-dt);
+  if(skullFx&&state!=='paused'){skullFx.t+=dt;if(skullFx.t>2.2)skullFx=null}
   try{render()}catch(e){console.error(e)}   // a drawing mistake must never freeze the game
   requestAnimationFrame(frame);
 }
