@@ -69,6 +69,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
 .ib svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .ib .f{fill:currentColor}
 .ib.sm{width:44px;height:44px;align-self:center}
+.ib[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
 a.ib{text-decoration:none}
 .head{display:flex;align-items:center;gap:14px;margin-bottom:2px}.head h1{margin:0;flex:1;text-align:left}.head .total{margin:0}
 #startOv .ibtns{margin-top:6px}.ib.sm svg{width:20px;height:20px}
@@ -129,7 +130,7 @@ a.ib{text-decoration:none}
         <circle cx="152" cy="49.5" r="1.8" fill="var(--bg)"/>
       </svg>
       <div class="total" id="totalStars"></div>
-      <div class="ibtns"><a class="ib sm" href="../" data-i18n-label="allGames"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 7 5 12l5 5M5 12h9"/><path d="M14 5.5h4.5v13H14"/></svg></a><button type="button" class="ib" id="levelsBtn" data-i18n-label="levels"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="6" height="6" rx="1.5"/><rect x="13.5" y="4.5" width="6" height="6" rx="1.5"/><rect x="4.5" y="13.5" width="6" height="6" rx="1.5"/><rect x="13.5" y="13.5" width="6" height="6" rx="1.5"/></svg></button><button type="button" class="ib main" id="playBtn" data-i18n-label="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.5v13l10-6.5Z" class="f"/></svg></button><button type="button" class="ib" id="shareBtn" data-i18n-label="share"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="17.5" cy="5.5" r="2.6"/><circle cx="6.5" cy="12" r="2.6"/><circle cx="17.5" cy="18.5" r="2.6"/><path d="M8.8 10.7l6.4-3.9M8.8 13.3l6.4 3.9"/></svg></button><button type="button" class="ib sm" id="installBtn" data-i18n-label="install" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg></button></div>
+      <div class="ibtns"><a class="ib sm" href="../" data-i18n-label="allGames"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 7 5 12l5 5M5 12h9"/><path d="M14 5.5h4.5v13H14"/></svg></a><button type="button" class="ib" id="levelsBtn" data-i18n-label="levels"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="6" height="6" rx="1.5"/><rect x="13.5" y="4.5" width="6" height="6" rx="1.5"/><rect x="4.5" y="13.5" width="6" height="6" rx="1.5"/><rect x="13.5" y="13.5" width="6" height="6" rx="1.5"/></svg></button><button type="button" class="ib main" id="playBtn" data-i18n-label="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.5v13l10-6.5Z" class="f"/></svg></button><button type="button" class="ib sm" id="kidsBtn" data-i18n-label="kids" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7.5"/><path d="M12 5.5c0-2 1.5-3 3-2.5"/><circle cx="9.3" cy="12" r=".9" class="f"/><circle cx="14.7" cy="12" r=".9" class="f"/><path d="M9.2 15.4c1.6 1.4 4 1.4 5.6 0"/></svg></button><button type="button" class="ib" id="shareBtn" data-i18n-label="share"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="17.5" cy="5.5" r="2.6"/><circle cx="6.5" cy="12" r="2.6"/><circle cx="17.5" cy="18.5" r="2.6"/><path d="M8.8 10.7l6.4-3.9M8.8 13.3l6.4 3.9"/></svg></button><button type="button" class="ib sm" id="installBtn" data-i18n-label="install" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg></button></div>
       <p class="iosHint" id="iosHint" hidden></p>
     </div>
   </div>
@@ -172,12 +173,12 @@ const $=id=>document.getElementById(id);
 
 /* ---------- languages (shared with the other games) ---------- */
 const LANG={
-  de:{allGames:'Alle Spiele',share:'Teilen',shareText:'Spiel mit mir The Line – ein Jump & Run auf einer einzigen Linie!',copied:'Link kopiert – schick ihn deinen Freunden',install:'ALS APP INSTALLIEREN',ios:'Als App: Teilen-Knopf ⬆︎ → „Zum Home-Bildschirm“',secret:'Geheimtür gefunden!',sTime:'Etwas schneller wäre besser',levels:'LEVELS',back:'ZURÜCK',reset:'Dreimal gestürzt – das Level beginnt von vorn',s3:'Alle Punkte, kein Sturz!',sDots:'Sammle alle 3 Punkte',sFalls:'Schaff es ohne Sturz',level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',fall:'✕'},
-  en:{allGames:'All games',share:'Share',shareText:'Play The Line with me – a jump & run on a single line!',copied:'Link copied – send it to your friends',install:'INSTALL AS APP',ios:'As an app: Share button ⬆︎ → “Add to Home Screen”',secret:'Secret door!',sTime:'A bit faster next time',levels:'LEVELS',back:'BACK',reset:'Three falls – the level starts over',s3:'All dots, no falls!',sDots:'Collect all 3 dots',sFalls:'Make it without a fall',level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',fall:'✕'},
-  fr:{allGames:'Tous les jeux',share:'Partager',shareText:'Joue à The Line avec moi – un jeu de plateforme sur une seule ligne !',copied:'Lien copié – envoie-le à tes amis',install:'INSTALLER L’APP',ios:'En app : bouton Partager ⬆︎ → « Sur l’écran d’accueil »',secret:'Porte secrète !',sTime:'Un peu plus vite la prochaine fois',levels:'NIVEAUX',back:'RETOUR',reset:'Trois chutes – le niveau recommence',s3:'Tous les points, aucune chute !',sDots:'Ramasse les 3 points',sFalls:'Réussis sans tomber',level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',fall:'✕'},
-  es:{allGames:'Todos los juegos',share:'Compartir',shareText:'¡Juega conmigo a The Line, un juego de saltos sobre una sola línea!',copied:'Enlace copiado: envíalo a tus amigos',install:'INSTALAR COMO APP',ios:'Como app: botón Compartir ⬆︎ → «Añadir a pantalla de inicio»',secret:'¡Puerta secreta!',sTime:'Un poco más rápido la próxima vez',levels:'NIVELES',back:'VOLVER',reset:'Tres caídas: el nivel empieza de nuevo',s3:'¡Todos los puntos, sin caídas!',sDots:'Recoge los 3 puntos',sFalls:'Hazlo sin caerte',level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',fall:'✕'},
-  it:{allGames:'Tutti i giochi',share:'Condividi',shareText:'Gioca con me a The Line – un platform su un’unica linea!',copied:'Link copiato – mandalo ai tuoi amici',install:'INSTALLA COME APP',ios:'Come app: tasto Condividi ⬆︎ → «Aggiungi alla schermata Home»',secret:'Porta segreta!',sTime:'Un po’ più veloce la prossima volta',levels:'LIVELLI',back:'INDIETRO',reset:'Tre cadute: il livello ricomincia',s3:'Tutti i punti, nessuna caduta!',sDots:'Raccogli tutti e 3 i punti',sFalls:'Fallo senza cadere',level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',fall:'✕'},
-  pt:{allGames:'Todos os jogos',share:'Compartilhar',shareText:'Jogue The Line comigo – um jogo de pulo numa única linha!',copied:'Link copiado – mande para seus amigos',install:'INSTALAR COMO APP',ios:'Como app: botão Compartilhar ⬆︎ → “Adicionar à Tela de Início”',secret:'Porta secreta!',sTime:'Um pouco mais rápido da próxima vez',levels:'NÍVEIS',back:'VOLTAR',reset:'Três quedas: o nível recomeça',s3:'Todos os pontos, sem quedas!',sDots:'Pegue os 3 pontos',sFalls:'Consiga sem cair',level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',fall:'✕'}
+  de:{kids:'Kindermodus',kidsOn:'Kindermodus an: jedes Herz hält zwei Treffer, eine Wolke fängt dich auf',kidsOff:'Kindermodus aus',allGames:'Alle Spiele',share:'Teilen',shareText:'Spiel mit mir The Line – ein Jump & Run auf einer einzigen Linie!',copied:'Link kopiert – schick ihn deinen Freunden',install:'ALS APP INSTALLIEREN',ios:'Als App: Teilen-Knopf ⬆︎ → „Zum Home-Bildschirm“',secret:'Geheimtür gefunden!',sTime:'Etwas schneller wäre besser',levels:'LEVELS',back:'ZURÜCK',reset:'Dreimal gestürzt – das Level beginnt von vorn',s3:'Alle Punkte, kein Sturz!',sDots:'Sammle alle 3 Punkte',sFalls:'Schaff es ohne Sturz',level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',fall:'✕'},
+  en:{kids:'Kids mode',kidsOn:'Kids mode on: every heart takes two hits, a cloud catches you',kidsOff:'Kids mode off',allGames:'All games',share:'Share',shareText:'Play The Line with me – a jump & run on a single line!',copied:'Link copied – send it to your friends',install:'INSTALL AS APP',ios:'As an app: Share button ⬆︎ → “Add to Home Screen”',secret:'Secret door!',sTime:'A bit faster next time',levels:'LEVELS',back:'BACK',reset:'Three falls – the level starts over',s3:'All dots, no falls!',sDots:'Collect all 3 dots',sFalls:'Make it without a fall',level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',fall:'✕'},
+  fr:{kids:'Mode enfant',kidsOn:'Mode enfant : chaque cœur tient deux coups, un nuage te rattrape',kidsOff:'Mode enfant désactivé',allGames:'Tous les jeux',share:'Partager',shareText:'Joue à The Line avec moi – un jeu de plateforme sur une seule ligne !',copied:'Lien copié – envoie-le à tes amis',install:'INSTALLER L’APP',ios:'En app : bouton Partager ⬆︎ → « Sur l’écran d’accueil »',secret:'Porte secrète !',sTime:'Un peu plus vite la prochaine fois',levels:'NIVEAUX',back:'RETOUR',reset:'Trois chutes – le niveau recommence',s3:'Tous les points, aucune chute !',sDots:'Ramasse les 3 points',sFalls:'Réussis sans tomber',level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',fall:'✕'},
+  es:{kids:'Modo niños',kidsOn:'Modo niños: cada corazón aguanta dos golpes y una nube te recoge',kidsOff:'Modo niños desactivado',allGames:'Todos los juegos',share:'Compartir',shareText:'¡Juega conmigo a The Line, un juego de saltos sobre una sola línea!',copied:'Enlace copiado: envíalo a tus amigos',install:'INSTALAR COMO APP',ios:'Como app: botón Compartir ⬆︎ → «Añadir a pantalla de inicio»',secret:'¡Puerta secreta!',sTime:'Un poco más rápido la próxima vez',levels:'NIVELES',back:'VOLVER',reset:'Tres caídas: el nivel empieza de nuevo',s3:'¡Todos los puntos, sin caídas!',sDots:'Recoge los 3 puntos',sFalls:'Hazlo sin caerte',level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',fall:'✕'},
+  it:{kids:'Modalità bambini',kidsOn:'Modalità bambini: ogni cuore regge due colpi, una nuvola ti prende',kidsOff:'Modalità bambini disattivata',allGames:'Tutti i giochi',share:'Condividi',shareText:'Gioca con me a The Line – un platform su un’unica linea!',copied:'Link copiato – mandalo ai tuoi amici',install:'INSTALLA COME APP',ios:'Come app: tasto Condividi ⬆︎ → «Aggiungi alla schermata Home»',secret:'Porta segreta!',sTime:'Un po’ più veloce la prossima volta',levels:'LIVELLI',back:'INDIETRO',reset:'Tre cadute: il livello ricomincia',s3:'Tutti i punti, nessuna caduta!',sDots:'Raccogli tutti e 3 i punti',sFalls:'Fallo senza cadere',level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',fall:'✕'},
+  pt:{kids:'Modo infantil',kidsOn:'Modo infantil: cada coração aguenta dois golpes e uma nuvem te pega',kidsOff:'Modo infantil desligado',allGames:'Todos os jogos',share:'Compartilhar',shareText:'Jogue The Line comigo – um jogo de pulo numa única linha!',copied:'Link copiado – mande para seus amigos',install:'INSTALAR COMO APP',ios:'Como app: botão Compartilhar ⬆︎ → “Adicionar à Tela de Início”',secret:'Porta secreta!',sTime:'Um pouco mais rápido da próxima vez',levels:'NÍVEIS',back:'VOLTAR',reset:'Três quedas: o nível recomeça',s3:'Todos os pontos, sem quedas!',sDots:'Pegue os 3 pontos',sFalls:'Consiga sem cair',level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',fall:'✕'}
 };
 let lang='de',T=LANG.de;
 function setLang(k){lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.lang=lang;
@@ -434,6 +435,8 @@ const sfx={
   fizzle(){tone(700,90,.5,.05,0,'sawtooth')},
   zap(){tone(90,60,.35,.1,0,'sawtooth');tone(1800,400,.25,.05,0,'square');tone(120,120,.3,.06,0,'square')},
   flap(){tone(900,1400,.05,.035,0,'square');tone(1100,1600,.05,.03,.06,'square')},
+  dong(){tone(523,523,.55,.11,0,'triangle');tone(262,262,.7,.07,0,'triangle');tone(784,784,.3,.03,0,'sine')},
+  whoosh(){tone(300,900,.35,.05,0,'triangle');tone(1200,1800,.2,.03,.25,'sine')},
   jump2(){tone(392,1568,.13,.09);tone(1568,1568,.05,.05,.13);tone(2093,2093,.06,.04,.18)},
   land(){tone(140,70,.06,.07,0,'triangle')},
   dot(){tone(1047,1047,.06,.08);tone(1568,1568,.1,.08,.065)},
@@ -596,16 +599,40 @@ let camX=0,camY=0,hintMoved=false,hintJumped=false,touchedEarly=false;
 
 function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;drops=[]}
 function startLevel(n){
-  ripples=[];winDoor=null;levelN=n;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];curtain=null;shake=0;
+  ripples=[];winDoor=null;rescue=null;safeTrail.length=0;P.half=false;P.inv=0;levelN=n;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];curtain=null;shake=0;
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
   spawn={x:40,y:0,g:1};placeAt(40,0,1);P.face=1;P.win=0;
   camX=P.x-viewW*.35;camY=P.y-VIEW_H*.6;
   hintMoved=hintJumped=false;touchedEarly=false;
   updateHud();
 }
+/* ---------- kids mode: every heart holds two hits; falling off is caught by a little cloud ---------- */
+let KIDS=store.get('line.kids',false)===true,rescue=null;const safeTrail=[];
+function soft(){
+  if(P.inv>0)return true;                    // just hit: blinking, nothing hurts for a moment
+  if(!KIDS||P.half)return false;             // a heart that's already half gone: same as normal mode
+  P.half=true;P.inv=1.6;sfx.dong();buzz([40,60,40]);
+  P.vy=-P.g*330;P.ground=false;P.on=null;P.coy=0;P.water=null;updateHud();return true;
+}
+function startRescue(){
+  P.half=true;updateHud();sfx.dong();
+  // back to where you stood safely a moment ago
+  let to=safeTrail[0]||{x:spawn.x,y:spawn.y,g:spawn.g};for(let i=safeTrail.length-1;i>=0;i--)if(lvTime-safeTrail[i].t>=.6){to=safeTrail[i];break}
+  const fy=P.g>0?Math.min(P.y,camY+VIEW_H-24):Math.max(P.y,camY+24);P.y=fy;P.vx=P.vy=0;P.water=null;
+  rescue={t:0,fx:P.x,fy,to,cx:P.x-160,cy:fy+P.g*16};state='rescue';sfx.whoosh();
+}
+function updateRescue(dt){
+  const r=rescue,g=r.to.g,ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)};r.t+=dt;
+  if(r.t<.55){const k=ease(r.t/.55);r.cx=r.fx-160*(1-k);r.cy=r.fy+P.g*16+Math.sin(k*Math.PI)*12*P.g}          // the cloud swoops in under you
+  else if(r.t<1.45){const k=ease((r.t-.55)/.9);r.cx=r.fx+(r.to.x-r.fx)*k;r.cy=(r.fy+P.g*16)+((r.to.y-g*34)-(r.fy+P.g*16))*k-Math.sin(k*Math.PI)*30*g;
+    if(r.t>.62&&P.g!==g){P.g=g}P.x=r.cx;P.y=r.cy-P.g*13}                                                                       // ...and carries you back
+  else if(r.t<1.75){const k=ease((r.t-1.45)/.3);P.x=r.to.x;P.y=(r.to.y-g*22)+(g*22)*k;r.cy-=dt*120}                        // you hop off onto the line
+  else{const s=support(r.to.x,r.to.y,g)||support(r.to.x,r.to.y-g*30,g);P.g=g;P.x=r.to.x;P.y=s?s.y:r.to.y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.inv=1.2;P.dj=true;state='play';rescue=null;return}
+  P.air=1;
+}
 function die(){
   if(state!=='play')return;
-  state='dead';P.dead=0;falls++;updateHud();buzz([70,50,140]);if(!P.eat)sfx.fall();
+  state='dead';P.dead=0;falls++;P.half=false;P.inv=0;updateHud();buzz([70,50,140]);if(!P.eat)sfx.fall();
   const g=P.g,fell=P.y>killY||P.y<killTop;
   // three ways to go: melt into the line (and shake it with three ripples), splash at the screen edge, or burst in the air
   let line=null;if(!fell)for(const p of plats){const f=floorAt(p,P.x);if(f!==null&&Math.abs(f-P.y)<=30&&(!line||Math.abs(f-P.y)<Math.abs(line.f-P.y)))line={p,f}}
@@ -740,6 +767,7 @@ function update(dt){
     if(P.dead>P.endT)respawn();return;
   }
   if(state==='win'){const D=winDoor||goal;P.win+=dt;P.x+=(D.x-P.x)*Math.min(1,dt*7);if(P.win>1.25)levelDone();return}
+  if(state==='rescue'){lvTime+=dt;updateRescue(dt);return}
   if(state!=='play')return;
   lvTime+=dt;
   const g=P.g;
@@ -748,6 +776,8 @@ function update(dt){
   const onSand=P.ground&&P.on&&P.on.sand,tgt=dir*SPEED*(onSand?.55:P.water?.42:1),acc=P.ground?ACC_G:ACC_A;
   P.vx+=Math.max(-acc*dt,Math.min(acc*dt,tgt-P.vx));
   if(!P.ground)P.air+=dt;
+  if(P.inv>0)P.inv-=dt;
+  if(P.ground&&P.on&&P.on.solid&&P.inv<=0&&(!safeTrail.length||lvTime-safeTrail[safeTrail.length-1].t>.1)){safeTrail.push({x:P.x,y:P.y,g:P.g,t:lvTime});if(safeTrail.length>40)safeTrail.shift()}
   if(P.buf>0)P.buf-=dt;if(P.coy>0)P.coy-=dt;if(P.squash>0)P.squash-=dt;if(P.flipT>0)P.flipT-=dt;
   // ride along on moving bits
   if(P.ground&&P.on&&P.on.mv)P.x+=P.on.dx;
@@ -810,18 +840,18 @@ function update(dt){
   // the ring at the end is a stop: you can't walk off the end of the line
   if(endFlip&&P.ground&&Math.abs(P.y-endFlip.y)<4&&P.x>endFlip.x-6){P.x=endFlip.x-6;if(P.vx>0)P.vx=0}
   // spikes, sharks, falling, dots, checkpoints, goal
-  for(const s of spikes)if(s.g===P.g&&P.x+8>s.x0&&P.x-8<s.x1){const h=s.g*(s.y-P.y);if(h<11&&h>-30){die();return}}
-  for(const z of zaps){if(Math.abs(P.x-z.pos)<13&&Math.abs(P.y-z.y)<13){P.zapped=1;die();return}}
+  for(const s of spikes)if(s.g===P.g&&P.x+8>s.x0&&P.x-8<s.x1){const h=s.g*(s.y-P.y);if(h<11&&h>-30){if(!soft())die();return}}
+  for(const z of zaps){if(Math.abs(P.x-z.pos)<13&&Math.abs(P.y-z.y)<13){if(!soft()){P.zapped=1;die()}return}}
   // birds: they notice you coming and need a moment to take off - storm in at full speed and you crash into one
   for(const b of birds){
     if(!b.fly){const dx=Math.abs(P.x-b.x),near=dx<85&&Math.abs(P.y-b.y)<60;
       if(near)b.alarm+=dt;else b.alarm=Math.max(0,b.alarm-dt);
       if(b.alarm>b.delay){b.fly=1;b.vx=(b.x>=P.x?1:-1)*(70+Math.random()*60);b.vy=-150-Math.random()*60;b.face=b.vx>0?1:-1;sfx.flap()}
-      if(dx<15&&Math.abs((P.y-9)-(b.y-5))<14){b.fly=1;b.vx=(b.x>=P.x?1:-1)*120;b.vy=-220;P.boom=1;die();return}}
+      if(dx<15&&Math.abs((P.y-9)-(b.y-5))<14){b.fly=1;b.vx=(b.x>=P.x?1:-1)*120;b.vy=-220;if(!soft()){P.boom=1;die()}return}}
     else{b.vy=Math.max(-170,b.vy-60*dt);b.x+=b.vx*dt;b.by+=b.vy*dt;b.fly+=dt}}
   for(const k of sharks){if(k.g!==P.g)continue;const h=k.g*(k.y-P.y),dx=Math.abs(P.x-k.pos);
-    if(dx<11&&h<14&&h>-6){die();return}                     // the fin
-    if(k.rise>.2&&dx<18&&h>-6&&h<k.rise*50+4){die();return}  // the mouth
+    if(dx<11&&h<14&&h>-6){if(!soft())die();return}                     // the fin
+    if(k.rise>.2&&dx<18&&h>-6&&h<k.rise*50+4){if(!soft())die();return}  // the mouth
   }
   // ghosts: they creep up on you while you look away, and freeze (eyes fading) when you face them
   for(const k of ghosts){const dx=P.x-k.x,dy=(P.y-P.g*9)-k.y,dist=Math.hypot(dx,dy);
@@ -829,15 +859,15 @@ function update(dt){
     const watched=P.face*(k.x-P.x)>0;
     if(watched){k.eye=Math.max(0,k.eye-dt*2.5);k.still+=dt}
     else{k.eye=Math.min(1,k.eye+dt*4);k.still=0;const sp=(48+14*Math.min(1,levelN/20))*dt;k.x+=dx/dist*sp;k.y+=dy/dist*sp;k.face=dx>0?1:-1}
-    if(dist<14){die();return}}
+    if(dist<14){if(!soft())die();return}}
   // floating eyes: touch them and they turn into a monster that eats you
-  for(const e of eyes){const [ex,ey]=eyePos(e);if(Math.hypot(P.x-ex,P.y-P.g*9-ey)<16){P.eat=e;P.ex=ex;P.ey=ey;die();return}}
+  for(const e of eyes){const [ex,ey]=eyePos(e);if(Math.hypot(P.x-ex,P.y-P.g*9-ey)<16){if(!soft()){P.eat=e;P.ex=ex;P.ey=ey;die()}return}}
   // under water too long, too deep: drowned
-  if(P.water&&P.y-P.water.y>74){die();return}
+  if(P.water&&P.y-P.water.y>74){if(soft()){P.y=P.water.y+8;P.vy=-240}else die();return}
   // fell below the line: gone (no climbing back up from underneath with the double jump)
   if(!P.ground&&!P.water){let low=null;for(const p of plats){if(p.x1<P.x-320||p.x0>P.x+320)continue;const v=P.g>0?p.lo:p.hi;if(low===null||P.g*(v-low)>0)low=v}
-    if(low!==null&&P.g*(P.y-low)>110){die();return}}
-  if(P.y>killY||P.y<killTop){die();return}
+    if(low!==null&&P.g*(P.y-low)>110){if(KIDS&&!P.half)startRescue();else die();return}}
+  if(P.y>killY||P.y<killTop){if(KIDS&&!P.half)startRescue();else die();return}
   for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-P.g*9-s.y)<20){s.got=true;s.pop=.001;buzz(12);sfx.dot();updateHud()}
   for(const c of cps)if(!c.on&&P.x>=c.x&&P.ground&&P.g===c.g){c.on=true;spawn={x:c.x,y:c.y,g:c.g};sfx.check();pops.push({x:c.x,y:c.y-c.g*22,t:0})}
   if(secret&&P.ground&&P.g>0&&Math.abs(P.x-secret.x)<6){winDoor=secret;state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door();toast(T.secret);return}
@@ -1016,6 +1046,7 @@ function drawBird(b){
   ctx.restore();
 }
 function drawChar(){
+  if(P.inv>0&&state==='play'&&Math.floor(P.inv*14)%2)return;   // blinking after a hit
   if(state==='dead'){
     const d=P.dead;
     if(P.kind==='eaten'){drawMonster(d);return}
@@ -1107,7 +1138,7 @@ function render(){
   if(!goal)return;
   if(state==='done'){ctx.fillStyle=FG;ctx.fillRect(0,0,cv.width,cv.height);return}
   // camera: a bit ahead of where you run
-  if(state==='play'||state==='win'){
+  if(state==='play'||state==='win'||state==='rescue'){
     const tx=P.x-viewW*.38+P.vx*.35,ty=P.y-VIEW_H*(P.g>0?.6:.4);
     camX+=(tx-camX)*.08;camY+=(ty-camY)*.06;
   }
@@ -1181,6 +1212,10 @@ function render(){
   for(const q of pops){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-q.t/.6;ctx.beginPath();ctx.arc(q.x,q.y,q.s?2+(q.t-.3)*30:8+q.t*70,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
   ctx.fillStyle=FG;for(const q of sandParts){if(q.x<vx0||q.x>vx1)continue;ctx.globalAlpha=1-q.t/.7;ctx.fillRect(q.x-.9,q.y-.9,1.8,1.8)}ctx.globalAlpha=1;
   ctx.strokeStyle=FG;ctx.lineWidth=LW;for(const d of drops){ctx.beginPath();ctx.ellipse(d.x,d.y,d.r*.85,d.r*(1+Math.min(.5,Math.abs(d.vy)/1600)),0,0,6.2832);ctx.stroke()}
+  if(rescue){const r=rescue,a=r.t>1.45?Math.max(0,1-(r.t-1.45)/.3):1,g=r.to.g;ctx.globalAlpha=a;ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.lineJoin='round';
+    // a little cloud: bumps on top, flat underneath (flipped when it carries you upside down)
+    const x=r.cx,y=r.cy;ctx.save();ctx.translate(x,y);ctx.scale(1,P.g>0?1:-1);ctx.beginPath();ctx.moveTo(-22,6);ctx.arc(-14,0,8,Math.PI*.75,Math.PI*1.5);ctx.arc(-2,-5,10,Math.PI*1.15,Math.PI*1.9);ctx.arc(12,-1,8,Math.PI*1.4,Math.PI*.2);ctx.lineTo(20,6);ctx.closePath();ctx.stroke();ctx.restore();
+    ctx.lineWidth=2;for(let i=0;i<3;i++){const px=x-(r.cx>r.fx?1:-1)*(26+i*9),pa=(t*3+i)%1;ctx.globalAlpha=a*(1-pa)*.6;ctx.beginPath();ctx.arc(px,y+3,2+pa*3,0,6.2832);ctx.stroke()}ctx.globalAlpha=1}
   if(state!=='menu')drawChar();
   // screen space: a white flash when you get zapped
   if(flash>0){ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=Math.min(.85,flash*3);ctx.fillStyle=FG;ctx.fillRect(0,0,cv.width,cv.height);ctx.globalAlpha=1}
@@ -1262,11 +1297,13 @@ function frame(now){
 const startOv=$('startOv'),pauseOv=$('pauseOv'),doneOv=$('doneOv'),hud=$('hud');
 let sel=Math.min(unlocked,store.get('line.last',unlocked)|0||1);
 function fmt(s){s=Math.floor(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
-const LIFE='<svg viewBox="0 0 20 18"><path d="M10 16.5C4 12.4 1.5 9.4 1.5 6.2 1.5 3.6 3.5 1.8 5.8 1.8c1.8 0 3.2 1 4.2 2.6 1-1.6 2.4-2.6 4.2-2.6 2.3 0 4.3 1.8 4.3 4.4 0 3.2-2.5 6.2-8.5 10.3Z"/></svg>';
+const HEART='M10 16.5C4 12.4 1.5 9.4 1.5 6.2 1.5 3.6 3.5 1.8 5.8 1.8c1.8 0 3.2 1 4.2 2.6 1-1.6 2.4-2.6 4.2-2.6 2.3 0 4.3 1.8 4.3 4.4 0 3.2-2.5 6.2-8.5 10.3Z';
+const LIFE='<svg viewBox="0 0 20 18"><path d="'+HEART+'"/></svg>';
+const HALF='<svg class="half" viewBox="0 0 20 18"><defs><clipPath id="hl"><rect width="10" height="18"/></clipPath></defs><path d="'+HEART+'" style="fill:none"/><path d="'+HEART+'" clip-path="url(#hl)"/></svg>';
 function updateHud(){
   $('lvChip').textContent=T.level+' '+levelN;
   [...$('dots').children].forEach((el,i)=>el.classList.toggle('on',!!(sparks[i]&&sparks[i].got)));
-  $('lives').innerHTML=[0,1,2].map(i=>LIFE.replace('<svg','<svg class="'+(i<3-falls?'':'lost')+'"')).join('');
+  const left=3-falls;$('lives').innerHTML=[0,1,2].map(i=>i===left-1&&P.half?HALF:LIFE.replace('<svg','<svg class="'+(i<left?'':'lost')+'"')).join('');
 }
 // a generous time for the level: running it at a relaxed pace, plus time to wait for bridges and eyes
 function parTime(){return goal.x/205*1.5+3*(plats.filter(p=>p.mv).length+eyes.length)+6}
@@ -1323,6 +1360,8 @@ $('menuBtn').onclick=()=>{sel=levelN;showMenu()};
 $('nextBtn').onclick=()=>{sel=levelN+1;play(sel)};
 $('againBtn').onclick=()=>play(levelN);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
+$('kidsBtn').setAttribute('aria-pressed',KIDS);
+$('kidsBtn').onclick=()=>{KIDS=!KIDS;store.set('line.kids',KIDS);$('kidsBtn').setAttribute('aria-pressed',KIDS);toast(KIDS?T.kidsOn:T.kidsOff)};
 /* ---------- share with friends: the phone's share sheet, otherwise copy the link ---------- */
 const SHARE_URL='https://diemmarkus.github.io/maze/line/';
 $('shareBtn').onclick=async()=>{
