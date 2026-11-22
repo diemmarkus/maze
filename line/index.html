@@ -366,11 +366,11 @@ function musStep(i,t0){
     }
     return;
   }
-  // ---- before the second drop: the robot says "I walk the line" over a bass heartbeat ----
+  // ---- before the second drop: the robot says "I walk the line" over a heartbeat ----
   if(sec==='line'){
     if(b%2===0){MUS.prev=0;if(st===0&&b===40)say('line',t0,55,{stretch:1.1})}
     else tuneNote(OLD,((b-41)>>1)*16+st,st,{t0,duty,vol:.07,up:12});
-    if(st===0||st===8){voice(t0,SPS*.9,{f:mf(root+12),duty:.4,vol:.15,lp:[2400,250,9,SPS*.9]});voice(t0+.16,SPS*.9,{f:mf(root),duty:.4,vol:.11,lp:[1200,250,9,SPS*.9]});voice(t0,SPS*.8,{f:mf(root),type:'sine',vol:.12})}
+    if(st===0||st===8)heart(t0,root);
     if(st%4===2)hat(t0,false);
     if(st===2||st===10)sidChord(t0,SPS*2,ch.map(x=>x+12),.05,2600,900);
     return;
@@ -391,11 +391,18 @@ function musWanted(){return MUS.on&&AC&&!document.hidden&&state!=='paused'}
 MUS.bars=0;MUS.quietIn=14+Math.random()*16|0;
 function musQuiet(t0){MUS.quiet=true;MUS.back=false;MUS.hb=0;MUS.quietUntil=AC.currentTime+3+Math.random()*9;
   voice(t0,.45,{f:mf(31),f0:mf(67),glide:.45,duty:.3,vol:.08,rel:.05,echo:.6})}   // a falling C64 'power-down'
-// lub-dub, two beats apart = 68 beats a minute, half the song's tempo, played on the song's own bass:
-// the filtered SID pulse bass on the root of the bar where the music stopped, with its sine underneath
-function heartbeat(t0){const root=ROOTS[(MUS.step>>4)%4];
-  for(const [d,n,v,lp] of [[0,root+12,.15,2400],[.16,root,.11,1200]]){
-    voice(t0+d,SPS*.9,{f:mf(n),duty:.4,vol:v,lp:[lp,250,9,SPS*.9]});voice(t0+d,SPS*.8,{f:mf(root),type:'sine',vol:.12})}}
+// lub-dub, two beats apart = 68 beats a minute, half the song's tempo. A real heartbeat is a deep, muffled thud:
+// a low note bending down (an octave under the bass, on the root of the bar), the bass's own pulse tone and a puff of noise
+// behind a nearly closed filter (open just enough for phone speakers) – the "lub" long and strong, the "dub" a bit later, shorter, softer and a little higher
+function heart(t0,root){const c=MUS.ac;
+  for(const [d,v,len,up] of [[0,1,.2,0],[.28,.6,.13,2]]){const t=t0+d,f=mf(root-12+up),q=c.createBiquadFilter(),g=c.createGain();
+    q.type='lowpass';q.frequency.value=320;q.Q.value=1;g.gain.value=v;q.connect(g).connect(MUS.out);
+    const o=c.createOscillator(),og=c.createGain();o.type='sine';o.frequency.setValueAtTime(f*1.5,t);o.frequency.exponentialRampToValueAtTime(f*.8,t+len);
+    og.gain.setValueAtTime(0,t);og.gain.linearRampToValueAtTime(.9,t+.018);og.gain.exponentialRampToValueAtTime(.001,t+len);o.connect(og).connect(q);o.start(t);o.stop(t+len+.02);
+    const p=c.createOscillator(),pg=c.createGain();p.setPeriodicWave(wave(.4));p.frequency.setValueAtTime(f*2,t);
+    pg.gain.setValueAtTime(0,t);pg.gain.linearRampToValueAtTime(.35,t+.015);pg.gain.exponentialRampToValueAtTime(.001,t+len*.7);p.connect(pg).connect(q);p.start(t);p.stop(t+len+.02);
+    const n=c.createBufferSource(),ng=c.createGain();n.buffer=noiseBuf();ng.gain.setValueAtTime(.5,t);ng.gain.exponentialRampToValueAtTime(.001,t+.05);n.connect(ng).connect(q);n.start(t,Math.random()*.5);n.stop(t+.06)}}
+function heartbeat(t0){heart(t0,ROOTS[(MUS.step>>4)%4])}
 function musJump(){if(!MUS.quiet||!AC||AC.currentTime<MUS.quietUntil)return;
   MUS.back=true}
 // phones put the audio to sleep now and then (a call, a notification, a long quiet moment): wake it at the next touch
