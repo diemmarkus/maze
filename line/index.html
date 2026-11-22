@@ -186,7 +186,8 @@ function tone(f0,f1,dur,vol,at,shape){
    SID-like pulse waves with sweeping pulse width, a resonant-filter bass, fast chord arpeggios, noise drums and echo.
    32 bars (about a minute), then it loops: groove – theme – breakdown, where a 4-bit talking synth says
    "softer … slower … blobber" and the music does what it says – a riser – the drop. */
-const MUS={on:store.get('line.music',true)!==false,next:0,step:0,live:false,ac:null,out:null,echo:null,noise:null,waves:{},prev:0};
+// the song runs on through levels, menus and pauses, and even picks up where it was after the game is closed
+const MUS={on:store.get('line.music',true)!==false,next:0,step:(store.get('line.musPos',0)|0)%512,live:false,ac:null,out:null,echo:null,noise:null,waves:{},prev:0};
 const BPM=136,SPS=60/BPM/4,BAR=16*SPS,SONG=512;   // one step = a sixteenth note, 32 bars
 const mf=m=>440*Math.pow(2,(m-69)/12);
 // G minor – E flat – B flat – F, one chord per bar
@@ -336,7 +337,7 @@ setInterval(()=>{
   if(AC.state!=='running'){MUS.live=false;wakeAudio();return}
   if(MUS.ac!==AC)musInit(AC);
   if(!MUS.live||MUS.next<AC.currentTime){MUS.next=AC.currentTime+.06;MUS.live=true}
-  while(MUS.next<AC.currentTime+.2){musStep(MUS.step,MUS.next);MUS.next+=SPS;MUS.step=(MUS.step+1)%SONG}
+  while(MUS.next<AC.currentTime+.2){musStep(MUS.step,MUS.next);MUS.next+=SPS;MUS.step=(MUS.step+1)%SONG;if(MUS.step%16===0)store.set('line.musPos',MUS.step)}
 },25);
 const sfx={
   jump(){tone(180,760,.15,.1);tone(360,1520,.15,.03,0,'square')},
