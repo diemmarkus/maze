@@ -1272,7 +1272,7 @@ function render(){
       ctx.beginPath();ctx.moveTo(-20,22);ctx.lineTo(-18,36);ctx.lineTo(18,36);ctx.lineTo(20,22);ctx.stroke();
       for(const x of[-9,0,9]){ctx.beginPath();ctx.moveTo(x,26);ctx.lineTo(x,36);ctx.stroke()}
       for(const sx of[-1,1]){ctx.beginPath();ctx.ellipse(sx*15,-12,9,10.5,0,0,6.2832);ctx.fill()}
-      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-5,11);ctx.lineTo(5,11);ctx.closePath();ctx.fill();
+      for(const nx of[-3,3]){ctx.beginPath();ctx.ellipse(nx,6,2.2,3.6,nx*.06,0,6.2832);ctx.fill()}   // two nose holes
       ctx.restore()}}
   if(joy.id!==null&&state==='play'){
     ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=.35;
