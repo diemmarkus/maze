@@ -60,6 +60,7 @@ A minimal jump and run. The background is one colour, the level is a single ligh
 - **New things come one at a time:** stairs (level 2), spikes (3), floating pieces (4), sharks (5), moving bridges (6), sand (7), eyes (8), ghosts (9), gravity switches (10). In the level where something is new, it shows up about three times.
 - **Levels** are generated from the level number (always the same layout for the same level), get longer and harder, and every level has its own colour. Reached levels can be picked in the level overview. A search bot checked that levels 1–14 can be finished.
 - **Sound:** Commodore 64 style blips made with the SID chip's pulse wave — rising sweep for the jump, a higher one for the double jump, plus sounds for dots, checkpoints, falling and the door. The speaker button next to pause turns it off (remembered on the phone).
+- **Music:** an original Commodore-64-style dance loop (132 BPM: four-on-the-floor kick, off-beat hi-hats, bouncing triangle bass, a fast pulse-wave arpeggio and a tune on every other pass). The note button at the top turns it off (remembered on the phone), separately from the sound effects.
 - Keyboard: ←/→ or A/D to run, Space/↑/W to jump (again in the air for the double jump), P or Esc to pause.
 
 ---

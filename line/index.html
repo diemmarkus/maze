@@ -26,10 +26,11 @@ body{font-family:var(--font);color:var(--fg);-webkit-user-select:none;user-selec
 .dots i{width:10px;height:10px;border-radius:50%;border:2px solid var(--fg);box-sizing:border-box;opacity:.55}
 .dots i.on{background:var(--fg);opacity:1}
 .hud .falls{opacity:.7}
-#sndBtn{margin-left:auto}
-#pauseBtn,#sndBtn{pointer-events:auto;width:38px;height:38px;border-radius:50%;border:2px solid var(--fg);background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;padding:0}
+#musBtn{margin-left:auto}
+#pauseBtn,#sndBtn,#musBtn{pointer-events:auto;width:38px;height:38px;border-radius:50%;border:2px solid var(--fg);background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;padding:0}
 #pauseBtn svg{width:14px;height:14px}#sndBtn svg{width:18px;height:18px}
 #sndBtn[aria-pressed="false"] .wv{display:none}#sndBtn[aria-pressed="true"] .x{display:none}
+#musBtn svg{width:18px;height:18px}#musBtn[aria-pressed="false"]{opacity:.45}#musBtn[aria-pressed="true"] .x{display:none}
 .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:calc(10px + var(--st)) max(14px,var(--sr)) calc(10px + var(--sb)) max(14px,var(--sl));background:color-mix(in srgb,var(--bg) 78%,transparent)}
 .card{box-sizing:border-box;width:min(560px,100%);max-height:100%;overflow-y:auto;text-align:center;padding:14px 22px 16px;border:2px solid var(--fg);border-radius:22px;background:var(--bg)}
 .logo{display:block;width:min(300px,80%);height:auto;margin:2px auto 4px}
@@ -85,6 +86,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
     <span id="lvChip">LEVEL 1</span>
     <span class="dots" id="dots"><i></i><i></i><i></i></span>
     <span class="lives" id="lives"></span>
+    <button type="button" id="musBtn" aria-label="Music" aria-pressed="true"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M6.5 13.5V3.5l8-1.8v10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="4.6" cy="13.8" rx="2.4" ry="1.9" fill="currentColor"/><ellipse cx="12.6" cy="12" rx="2.4" ry="1.9" fill="currentColor"/><path class="x" d="M2 2l14 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     <button type="button" id="sndBtn" aria-label="Sound" aria-pressed="true"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M2 7h3l4-3.5v11L5 11H2Z" fill="currentColor"/><path class="wv" d="M12 6.5a3.5 3.5 0 0 1 0 5M14 4.5a6.5 6.5 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="x" d="M12 7l4 4M16 7l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     <button type="button" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.5" height="12" rx="1.5" fill="currentColor"/><rect x="8.5" y="1" width="3.5" height="12" rx="1.5" fill="currentColor"/></svg></button>
   </div>
@@ -180,6 +182,44 @@ function tone(f0,f1,dur,vol,at,shape){
   g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+.004);g.gain.setValueAtTime(vol,t0+dur*.55);g.gain.exponentialRampToValueAtTime(.0008,t0+dur);
   o.connect(g).connect(a.destination);o.start(t0);o.stop(t0+dur+.03);
 }
+/* ---------- music: an original Commodore-64-style dance loop (pulse lead and arpeggio, triangle bass, noise drums) ---------- */
+const MUS={on:store.get('line.music',true)!==false,next:0,step:0,out:null,noise:null,waves:{},live:false};
+const BPM=132,SPS=60/BPM/4;   // one step = a sixteenth note
+const mf=m=>440*Math.pow(2,(m-69)/12);
+// four chords, one per bar: A minor, F, C, G
+const CHORDS=[[57,60,64],[53,57,60],[48,52,55],[55,59,62]];
+// the tune (MIDI notes, 0 = rest), 16 steps per bar; written for this game
+const LEAD=[76,0,76,0,81,0,79,76,0,0,74,0,76,0,0,0, 72,0,72,0,77,0,76,72,0,0,69,0,72,0,0,0,
+            67,0,72,0,76,0,74,72,0,0,76,0,79,0,0,0, 74,0,71,0,67,0,71,74,0,0,79,0,77,76,74,0];
+function musWave(duty){if(!MUS.waves[duty]){const n=24,re=new Float32Array(n),im=new Float32Array(n);
+  for(let k=1;k<n;k++){re[k]=2/(k*Math.PI)*Math.sin(2*Math.PI*k*duty);im[k]=2/(k*Math.PI)*(1-Math.cos(2*Math.PI*k*duty))}MUS.waves[duty]=AC.createPeriodicWave(re,im)}return MUS.waves[duty]}
+function mNote(f,t0,dur,vol,kind,duty){const o=AC.createOscillator(),g=AC.createGain();
+  if(kind==='pulse')o.setPeriodicWave(musWave(duty||.25));else o.type=kind;o.frequency.setValueAtTime(f,t0);
+  g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+.005);g.gain.setValueAtTime(vol*.8,t0+dur*.5);g.gain.exponentialRampToValueAtTime(.0008,t0+dur);
+  o.connect(g).connect(MUS.out);o.start(t0);o.stop(t0+dur+.02)}
+function mNoise(t0,dur,vol,type,freq){if(!MUS.noise){const b=AC.createBuffer(1,AC.sampleRate,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;MUS.noise=b}
+  const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=MUS.noise;f.type=type;f.frequency.value=freq;
+  g.gain.setValueAtTime(vol,t0);g.gain.exponentialRampToValueAtTime(.0008,t0+dur);s.connect(f).connect(g).connect(MUS.out);s.start(t0,Math.random()*.5);s.stop(t0+dur+.02)}
+function mKick(t0){const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(150,t0);o.frequency.exponentialRampToValueAtTime(42,t0+.12);
+  g.gain.setValueAtTime(.55,t0);g.gain.exponentialRampToValueAtTime(.001,t0+.16);o.connect(g).connect(MUS.out);o.start(t0);o.stop(t0+.18)}
+function musStep(i,t0){
+  const bar=(i>>4)%4,st=i%16,part=(i>>6)%2,ch=CHORDS[bar];
+  if(st%4===0)mKick(t0);
+  if(st%4===2)mNoise(t0,.09,.12,'highpass',7000);else mNoise(t0,.025,.04,'highpass',9000);
+  if(st===4||st===12)mNoise(t0,.14,.16,'bandpass',1800);
+  // bouncing off-beat bass, octave up and down
+  if(st%2===0)mNote(mf(ch[0]-12+(st%4===2?12:0)),t0,SPS*1.6,.16,'triangle');
+  // the arpeggio runs all the time, the tune on every other pass
+  mNote(mf(ch[st%3]+12),t0,SPS*.9,part?.05:.035,'pulse',.125);
+  if(part===0){const n=LEAD[i%64];if(n)mNote(mf(n),t0,SPS*1.7,.07,'pulse',.25)}
+}
+function musWanted(){return MUS.on&&AC&&!document.hidden&&state!=='paused'}
+setInterval(()=>{
+  if(!musWanted()){MUS.live=false;return}
+  if(!MUS.out){MUS.out=AC.createGain();MUS.out.gain.value=.55;MUS.out.connect(AC.destination)}
+  if(!MUS.live||MUS.next<AC.currentTime){MUS.next=AC.currentTime+.06;MUS.live=true}
+  while(MUS.next<AC.currentTime+.15){musStep(MUS.step,MUS.next);MUS.next+=SPS;MUS.step=(MUS.step+1)%128}
+},25);
 const sfx={
   jump(){tone(180,760,.15,.1);tone(360,1520,.15,.03,0,'square')},
   flip(){tone(880,220,.12,.08);tone(220,880,.12,.08,.1)},
@@ -941,7 +981,8 @@ $('playBtn').onclick=()=>play(unlocked);
 $('levelsBtn').onclick=$('levelsBtn2').onclick=$('levelsBtn3').onclick=showLevels;
 $('backBtn').onclick=showMenu;
 $('pauseBtn').onclick=pause;
-function paintSnd(){$('sndBtn').setAttribute('aria-pressed',soundOn)}
+function paintSnd(){$('sndBtn').setAttribute('aria-pressed',soundOn);$('musBtn').setAttribute('aria-pressed',MUS.on)}
+$('musBtn').onclick=()=>{MUS.on=!MUS.on;store.set('line.music',MUS.on);paintSnd();if(MUS.on)audio()};
 $('sndBtn').onclick=()=>{soundOn=!soundOn;store.set('line.sound',soundOn);paintSnd();if(soundOn)sfx.dot()};
 paintSnd();
 $('resumeBtn').onclick=resume;
