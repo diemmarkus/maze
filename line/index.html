@@ -64,6 +64,13 @@ h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
 .big .sw.got{animation:pop .45s cubic-bezier(.3,1.8,.5,1) both}
 .big .sw:nth-child(2){animation-delay:.25s}.big .sw:nth-child(3){animation-delay:.5s}
 @keyframes pop{0%{transform:scale(0) rotate(-40deg)}100%{transform:none}}
+.ibtns{display:flex;align-items:center;justify-content:center;gap:16px;padding:6px 4px}
+.ib{width:54px;height:54px;border-radius:50%;border:2px solid var(--fg);background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;padding:0}
+.ib svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.ib .f{fill:currentColor}
+.ib.main{width:76px;height:76px;background:var(--fg);color:var(--bg)}.ib.main svg{width:34px;height:34px}
+.ib:active{transform:scale(.94)}.ib:focus-visible{outline:2px dashed var(--fg);outline-offset:3px}
+#pauseOv .card{width:auto;padding:16px 22px}
 .iosHint{font-size:12px;opacity:.8;margin:8px 0 0}
 .total{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;letter-spacing:.1em;margin:2px 0 4px}
 .total .st{width:15px;height:15px}
@@ -136,9 +143,12 @@ h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
 
   <div class="overlay" id="pauseOv" hidden>
     <div class="card">
-      <h1 data-i18n="paused">PAUSE</h1>
-      <div class="btns"><button type="button" class="btn" id="resumeBtn" data-i18n="resume">WEITER</button><button type="button" class="btn alt" id="restartBtn" data-i18n="restart">NEU STARTEN</button></div>
-      <div class="btns"><button type="button" class="btn alt" id="menuBtn" data-i18n="menu">MENÜ</button><button type="button" class="btn alt" id="levelsBtn2" data-i18n="levels">LEVELS</button></div>
+      <div class="ibtns">
+        <button type="button" class="ib" id="menuBtn" data-i18n-label="menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4.5l8 7M6.5 9.8V19.5h11V9.8"/><path d="M10 19.5v-5h4v5"/></svg></button>
+        <button type="button" class="ib" id="restartBtn" data-i18n-label="restart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.1-5"/><path d="M17.6 3.4v4h-4"/></svg></button>
+        <button type="button" class="ib main" id="resumeBtn" data-i18n-label="resume"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.5v13l10-6.5Z" class="f"/></svg></button>
+        <button type="button" class="ib" id="levelsBtn2" data-i18n-label="levels"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="6" height="6" rx="1.5"/><rect x="13.5" y="4.5" width="6" height="6" rx="1.5"/><rect x="4.5" y="13.5" width="6" height="6" rx="1.5"/><rect x="13.5" y="13.5" width="6" height="6" rx="1.5"/></svg></button>
+      </div>
     </div>
   </div>
 
@@ -172,6 +182,7 @@ const LANG={
 };
 let lang='de',T=LANG.de;
 function setLang(k){lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n-label]').forEach(el=>{const v=T[el.dataset.i18nLabel];el.setAttribute('aria-label',v);el.title=v});
   document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=T[el.dataset.i18n]})}
 
 /* ---------- storage ---------- */
@@ -641,7 +652,7 @@ addEventListener('keydown',e=>{
   else if(c==='ArrowRight'||c==='KeyD')keys.r=1;
   else if(c==='Space'||c==='ArrowUp'||c==='KeyW'){if(!e.repeat&&state==='play'){P.buf=.14;hintJumped=true}}
   else if(c==='Escape'||c==='KeyP'){if(state==='play')pause();else if(state==='paused')resume()}
-  else if(c==='Enter'){const ov=[...document.querySelectorAll('.overlay')].find(o=>!o.hidden);if(ov){const b=ov.querySelector('.btn');b&&b.click()}return}
+  else if(c==='Enter'){const ov=[...document.querySelectorAll('.overlay')].find(o=>!o.hidden);if(ov){const b=ov.querySelector('.ib.main,.btn');b&&b.click()}return}
   else return;
   e.preventDefault();
 });
