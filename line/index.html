@@ -783,7 +783,7 @@ function update(dt){
   const onSand=P.ground&&P.on&&P.on.sand,tgt=dir*SPEED*(onSand?.55:P.water?.42:1),acc=P.ground?ACC_G:ACC_A;
   P.vx+=Math.max(-acc*dt,Math.min(acc*dt,tgt-P.vx));
   if(!P.ground)P.air+=dt;
-  if(P.inv>0)P.inv-=dt;
+  if(P.inv>0)P.inv-=dt;if(P.spin>0)P.spin-=dt;
   if(P.ground&&P.on&&P.on.solid&&P.inv<=0&&(!safeTrail.length||lvTime-safeTrail[safeTrail.length-1].t>.1)){safeTrail.push({x:P.x,y:P.y,g:P.g,t:lvTime});if(safeTrail.length>40)safeTrail.shift()}
   if(P.buf>0)P.buf-=dt;if(P.coy>0)P.coy-=dt;if(P.squash>0)P.squash-=dt;if(P.flipT>0)P.flipT-=dt;
   // ride along on moving bits
@@ -823,8 +823,9 @@ function update(dt){
     P.vy=-g*JV;P.ground=false;P.on=null;P.coy=0;P.buf=0;P.air=0;sfx.jump();musJump();
   }else if(P.buf>0&&!P.ground&&P.dj&&P.air>.06){
     // second jump in the air: higher, but a little drop splits off the blob
-    P.vy=-g*JV*.92;P.dj=false;P.split=1;P.buf=0;sfx.jump2();musJump();buzz(10);
-    drops.push({x:P.x-P.face*4,y:P.y-g*4,vx:-P.face*70+P.vx*.25,vy:g*160,r:4.6,t:0,g});
+    // second jump: a somersault, with a puff ring pushing off under you
+    P.vy=-g*JV*.92;P.dj=false;P.spin=.42;P.buf=0;sfx.jump2();musJump();buzz(10);
+    pops.push({x:P.x,y:P.y+g*2,t:0,ring:1,g});
   }
   for(const d of drops){d.t+=dt;d.vy+=d.g*G*dt;const py=d.y;d.x+=d.vx*dt;d.y+=d.vy*dt;
     for(const p of plats){const f=floorAt(p,d.x);if(f!==null&&d.g*(py-f)<=0&&d.g*(d.y-f)>=0){d.dead=1;pops.push({x:d.x,y:f,t:.3,s:1});break}}
@@ -914,7 +915,7 @@ function strokePts(pts,close){ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineT
 // in the air the piece of line curls up: both ends swing round and meet, and it's a round outline (a blob)
 function drawBlob(){
   const g=P.g,k0=Math.min(1,P.air/.16),k=1-Math.pow(1-k0,2.2);
-  const sz=P.split?.82:1,Rf=8.5*sz;
+  const Rf=8.5;
   ctx.strokeStyle=FG;ctx.lineWidth=LW;
   if(k<1){
     // an arc of a circle: its length grows from the hump to the full ring, the opening closes towards your side of the line
@@ -925,9 +926,13 @@ function drawBlob(){
   }
   const st=Math.max(-.3,Math.min(.3,-g*P.vy/1500)),wob=Math.min(1,(P.air-.16)/.15);
   const ry=Rf*(1+st),rx=Rf*(1-st*.7),cx=P.x,cy=P.y-g*(ry+1),pts=[];
-  for(let i=0;i<24;i++){const a=i/24*6.2832,w=1+wob*(.07*Math.sin(3*a+t*15)+.05*Math.sin(5*a-t*11));pts.push([cx+Math.cos(a)*rx*w,cy+Math.sin(a)*ry*w])}
+  // somersault on the second jump: the whole blob turns once, squashing a little, with swoosh arcs behind it
+  const sp=P.spin>0?1-P.spin/.42:0,ang=sp>0?(sp*sp*(3-2*sp))*6.2832*P.face*g:0,sq=sp>0?Math.sin(sp*Math.PI)*.18:0;
+  const ca=Math.cos(ang),sa=Math.sin(ang),rot=(dx,dy)=>[cx+dx*ca-dy*sa,cy+dx*sa+dy*ca];
+  for(let i=0;i<24;i++){const a=i/24*6.2832,w=1+wob*(.07*Math.sin(3*a+t*15)+.05*Math.sin(5*a-t*11));pts.push(rot(Math.cos(a)*rx*w*(1+sq),Math.sin(a)*ry*w*(1-sq)))}
   strokePts(pts,true);
-  ctx.fillStyle=FG;ctx.beginPath();ctx.arc(cx+P.face*rx*.38,cy-g*ry*.2,1.9,0,6.2832);ctx.fill();
+  const e=rot(P.face*rx*.38,-g*ry*.2);ctx.fillStyle=FG;ctx.beginPath();ctx.arc(e[0],e[1],1.9,0,6.2832);ctx.fill();
+  if(sp>0&&sp<.9){ctx.lineWidth=2;ctx.globalAlpha=.6*(1-sp);for(const rr of[13,17]){ctx.beginPath();ctx.arc(cx,cy,rr,ang-P.face*g*2.2-1.1,ang-P.face*g*2.2+.2);ctx.stroke()}ctx.globalAlpha=1}
 }
 // sand: the line made of grains (packed tight on top, looser below), with gaps where it has given way
 function drawSand(p){
@@ -1225,7 +1230,7 @@ function render(){
     if(lit<1){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(gx+dw-5,gy-dh*.45,2,0,6.2832);ctx.fill()}
     if(mine&&P.win>.3){const k=Math.min(1,(P.win-.3)/.8),e=k*k*(3-2*k);
       ctx.fillStyle=FG;ctx.beginPath();ctx.arc(gx,gy-dh/2,8+e*(viewW+VIEW_H)*1.3,0,6.2832);ctx.fill()}}
-  for(const q of pops){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-q.t/.6;ctx.beginPath();ctx.arc(q.x,q.y,q.s?2+(q.t-.3)*30:8+q.t*70,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
+  for(const q of pops){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-q.t/.6;ctx.beginPath();if(q.ring)ctx.ellipse(q.x,q.y,6+q.t*55,1.5+q.t*9,0,0,6.2832);else ctx.arc(q.x,q.y,q.s?2+(q.t-.3)*30:8+q.t*70,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
   ctx.fillStyle=FG;for(const q of sandParts){if(q.x<vx0||q.x>vx1)continue;ctx.globalAlpha=1-q.t/.7;ctx.fillRect(q.x-.9,q.y-.9,1.8,1.8)}ctx.globalAlpha=1;
   ctx.strokeStyle=FG;ctx.lineWidth=LW;for(const d of drops){ctx.beginPath();ctx.ellipse(d.x,d.y,d.r*.85,d.r*(1+Math.min(.5,Math.abs(d.vy)/1600)),0,0,6.2832);ctx.stroke()}
   if(rescue){const r=rescue,a=r.t>2.3?Math.max(0,1-(r.t-2.3)/.3):1,gc=r.t>1.1?r.to.g:P.g;ctx.globalAlpha=a;ctx.strokeStyle=FG;ctx.lineJoin='round';ctx.lineCap='round';
