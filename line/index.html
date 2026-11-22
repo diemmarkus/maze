@@ -409,6 +409,7 @@ const sfx={
   crack(){tone(260,70,.22,.09,0,'sawtooth');tone(520,120,.08,.05,0,'square')},
   swim(){tone(330,620,.07,.05,0,'triangle')},
   splash(){tone(1200,180,.18,.05,0,'sawtooth');tone(600,120,.12,.04,0,'square')},
+  fizzle(){tone(700,90,.5,.05,0,'sawtooth')},
   zap(){tone(90,60,.35,.1,0,'sawtooth');tone(1800,400,.25,.05,0,'square');tone(120,120,.3,.06,0,'square')},
   jump2(){tone(392,1568,.13,.09);tone(1568,1568,.05,.05,.13);tone(2093,2093,.06,.04,.18)},
   land(){tone(140,70,.06,.07,0,'triangle')},
@@ -581,7 +582,7 @@ function die(){
   const g=P.g,fell=P.y>killY||P.y<killTop;
   // three ways to go: melt into the line (and shake it with three ripples), splash at the screen edge, or burst in the air
   let line=null;if(!fell)for(const p of plats){const f=floorAt(p,P.x);if(f!==null&&Math.abs(f-P.y)<=30&&(!line||Math.abs(f-P.y)<Math.abs(line.f-P.y)))line={p,f}}
-  P.kind=P.eat?'eaten':P.water?'drown':fell?'fall':line?'line':'air';P.vx=0;P.ax=P.x;P.ay=P.y;
+  P.kind=P.eat?'eaten':P.zapped?'zap':P.water?'drown':fell?'fall':line?'line':'air';P.vx=0;P.ax=P.x;P.ay=P.y;
   if(P.zapped){flash=.35;sfx.zap();buzz([30,20,30,20,60])}
   if(P.kind==='line'){P.lp=line.p;P.lx=P.x-line.p.ox;P.dy0=line.f;P.rq=[0,.2,.4]}
   else if(P.kind==='fall'){
@@ -594,9 +595,10 @@ function die(){
       shards.push({x:P.x,y:yc,vx:Math.cos(a)*v,vy:Math.sin(a)*v-g*120,r:1.6+Math.random()*3.2,stuck:0,g,d:.12+Math.random()*.05})}}
   P.endT=1.25;
   if(P.kind==='eaten'){P.endT=EAT_CURTAIN+1.25;sfx.gasp();return}
+  if(P.kind==='zap'){P.endT=ZAP_CURTAIN+1.25;return}
   startCurtain();shake=.3;
 }
-const EAT_CURTAIN=1.05;   // the monster gets about a second on screen before the blood comes down
+const EAT_CURTAIN=1.05,ZAP_CURTAIN=.95;   // the monster gets about a second on screen before the blood comes down
 function startCurtain(){
   curtain={t:0,drips:[],ph:Math.random()*9};
   for(let x=Math.random()*20-10;x<SW+40;){const thin=Math.random()<.3,w=thin?4+Math.random()*6:14+Math.random()*26;
@@ -702,6 +704,7 @@ function update(dt){
       for(const c of[.5,.66,.82])if(at(c))sfx.chew();
       if(at(.95))sfx.burp();
       if(at(EAT_CURTAIN)){startCurtain();shake=.2}}
+    if(P.kind==='zap'){const at=a=>pd<a&&P.dead>=a;for(const a of[.12,.24,.36,.48])if(at(a)){flash=.12;sfx.zap()}if(at(.58))sfx.fizzle();if(at(ZAP_CURTAIN)){startCurtain();shake=.2}if(P.dead<.55)shake=Math.max(shake,.08)}
     if(P.dead>P.endT)respawn();return;
   }
   if(state==='win'){const D=winDoor||goal;P.win+=dt;P.x+=(D.x-P.x)*Math.min(1,dt*7);if(P.win>1.25)levelDone();return}
@@ -930,6 +933,33 @@ function drawMonster(d){
   if(d>.36&&d<.95){ctx.strokeStyle=FG;ctx.lineWidth=2.5;for(const s of[-1,1]){const cx=ex+s*8*es;ctx.beginPath();ctx.arc(cx,eyY+g*2,5*es,g>0?Math.PI*1.15:Math.PI*.15,g>0?Math.PI*1.85:Math.PI*.85);ctx.stroke()}}
   else drawEyes(ex,eyY,g,es,d<.36?[P.ax,P.ay]:[ex+P.face*30,eyY],d>1.05&&d<1.2?1:0);
 }
+// fried: lifted off the line and shaking, flickering between outline-with-bolts and a lit-up x-ray;
+// then it smokes, chars, and crumbles into ash that blows away
+function drawZap(d){
+  const g=P.g,lift=Math.min(1,d/.08)*7*(d<.6?1:Math.max(0,1-(d-.6)/.2)),cx=P.ax+(d<.55?(Math.random()-.5)*3:0),cy=P.ay-g*(10+lift);
+  const rnd=(i)=>{const h=Math.sin(i*91.7+Math.floor(d*30)*13.1)*43758.5;return h-Math.floor(h)};
+  ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineJoin='miter';
+  if(d<.55){
+    if(Math.floor(d/.06)%2===0){
+      ctx.lineWidth=LW;ctx.beginPath();ctx.ellipse(cx,cy,9,9.5,0,0,6.2832);ctx.stroke();
+      ctx.lineWidth=2;for(let b=0;b<4;b++){const a=rnd(b)*6.2832,ex=P.ax+(rnd(b+9)-.5)*60,ey=P.ay;let x=cx+Math.cos(a)*9,y=cy+Math.sin(a)*9;
+        ctx.beginPath();ctx.moveTo(x,y);for(let i=1;i<=4;i++){const u=i/4;ctx.lineTo(x+(ex-x)*u+(i<4?(rnd(b*7+i)-.5)*10:0),y+(ey-y)*u+(i<4?(rnd(b*5+i)-.5)*8:0))}ctx.stroke()}
+    }else{   // the x-ray: lit up solid, a zigzag spine and crossed-out eyes showing through
+      ctx.beginPath();ctx.ellipse(cx,cy,10,10.5,0,0,6.2832);ctx.fill();
+      ctx.strokeStyle=BG;ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx-1,cy-g*1);for(let i=1;i<=4;i++)ctx.lineTo(cx+(i%2?2.5:-2.5),cy+g*(i*2.2-1));ctx.stroke();
+      for(const s of[-1,1]){const ex=cx+s*4,ey=cy-g*4;ctx.beginPath();ctx.moveTo(ex-1.6,ey-1.6);ctx.lineTo(ex+1.6,ey+1.6);ctx.moveTo(ex+1.6,ey-1.6);ctx.lineTo(ex-1.6,ey+1.6);ctx.stroke()}
+      ctx.strokeStyle=FG}
+  }else if(d<.82){   // charred: a broken, shrinking outline
+    const k=(d-.55)/.27;ctx.lineWidth=LW*.8;ctx.setLineDash([3,3.5]);ctx.beginPath();ctx.ellipse(cx,cy+g*k*4,9*(1-k*.25),9.5*(1-k*.45),0,0,6.2832);ctx.stroke();ctx.setLineDash([])
+  }else{   // a little heap of ash on the line, blowing away
+    const k=Math.min(1,(d-.82)/.5);ctx.globalAlpha=1-k;
+    for(let i=0;i<9;i++){const u=(i/8-.5),x=P.ax+u*16+k*(18+i*5)*(i%2?1:.6),y=P.ay-g*(2+Math.abs(u)*-3+k*i*1.5);ctx.beginPath();ctx.arc(x,y,1.4+(i%3)*.4,0,6.2832);ctx.fill()}
+    ctx.globalAlpha=1}
+  // smoke curling up once it's fried
+  if(d>.5){ctx.lineWidth=2;for(let i=0;i<3;i++){const tt=d-.5-i*.12;if(tt<0||tt>.9)continue;ctx.globalAlpha=Math.max(0,.7-tt*.8);
+    ctx.beginPath();ctx.arc(P.ax+Math.sin(tt*6+i*2)*5+i*3,P.ay-g*(16+tt*55),3+tt*9,0,6.2832);ctx.stroke()}ctx.globalAlpha=1}
+  ctx.lineJoin='round';
+}
 function drawChar(){
   if(state==='dead'){
     const d=P.dead;
@@ -938,8 +968,7 @@ function drawChar(){
       const y=P.ay+d*28,a=Math.max(0,1-d/1.1);ctx.globalAlpha=a;ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.ellipse(P.ax,y-8,7.5,8.5,0,0,6.2832);ctx.stroke();
       ctx.lineWidth=2;for(let i=0;i<4;i++){const by=P.ay-12-((d*60+i*14)%60);if(by>P.water.y){ctx.beginPath();ctx.arc(P.ax+Math.sin(d*8+i)*4,by,1.5+i*.5,0,6.2832);ctx.stroke()}}
       ctx.globalAlpha=1;return}
-    if(P.zapped&&d<.3){   // fried: the outline flickers as a jagged bolt
-      ctx.strokeStyle=FG;ctx.lineWidth=LW*.8;ctx.beginPath();for(let i=0;i<=10;i++){const a=i/10*6.2832,r=9+(Math.random()-.5)*7;const x=P.ax+Math.cos(a)*r,y=P.ay-P.g*9+Math.sin(a)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();ctx.stroke();return}
+    if(P.kind==='zap'){drawZap(d);return}
     if(P.kind==='line'){   // the hump sinks back into the line and is gone
       const k=Math.min(1,d/.14);if(k>=1)return;const p=P.lp,x=P.lx+p.ox,len=CL*(1+k*.6),h=P.g*9*(1-k)*(1-k);
       strokeAlong(p,x-len/2,x+len/2,BG,LW+3);const pts=humpPts(x-len/2,x+len/2,px=>{const f=floorAt(p,px);return f===null?P.dy0:f},h,P.face,.85);
@@ -1054,7 +1083,6 @@ function render(){
   if(endFlip&&endFlip.x>vx0&&endFlip.x<vx1){const f=endFlip,r=5+.6*Math.sin(t*4);   // the line ends in a little ring
     ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.arc(f.x+r,f.y,r,0,6.2832);ctx.stroke()}
   for(const z of zaps){if(z.x1<vx0||z.x0>vx1)continue;
-    ctx.strokeStyle=FG;ctx.lineWidth=LW;for(const x of[z.x0,z.x1]){ctx.beginPath();ctx.moveTo(x,z.y-6);ctx.lineTo(x,z.y+6);ctx.stroke()}
     // the spark: the line goes jagged where it is, with little arcs jumping off
     const x=z.pos,w=12;strokeAlong(z.p,x-w,x+w,BG,LW+3);
     ctx.strokeStyle=FG;ctx.lineWidth=LW*.85;ctx.lineJoin='miter';ctx.beginPath();ctx.moveTo(x-w,z.y);
