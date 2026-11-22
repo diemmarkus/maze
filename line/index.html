@@ -251,8 +251,8 @@ function gen(n){
   const flip=()=>{flat(70);flips.push({x:cx,y:cy,used:0,p:{pts:cur,ox:0,oy:0}});g=-g;flat(ri(110,150))};
   flat(380);
   // new things come in one at a time; in the level where one is new it shows up a few times
-  const INTRO={stairs:2,spikes:3,floats:4,shark:5,mover:6,crumble:7,eyes:8,ghost:9,flip:10};
-  const base={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:2.2,flip:1.3,shark:1.4,floats:1.4,mover:1.2,eyes:1.5,crumble:1.3,ghost:1},W={};
+  const INTRO={stairs:2,spikes:3,floats:4,shark:5,mover:6,sand:7,eyes:8,ghost:9,flip:10};
+  const base={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:2.2,flip:1.3,shark:1.4,floats:1.4,mover:1.2,eyes:1.5,sand:1.3,ghost:1},W={};
   for(const k in base)W[k]=n>=(INTRO[k]||1)?base[k]:0;
   const fresh=Object.keys(INTRO).find(k=>INTRO[k]===n),freshAt=[.18,.45,.72];let freshN=0;
   const pick=last=>{let tot=0;for(const k in W)if(k!==last)tot+=W[k];let r=R()*tot;for(const k in W){if(k===last)continue;if((r-=W[k])<0)return k}return 'flat'};
@@ -281,6 +281,9 @@ function gen(n){
     }
     else if(k==='ghost'){   // a ghost waiting a bit ahead, floating above the line on your side
       flat(ri(160,240));{const hx=cx-ri(10,60),hy=cy-g*ri(34,62);ghosts.push({hx,hy,x:hx,y:hy,eye:1,face:-1,still:0})}flat(ri(60,110))}
+    else if(k==='sand'&&g>0){   // a stretch of sand over a pit: it trickles all the time, slows you down, and you sink through if you stand still
+      end();const L=ri(170,260+80*d);const pl=mkPlat([[cx,cy],[cx+L,cy]],false);pl.sand={holes:[],seed:R()*99};plats.push(pl);
+      cands.push([cx+L*.6,cy-g*55]);cx+=L;cur=[[cx,cy]];flat(ri(100,150))}
     else if(k==='crumble'){   // a row of short tiles over a pit: they wobble while you stand on them and drop if you stay too long
       end();const m=3+Math.round(R()*(1+2*d));
       for(let i=0;i<m;i++){const tl=ri(44,60);const pl=mkPlat([[cx,cy],[cx+tl,cy]],false);pl.cr={t:0,fall:false,vy:0};plats.push(pl);if(i===1)cands.push([cx+tl/2,cy-g*55]);cx+=tl+5}
@@ -314,6 +317,7 @@ const SPEED=205,ACC_G=1700,ACC_A=950,G=1500,JV=545,STEP=7,SNAP=10,CL=26;
 function floorAt(p,x){
   const q=p.pts,lx=x-p.ox;
   if(lx<q[0][0]||lx>q[q.length-1][0])return null;
+  if(p.sand)for(const h of p.sand.holes)if(lx>h.a&&lx<h.b)return null;
   for(let i=0;i<q.length-1;i++){const a=q[i],b=q[i+1];if(b[0]===a[0])continue;
     if(lx>=a[0]&&lx<=b[0])return a[1]+(b[1]-a[1])*(lx-a[0])/(b[0]-a[0])+p.oy}
   return null;
@@ -323,6 +327,7 @@ function ledgeAt(x,y){const g=P.g;let b=null;for(const p of plats){if(!p.solid)c
 function wallAt(x,y){const g=P.g;for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f!==null&&g*(y-f)>STEP)return true}return false}
 
 const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0,air:0,dj:true,split:0,g:1,flipT:0};
+let sandParts=[];
 let drops=[],flips=[],sharks=[],eyes=[],ghosts=[],killTop=-400,endFlip=null;
 let curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
@@ -376,6 +381,7 @@ function respawn(){respawnEat();
   shards=[];holes=[];
   for(const p of plats)if(p.mv)p.dx=p.dy=0;
   resetGhosts();
+  for(const p of plats)if(p.sand)p.sand.holes=[];P.sink=0;sandParts=[];
   for(const p of plats)if(p.cr){p.cr.t=0;p.cr.fall=false;p.cr.vy=0;p.oy=0;p.dy=0}
   for(const f of flips)f.used=0;
   for(const k of sharks)k.rise=0;
@@ -421,6 +427,17 @@ addEventListener('keyup',e=>{const c=e.code;if(c==='ArrowLeft'||c==='KeyA')keys.
 function update(dt){
   t+=dt;
   for(const p of plats)if(p.mv){const nx=p.mv.amp*Math.sin(t*6.2832/p.mv.per+p.mv.ph);p.dx=nx-p.ox;p.ox=nx}
+  // sand: grains trickle down all the time, holes close up again
+  for(const p of plats)if(p.sand){const sd=p.sand,a=p.pts[0][0],b=p.pts[1][0],y=p.pts[0][1];
+    for(const h of sd.holes)h.t+=dt;sd.holes=sd.holes.filter(h=>h.t<2.6);
+    const n=(b-a)/100*9*dt;for(let i=0;i<n||Math.random()<n-i;i++){const x=a+Math.random()*(b-a);if(floorAt(p,x)!==null)sandParts.push({x,y:y+2,vy:20+Math.random()*30,t:0});if(i>50)break}
+    for(const h of sd.holes)if(h.t<2.2)for(let i=0;i<3;i++)sandParts.push({x:(h.a+h.b)/2+(Math.random()-.5)*(h.b-h.a)*.8,y:y,vy:40+Math.random()*60,t:0})}
+  for(const q of sandParts){q.t+=dt;q.vy+=600*dt;q.y+=q.vy*dt}sandParts=sandParts.filter(q=>q.t<.7);
+  if(state==='play'){const on=P.ground&&P.on&&P.on.sand?P.on:null;
+    if(on){const still=Math.abs(P.vx)<SPEED*.2;P.sink=Math.max(0,(P.sink||0)+(still?dt:-dt*1.5));
+      if(still&&Math.random()<dt*25*(P.sink+.2))sandParts.push({x:P.x+(Math.random()-.5)*20,y:P.y+2,vy:30+Math.random()*40,t:0});
+      if(P.sink>1.1){const lx=P.x-on.ox;on.sand.holes.push({a:lx-17,b:lx+17,t:0});P.sink=0;P.ground=false;P.on=null;P.vy=0;sfx.crack()}}
+    else P.sink=Math.max(0,(P.sink||0)-dt*2)}
   for(const p of plats)if(p.cr){const c=p.cr,prev=p.oy;
     if(!c.fall&&state==='play'&&P.ground&&P.on===p){c.t+=dt;if(c.t>.6){c.fall=true;sfx.crack();buzz(20)}}
     else if(!c.fall)c.t=Math.max(0,c.t-dt*.6);
@@ -455,7 +472,7 @@ function update(dt){
   const g=P.g;
   const dir=joy.id!==null?joyDir():keys.r-keys.l;
   if(dir!==0){P.face=dir>0?1:-1;hintMoved=true}
-  const tgt=dir*SPEED,acc=P.ground?ACC_G:ACC_A;
+  const onSand=P.ground&&P.on&&P.on.sand,tgt=dir*SPEED*(onSand?.55:1),acc=P.ground?ACC_G:ACC_A;
   P.vx+=Math.max(-acc*dt,Math.min(acc*dt,tgt-P.vx));
   if(!P.ground)P.air+=dt;
   if(P.buf>0)P.buf-=dt;if(P.coy>0)P.coy-=dt;if(P.squash>0)P.squash-=dt;if(P.flipT>0)P.flipT-=dt;
@@ -576,6 +593,13 @@ function drawBlob(){
   strokePts(pts,true);
   ctx.fillStyle=FG;ctx.beginPath();ctx.arc(cx+P.face*rx*.38,cy-g*ry*.2,1.9,0,6.2832);ctx.fill();
 }
+// sand: the line made of grains (packed tight on top, looser below), with gaps where it has given way
+function drawSand(p){
+  const a=p.pts[0][0],b=p.pts[1][0],y=p.pts[0][1],sd=p.sand;ctx.fillStyle=FG;
+  let i=0;for(let x=a;x<=b;x+=2.2,i++){if(floorAt(p,x)===null)continue;
+    const h1=Math.sin(i*12.9898+sd.seed)*43758.5453,r1=h1-Math.floor(h1),h2=Math.sin(i*78.233+sd.seed)*12345.678,r2=h2-Math.floor(h2);
+    ctx.fillRect(x-1.1,y-2+r1*1.2,2.2,2.2+r2*1.4);if(r2>.55)ctx.fillRect(x-.8+r1,y+1.4+r2*2,1.6,1.6)}
+}
 // a ghost: a dome with a wavy hem; hunting it shows its eyes and an open mouth, watched it goes shy and see-through
 function drawGhost(k){
   const sh=k.eye<.5?Math.sin(t*60)*.6:0,bob=Math.sin(t*3+k.hx)*2.5,x=k.x+sh,y=k.y+bob,f=k.face;
@@ -693,7 +717,8 @@ function drawChar(){
   if(on){
     // keep the hump off vertical bits of the line: stop at a wall, only cut the line where it runs on smoothly
     const sp=lineSpan(on,P.x,Math.ceil(len/2)+1);x0=Math.max(x0,sp.wl);x1=Math.min(x1,sp.wr);
-    base=px=>{const f=floorAt(on,Math.max(sp.el,Math.min(sp.er,px)));return f===null?P.y:f};
+    const sk=on.sand?Math.min(1,P.sink||0)*6*P.g:0;   // sinking into sand
+    base=px=>{const f=floorAt(on,Math.max(sp.el,Math.min(sp.er,px)));return (f===null?P.y:f)+sk*Math.sin(Math.PI*Math.max(0,Math.min(1,(px-x0)/(x1-x0))))};
     strokeAlong(on,Math.max(x0,sp.el),Math.min(x1,sp.er),BG,LW+3);
   }else base=()=>P.y;
   const pts=humpPts(x0,x1,base,h,P.face,sk);
@@ -745,6 +770,7 @@ function render(){
   // the line
   ctx.strokeStyle=FG;ctx.lineWidth=LW;
   for(const p of plats){const q=p.pts;if(q[q.length-1][0]+p.ox<vx0||q[0][0]+p.ox>vx1)continue;
+    if(p.sand){drawSand(p);continue}
     ctx.beginPath();q.forEach(([x,y],i)=>i?ctx.lineTo(x+p.ox,y+p.oy):ctx.moveTo(x+p.ox,y+p.oy));ctx.stroke()}
   // loose tiles: little feet at both ends hanging off the line, and a crack once they start to give
   for(const p of plats){if(!p.cr)continue;const [a,b]=p.pts,y=a[1]+p.oy;if(b[0]<vx0||a[0]>vx1)continue;
@@ -791,6 +817,7 @@ function render(){
     if(state==='win'&&P.win>.3){const k=Math.min(1,(P.win-.3)/.8),e=k*k*(3-2*k);
       ctx.fillStyle=FG;ctx.beginPath();ctx.arc(gx,gy-dh/2,8+e*(viewW+VIEW_H)*1.3,0,6.2832);ctx.fill()}}
   for(const q of pops){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-q.t/.6;ctx.beginPath();ctx.arc(q.x,q.y,q.s?2+(q.t-.3)*30:8+q.t*70,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
+  ctx.fillStyle=FG;for(const q of sandParts){if(q.x<vx0||q.x>vx1)continue;ctx.globalAlpha=1-q.t/.7;ctx.fillRect(q.x-.9,q.y-.9,1.8,1.8)}ctx.globalAlpha=1;
   ctx.strokeStyle=FG;ctx.lineWidth=LW;for(const d of drops){ctx.beginPath();ctx.ellipse(d.x,d.y,d.r*.85,d.r*(1+Math.min(.5,Math.abs(d.vy)/1600)),0,0,6.2832);ctx.stroke()}
   if(state!=='menu')drawChar();
   // screen space: joystick and first-level hints
