@@ -181,6 +181,7 @@ const sfx={
   chomp(){tone(220,55,.14,.13,0,'square');tone(110,40,.18,.1,0,'sawtooth')},
   chew(){tone(140,110,.05,.07,0,'square')},
   burp(){tone(190,90,.28,.09,0,'sawtooth');tone(95,60,.28,.06,0,'square')},
+  crack(){tone(260,70,.22,.09,0,'sawtooth');tone(520,120,.08,.05,0,'square')},
   jump2(){tone(392,1568,.13,.09);tone(1568,1568,.05,.05,.13);tone(2093,2093,.06,.04,.18)},
   land(){tone(140,70,.06,.07,0,'triangle')},
   dot(){tone(1047,1047,.06,.08);tone(1568,1568,.1,.08,.065)},
@@ -244,8 +245,8 @@ function gen(n){
   const flip=()=>{flat(70);flips.push({x:cx,y:cy,used:0,p:{pts:cur,ox:0,oy:0}});g=-g;flat(ri(110,150))};
   flat(380);
   // new things come in one at a time; in the level where one is new it shows up a few times
-  const INTRO={stairs:2,spikes:3,floats:4,shark:5,mover:6,eyes:8,flip:10};
-  const base={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:2.2,flip:1.3,shark:1.4,floats:1.4,mover:1.2,eyes:1.5},W={};
+  const INTRO={stairs:2,spikes:3,floats:4,shark:5,mover:6,crumble:7,eyes:8,flip:10};
+  const base={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:2.2,flip:1.3,shark:1.4,floats:1.4,mover:1.2,eyes:1.5,crumble:1.3},W={};
   for(const k in base)W[k]=n>=(INTRO[k]||1)?base[k]:0;
   const fresh=Object.keys(INTRO).find(k=>INTRO[k]===n),freshAt=[.18,.45,.72];let freshN=0;
   const pick=last=>{let tot=0;for(const k in W)if(k!==last)tot+=W[k];let r=R()*tot;for(const k in W){if(k===last)continue;if((r-=W[k])<0)return k}return 'flat'};
@@ -271,6 +272,11 @@ function gen(n){
       end();const m=1+(R()<.3+.4*d?1:0);let x=cx;let fy=cy;
       for(let i=0;i<m;i++){const sub=ri(58,82+22*d),pw=ri(55,85);x+=sub;fy=cy-g*ri(8,44);plats.push(mkPlat([[x,fy],[x+pw,fy]],false));cands.push([x+pw/2,fy-g*42]);x+=pw}
       x+=ri(58,80+20*d);cx=x;cy=fy+g*ri(-20,35);cur=[[cx,cy]];flat(ri(100,150));
+    }
+    else if(k==='crumble'){   // a row of short tiles over a pit: they wobble while you stand on them and drop if you stay too long
+      end();const m=3+Math.round(R()*(1+2*d));
+      for(let i=0;i<m;i++){const tl=ri(44,60);const pl=mkPlat([[cx,cy],[cx+tl,cy]],false);pl.cr={t:0,fall:false,vy:0};plats.push(pl);if(i===1)cands.push([cx+tl/2,cy-g*55]);cx+=tl+5}
+      cx+=0;cur=[[cx,cy]];flat(ri(100,150));
     }
     else if(k==='mover'){
       end();const G=ri(250,330+60*d),pw=72,c=cx+G/2,amp=G/2-pw/2-2;
@@ -360,6 +366,7 @@ function respawn(){respawnEat();
   if(falls>=3){const c=curtain;startLevel(levelN);curtain=c;touchedEarly=true;state='play';toast(T.reset);return}
   shards=[];holes=[];
   for(const p of plats)if(p.mv)p.dx=p.dy=0;
+  for(const p of plats)if(p.cr){p.cr.t=0;p.cr.fall=false;p.cr.vy=0;p.oy=0;p.dy=0}
   for(const f of flips)f.used=0;
   for(const k of sharks)k.rise=0;
   placeAt(spawn.x,spawn.y,spawn.g);camX=P.x-viewW*.38;camY=P.y-VIEW_H*(P.g>0?.6:.4);state='play';
@@ -404,6 +411,11 @@ addEventListener('keyup',e=>{const c=e.code;if(c==='ArrowLeft'||c==='KeyA')keys.
 function update(dt){
   t+=dt;
   for(const p of plats)if(p.mv){const nx=p.mv.amp*Math.sin(t*6.2832/p.mv.per+p.mv.ph);p.dx=nx-p.ox;p.ox=nx}
+  for(const p of plats)if(p.cr){const c=p.cr,prev=p.oy;
+    if(!c.fall&&state==='play'&&P.ground&&P.on===p){c.t+=dt;if(c.t>.6){c.fall=true;sfx.crack();buzz(20)}}
+    else if(!c.fall)c.t=Math.max(0,c.t-dt*.6);
+    if(c.fall){c.vy+=G*.9*dt;p.oy+=c.vy*dt}else p.oy=c.t>0?Math.sin(t*75)*Math.min(1.3,c.t*3):0;
+    p.dy=p.oy-prev}
   for(const h of holes)h.t+=dt;holes=holes.filter(h=>h.t<.5);
   for(const r of ripples)r.t+=dt;ripples=ripples.filter(r=>r.t<(r.life||.6));
   for(const s of sparks)if(s.pop>0)s.pop+=dt;
@@ -704,6 +716,10 @@ function render(){
   ctx.strokeStyle=FG;ctx.lineWidth=LW;
   for(const p of plats){const q=p.pts;if(q[q.length-1][0]+p.ox<vx0||q[0][0]+p.ox>vx1)continue;
     ctx.beginPath();q.forEach(([x,y],i)=>i?ctx.lineTo(x+p.ox,y+p.oy):ctx.moveTo(x+p.ox,y+p.oy));ctx.stroke()}
+  // loose tiles: little feet at both ends hanging off the line, and a crack once they start to give
+  for(const p of plats){if(!p.cr)continue;const [a,b]=p.pts,y=a[1]+p.oy;if(b[0]<vx0||a[0]>vx1)continue;
+    ctx.beginPath();ctx.moveTo(a[0]+1,y);ctx.lineTo(a[0]+3,y+5);ctx.moveTo(b[0]-1,y);ctx.lineTo(b[0]-3,y+5);ctx.stroke();
+    if(p.cr.t>.25){const m=(a[0]+b[0])/2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(m-3,y+2);ctx.lineTo(m,y+7);ctx.lineTo(m+3,y+3);ctx.stroke();ctx.lineWidth=LW}}
   // spikes: zig-zags cut into the line
   for(const s of spikes){if(s.x1<vx0||s.x0>vx1)continue;
     ctx.strokeStyle=BG;ctx.lineWidth=LW+3;ctx.lineCap="butt";ctx.beginPath();ctx.moveTo(s.x0,s.y);ctx.lineTo(s.x1,s.y);ctx.stroke();ctx.lineCap="round";
