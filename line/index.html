@@ -182,43 +182,161 @@ function tone(f0,f1,dur,vol,at,shape){
   g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+.004);g.gain.setValueAtTime(vol,t0+dur*.55);g.gain.exponentialRampToValueAtTime(.0008,t0+dur);
   o.connect(g).connect(a.destination);o.start(t0);o.stop(t0+dur+.03);
 }
-/* ---------- music: an original Commodore-64-style dance loop (pulse lead and arpeggio, triangle bass, noise drums) ---------- */
-const MUS={on:store.get('line.music',true)!==false,next:0,step:0,out:null,noise:null,waves:{},live:false};
-const BPM=132,SPS=60/BPM/4;   // one step = a sixteenth note
+/* ---------- music: an original 90s Italo-dance track played on a Commodore-64-style synth ----------
+   SID-like pulse waves with sweeping pulse width, a resonant-filter bass, fast chord arpeggios, noise drums and echo.
+   32 bars (about a minute), then it loops: groove – theme – breakdown, where a 4-bit talking synth says
+   "softer … slower … blobber" and the music does what it says – a riser – the drop. */
+const MUS={on:store.get('line.music',true)!==false,next:0,step:0,live:false,ac:null,out:null,echo:null,noise:null,waves:{},prev:0};
+const BPM=136,SPS=60/BPM/4,BAR=16*SPS,SONG=512;   // one step = a sixteenth note, 32 bars
 const mf=m=>440*Math.pow(2,(m-69)/12);
-// four chords, one per bar: A minor, F, C, G
-const CHORDS=[[57,60,64],[53,57,60],[48,52,55],[55,59,62]];
-// the tune (MIDI notes, 0 = rest), 16 steps per bar; written for this game
-const LEAD=[76,0,76,0,81,0,79,76,0,0,74,0,76,0,0,0, 72,0,72,0,77,0,76,72,0,0,69,0,72,0,0,0,
-            67,0,72,0,76,0,74,72,0,0,76,0,79,0,0,0, 74,0,71,0,67,0,71,74,0,0,79,0,77,76,74,0];
-function musWave(duty){if(!MUS.waves[duty]){const n=24,re=new Float32Array(n),im=new Float32Array(n);
-  for(let k=1;k<n;k++){re[k]=2/(k*Math.PI)*Math.sin(2*Math.PI*k*duty);im[k]=2/(k*Math.PI)*(1-Math.cos(2*Math.PI*k*duty))}MUS.waves[duty]=AC.createPeriodicWave(re,im)}return MUS.waves[duty]}
-function mNote(f,t0,dur,vol,kind,duty){const o=AC.createOscillator(),g=AC.createGain();
-  if(kind==='pulse')o.setPeriodicWave(musWave(duty||.25));else o.type=kind;o.frequency.setValueAtTime(f,t0);
-  g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+.005);g.gain.setValueAtTime(vol*.8,t0+dur*.5);g.gain.exponentialRampToValueAtTime(.0008,t0+dur);
-  o.connect(g).connect(MUS.out);o.start(t0);o.stop(t0+dur+.02)}
-function mNoise(t0,dur,vol,type,freq){if(!MUS.noise){const b=AC.createBuffer(1,AC.sampleRate,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;MUS.noise=b}
-  const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=MUS.noise;f.type=type;f.frequency.value=freq;
-  g.gain.setValueAtTime(vol,t0);g.gain.exponentialRampToValueAtTime(.0008,t0+dur);s.connect(f).connect(g).connect(MUS.out);s.start(t0,Math.random()*.5);s.stop(t0+dur+.02)}
-function mKick(t0){const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(150,t0);o.frequency.exponentialRampToValueAtTime(42,t0+.12);
-  g.gain.setValueAtTime(.55,t0);g.gain.exponentialRampToValueAtTime(.001,t0+.16);o.connect(g).connect(MUS.out);o.start(t0);o.stop(t0+.18)}
+// G minor – E flat – B flat – F, one chord per bar
+const CHORDS=[[55,58,62],[55,58,63],[53,58,62],[53,57,60]],ROOTS=[43,39,46,41];
+// the tune (MIDI notes, 0 = rest), 8 bars of 16 steps; written for this game
+const LEAD=[74,0,0,74,0,0,77,0,79,0,77,0,74,0,0,0, 75,0,0,75,0,0,74,0,72,0,70,0,72,0,0,0,
+            70,0,0,70,0,0,72,0,74,0,77,0,74,0,72,0, 72,0,0,72,0,0,70,0,69,0,0,0,65,0,69,0,
+            79,0,0,79,0,0,82,0,81,0,79,0,77,0,0,0, 79,0,0,79,0,0,77,0,75,0,74,0,75,0,0,0,
+            74,0,0,74,0,0,77,0,74,0,72,0,70,0,72,0, 69,0,0,72,0,0,70,0,69,0,0,0,67,0,0,0];
+const SECTION=b=>b<4?'intro':b<8?'groove':b<16?'theme':b<18?'soft':b<20?'slow':b<22?'blob':b<24?'rise':'drop';
+
+function musInit(c){
+  MUS.ac=c;MUS.waves={};MUS.noise=null;
+  const comp=c.createDynamicsCompressor();comp.threshold.value=-14;comp.knee.value=8;comp.ratio.value=4;comp.attack.value=.003;comp.release.value=.15;
+  const m=c.createGain();m.gain.value=.5;m.connect(comp).connect(c.destination);
+  MUS.out=c.createGain();MUS.out.connect(m);
+  // echo: dotted eighth, darker with every repeat
+  const e=c.createGain(),d=c.createDelay(1),fb=c.createGain(),lp=c.createBiquadFilter();
+  d.delayTime.value=SPS*3;fb.gain.value=.4;lp.type='lowpass';lp.frequency.value=2400;
+  e.connect(d);d.connect(lp);lp.connect(fb);fb.connect(d);lp.connect(m);MUS.echo=e;
+}
+// SID pulse wave with a given pulse width (cached in steps of 5 %)
+function wave(duty){duty=Math.round(duty*20)/20;if(!MUS.waves[duty]){const n=28,re=new Float32Array(n),im=new Float32Array(n);
+  for(let k=1;k<n;k++){re[k]=2/(k*Math.PI)*Math.sin(2*Math.PI*k*duty);im[k]=2/(k*Math.PI)*(1-Math.cos(2*Math.PI*k*duty))}
+  MUS.waves[duty]=MUS.ac.createPeriodicWave(re,im)}return MUS.waves[duty]}
+function voice(t0,dur,o){
+  const c=MUS.ac,os=c.createOscillator(),g=c.createGain(),f=o.f,vol=o.vol||.1,rel=o.rel||.05,att=o.att||.004;
+  if(o.type)os.type=o.type;else os.setPeriodicWave(wave(o.duty||.25));
+  os.frequency.setValueAtTime(o.f0||f,t0);if(o.f0)os.frequency.exponentialRampToValueAtTime(f,t0+(o.glide||.03));
+  if(o.vib){const l=c.createOscillator(),lg=c.createGain();l.frequency.value=o.vr||5.6;lg.gain.setValueAtTime(0,t0);lg.gain.linearRampToValueAtTime(f*o.vib,t0+Math.min(dur,.22));
+    l.connect(lg).connect(os.frequency);l.start(t0);l.stop(t0+dur+rel+.02)}
+  let n=os;
+  if(o.lp){const q=c.createBiquadFilter();q.type='lowpass';q.Q.value=o.lp[2];q.frequency.setValueAtTime(o.lp[0],t0);q.frequency.exponentialRampToValueAtTime(o.lp[1],t0+(o.lp[3]||dur));n.connect(q);n=q}
+  g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+att);g.gain.setValueAtTime(vol,t0+Math.max(att,dur));g.gain.exponentialRampToValueAtTime(.0005,t0+Math.max(att,dur)+rel);
+  n.connect(g);g.connect(MUS.out);if(o.echo){const s=c.createGain();s.gain.value=o.echo;g.connect(s);s.connect(MUS.echo)}
+  os.start(t0);os.stop(t0+dur+rel+.03);return os;
+}
+function noiseBuf(){if(!MUS.noise){const c=MUS.ac,b=c.createBuffer(1,c.sampleRate,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;MUS.noise=b}return MUS.noise}
+function noise(t0,dur,vol,type,freq,q,f1,att){
+  const c=MUS.ac,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=noiseBuf();s.loop=true;
+  f.type=type;f.Q.value=q||.7;f.frequency.setValueAtTime(freq,t0);if(f1)f.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  if(att){g.gain.setValueAtTime(.0005,t0);g.gain.exponentialRampToValueAtTime(vol,t0+att);g.gain.setValueAtTime(vol,t0+att)}else g.gain.setValueAtTime(vol,t0);
+  g.gain.exponentialRampToValueAtTime(.0005,t0+dur);
+  s.connect(f).connect(g).connect(MUS.out);s.start(t0,Math.random()*.5);s.stop(t0+dur+.03);
+}
+function kick(t0,v){const c=MUS.ac,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(160,t0);o.frequency.exponentialRampToValueAtTime(44,t0+.11);
+  g.gain.setValueAtTime(v,t0);g.gain.exponentialRampToValueAtTime(.001,t0+.2);o.connect(g).connect(MUS.out);o.start(t0);o.stop(t0+.22);noise(t0,.012,v*.25,'lowpass',3000)}
+const hat=(t0,open)=>open?noise(t0,.13,.08,'highpass',7500):noise(t0,.03,.035,'highpass',9000);
+function clap(t0){for(let k=0;k<3;k++)noise(t0+k*.011,.012,.14,'bandpass',1500,1.2);noise(t0+.033,.16,.13,'bandpass',1400,1.1)}
+function snare(t0,v){noise(t0,.11,v,'bandpass',1900,.9);voice(t0,.03,{f:200,type:'triangle',vol:v*.8,rel:.05})}
+// the C64 trick for chords: one voice running through the notes 40 times a second
+function sidChord(t0,dur,notes,vol,lp0,lp1){
+  const c=MUS.ac,o=c.createOscillator(),q=c.createBiquadFilter(),g=c.createGain();o.setPeriodicWave(wave(.3));
+  for(let k=0,t=t0;t<t0+dur+.1;k++,t+=.025)o.frequency.setValueAtTime(mf(notes[k%notes.length]),t);
+  q.type='lowpass';q.Q.value=4;q.frequency.setValueAtTime(lp0,t0);q.frequency.exponentialRampToValueAtTime(lp1||lp0,t0+dur);
+  g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+Math.min(.15,dur*.3));g.gain.setValueAtTime(vol,t0+dur*.8);g.gain.exponentialRampToValueAtTime(.0005,t0+dur+.08);
+  o.connect(q).connect(g).connect(MUS.out);o.start(t0);o.stop(t0+dur+.12);
+}
+
+/* the talking synth: a buzzing voice through three vowel filters, plus hiss for s, f and t, crushed to a few bits like a C64 sample */
+const PH={s:{h:[5200,.2]},t:{h:[3600,.3]},f:{n:[3000,.13]},
+  b:{v:[260,700,2200],a:.12},l:{v:[380,1000,2700],a:.5},w:{v:[300,650,2200],a:.45},
+  o:{v:[620,980,2550],a:1},ou:{v:[480,880,2450],a:1,to:[340,760,2350]},er:{v:[470,1300,1650],a:.9}};
+const WORDS={softer:[['s',.13],['o',.2],['f',.1],['t',.035],['er',.34]],
+             slower:[['s',.13],['l',.07],['ou',.3],['w',.06],['er',.36]],
+             blobber:[['b',.05],['l',.06],['o',.17],['b',.07],['er',.36]]};
+let crush=null;
+function say(word,t0,note,o){
+  o=o||{};const c=MUS.ac,st=o.stretch||1,ph=WORDS[word];let len=0;for(const p of ph)len+=p[1]*st;
+  const src=c.createOscillator();src.type='sawtooth';const f=mf(note);
+  src.frequency.setValueAtTime(f,t0);src.frequency.exponentialRampToValueAtTime(f*Math.pow(2,(o.drop||-3)/12),t0+len);
+  if(o.wob){const l=c.createOscillator(),lg=c.createGain();l.frequency.value=o.wob;lg.gain.value=f*.07;l.connect(lg).connect(src.frequency);l.start(t0);l.stop(t0+len+.1)}
+  const vg=c.createGain(),bp=[0,1,2].map(i=>{const q=c.createBiquadFilter(),g=c.createGain();q.type='bandpass';q.Q.value=[7,11,13][i];g.gain.value=[3.2,2.6,1.6][i];src.connect(q).connect(g).connect(vg);return q});
+  const hs=c.createBufferSource();hs.buffer=noiseBuf();hs.loop=true;
+  const hp=c.createBiquadFilter(),hg=c.createGain(),np=c.createBiquadFilter(),ng=c.createGain();hp.type='highpass';np.type='bandpass';np.Q.value=.8;np.frequency.value=3000;
+  hs.connect(hp).connect(hg);hs.connect(np).connect(ng);
+  if(!crush||crush.context!==c){crush=c.createWaveShaper();const cv=new Float32Array(1024);for(let i=0;i<1024;i++)cv[i]=Math.round((i/511.5-1)*16)/16;crush.curve=cv;
+    crush.out=c.createGain();crush.out.gain.value=.55;crush.connect(crush.out);crush.out.connect(MUS.out);const s=c.createGain();s.gain.value=.5;crush.out.connect(s);s.connect(MUS.echo)}
+  const pre=c.createGain();pre.gain.value=.9;vg.connect(pre);hg.connect(pre);ng.connect(pre);pre.connect(crush);
+  for(const g of [vg,hg,ng])g.gain.setValueAtTime(0,t0);
+  let t=t0;
+  for(const [k,d0] of ph){const p=PH[k],d=d0*st,x=Math.min(.03,d*.4);
+    vg.gain.linearRampToValueAtTime(p.v?p.a:0,t+x);hg.gain.linearRampToValueAtTime(p.h?p.h[1]:0,t+x);ng.gain.linearRampToValueAtTime(p.n?p.n[1]:0,t+x);
+    if(p.h)hp.frequency.setValueAtTime(p.h[0],t);
+    if(p.v)bp.forEach((q,i)=>{q.frequency.linearRampToValueAtTime(p.v[i],t+x);if(p.to)q.frequency.linearRampToValueAtTime(p.to[i],t+d)});
+    t+=d;vg.gain.setValueAtTime(p.v?p.a:0,t-.005);hg.gain.setValueAtTime(p.h?p.h[1]:0,t-.005);ng.gain.setValueAtTime(p.n?p.n[1]:0,t-.005)}
+  for(const g of [vg,hg,ng])g.gain.linearRampToValueAtTime(0,t+.05);
+  src.start(t0);src.stop(t+.1);hs.start(t0,Math.random()*.5);hs.stop(t+.1);
+}
+
 function musStep(i,t0){
-  const bar=(i>>4)%4,st=i%16,part=(i>>6)%2,ch=CHORDS[bar];
-  if(st%4===0)mKick(t0);
-  if(st%4===2)mNoise(t0,.09,.12,'highpass',7000);else mNoise(t0,.025,.04,'highpass',9000);
-  if(st===4||st===12)mNoise(t0,.14,.16,'bandpass',1800);
-  // bouncing off-beat bass, octave up and down
-  if(st%2===0)mNote(mf(ch[0]-12+(st%4===2?12:0)),t0,SPS*1.6,.16,'triangle');
-  // the arpeggio runs all the time, the tune on every other pass
-  mNote(mf(ch[st%3]+12),t0,SPS*.9,part?.05:.035,'pulse',.125);
-  if(part===0){const n=LEAD[i%64];if(n)mNote(mf(n),t0,SPS*1.7,.07,'pulse',.25)}
+  const b=(i>>4)%32,st=i%16,ci=b%4,ch=CHORDS[ci],root=ROOTS[ci],sec=SECTION(b),full=sec==='theme'||sec==='drop';
+  // how loud the whole band is: the voice asks for "softer", the drop brings it back
+  if(st===0){const tgt={soft:.62,slow:.62,blob:.7,rise:1}[sec]||1;MUS.out.gain.setTargetAtTime(tgt,t0,sec==='rise'?.9:.25)}
+  if(sec==='intro'||sec==='groove'||full){
+    if(st%4===0)kick(t0,sec==='drop'?.8:.62);
+    if(st%4===2)hat(t0,sec!=='intro');else if(st%2)hat(t0,false);
+    if(sec!=='intro'&&(st===4||st===12))clap(t0);
+    if(st===0&&(b===8||b===24||b===28))noise(t0,1.6,.16,'highpass',5000);   // crash
+    if(b===24&&st===0)voice(t0,.7,{f:38,f0:95,glide:.6,type:'sine',vol:.55,rel:.1});   // the drop's boom
+    // bouncing Italo bass: low – octave up – low after every beat, the filter snapping shut like on the SID
+    if(st%4===2)voice(t0,SPS*.9,{f:mf(root+12),duty:.4,vol:.15,lp:[2400,300,9,SPS*.9]});
+    else if(st%2)voice(t0,SPS*.5,{f:mf(root),duty:.45,vol:.1,lp:[900,200,6]});
+    if(st%4===2)voice(t0,SPS*.8,{f:mf(root),type:'sine',vol:.12});
+    // arpeggio
+    if(sec!=='intro')voice(t0,SPS*.7,{f:mf(ch[st%3]+(st&4?24:12)),duty:.125,vol:sec==='groove'?.03:.022,rel:.03,echo:.25});
+    // the tune, legato with SID portamento and a slow pulse-width sweep
+    if(full){const n=LEAD[(i%128)];if(n){let l=1;while(l<4&&!LEAD[(i+l)%128])l++;
+      const duty=.12+.33*(.5+.5*Math.sin(t0*.8));
+      voice(t0,SPS*l*.92,{f:mf(n),f0:MUS.prev?mf(MUS.prev):0,glide:.035,duty,vol:.075,vib:.007,rel:.08,echo:.45});
+      if(sec==='drop')voice(t0,SPS*l*.92,{f:mf(n+12),duty:.5-duty*.6,vol:.03,vib:.007,rel:.06,echo:.3});
+      MUS.prev=n}
+      // Gigi-style off-beat chord stabs in the drop
+      if(sec==='drop'&&st%4===2)sidChord(t0,SPS*.9,ch.map(x=>x+12),.05,3500,900)}
+    return;
+  }
+  // ---- breakdown ----
+  MUS.prev=0;
+  if(st===0&&sec!=='rise')sidChord(t0,BAR,ch,.08,sec==='blob'?1500:900,sec==='slow'?500:1100);
+  if(sec==='soft'){
+    if(b===16&&st===0)say('softer',t0,57,{drop:-2});
+    voice(t0,SPS*.6,{f:mf(ch[st%3]+24),duty:.125,vol:.03,rel:.03,echo:.3});
+  }
+  if(sec==='slow'){
+    if(b===18&&st===0)say('slower',t0,55,{stretch:1.8,drop:-9});
+    const every=b===18?2:4;if(st%every===0)voice(t0,SPS*every*.6,{f:mf(ch[(st/every)%3]+24),duty:.125,vol:.032,rel:.05,echo:.35});
+  }
+  if(sec==='blob'){
+    if(b===20&&st===0)say('blobber',t0,53,{wob:9,drop:-4});
+    // bubbles: a deep note with the filter blooping open
+    if(st%4===0||st===10)voice(t0,SPS*1.6,{f:mf(root),duty:.5,vol:.14,lp:[180,2200,18,SPS*1.2],rel:.08});
+  }
+  if(sec==='rise'){
+    if(b===22&&st===0){noise(t0,BAR*2-SPS*2,.16,'bandpass',300,2,9000,BAR*1.6);
+      voice(t0,BAR*2-SPS*2,{f:mf(root+36),f0:mf(root+12),glide:BAR*2-SPS*2,duty:.2,vol:.04,att:BAR,rel:.02})}
+    if(st===0)sidChord(t0,BAR,ch,.05,600,6000);
+    if(b===22?st%2===0:st<14)snare(t0,b===22?.07+st*.004:.09+st*.006);
+    if(b===23&&st%4===0&&st<12)kick(t0,.45);
+  }
 }
 function musWanted(){return MUS.on&&AC&&!document.hidden&&state!=='paused'}
+// phones put the audio to sleep now and then (a call, a notification, a long quiet moment): wake it at the next touch
+function wakeAudio(){if(AC&&AC.state!=='running'&&!document.hidden&&(MUS.on||soundOn))AC.resume().catch(()=>{})}
+for(const ev of ['pointerdown','touchstart','touchend','keydown'])document.addEventListener(ev,wakeAudio,{capture:true,passive:true});
 setInterval(()=>{
   if(!musWanted()){MUS.live=false;return}
-  if(!MUS.out){MUS.out=AC.createGain();MUS.out.gain.value=.55;MUS.out.connect(AC.destination)}
+  if(AC.state!=='running'){MUS.live=false;wakeAudio();return}
+  if(MUS.ac!==AC)musInit(AC);
   if(!MUS.live||MUS.next<AC.currentTime){MUS.next=AC.currentTime+.06;MUS.live=true}
-  while(MUS.next<AC.currentTime+.15){musStep(MUS.step,MUS.next);MUS.next+=SPS;MUS.step=(MUS.step+1)%128}
+  while(MUS.next<AC.currentTime+.2){musStep(MUS.step,MUS.next);MUS.next+=SPS;MUS.step=(MUS.step+1)%SONG}
 },25);
 const sfx={
   jump(){tone(180,760,.15,.1);tone(360,1520,.15,.03,0,'square')},
