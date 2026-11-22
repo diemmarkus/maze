@@ -37,7 +37,10 @@ Conway's Game of Life in the pixel look of Skiing. Not on the game list: tap the
 A minimal jump and run. The background is one colour, the level is a single lighter line in the same colour — and you are a piece of that line.
 
 - **Landscape:** the game always plays sideways. On Android it goes full screen and locks to landscape when you tap *Play*; on iPhone (where pages can't lock the screen) the game turns itself by 90° if the phone is held upright.
-- **Start screen** keeps it short: just the title, the level picker and *Play*. If you don't touch the screen in the first moment of a level, a ghost joystick (knob sliding left and right) and a pulsing tap button show the controls until you've used them.
+- **Start screen** keeps it short: the title, your total stars, *Play* (goes to the newest level you've reached) and *Levels*. If you don't touch the screen in the first moment of a level, a ghost joystick (knob sliding left and right) and a pulsing tap button show the controls until you've used them.
+- **Levels overview:** every level as a tile in its own colour with its best stars; the next three locked levels are shown greyed out.
+- **Stars:** up to 3 per level — one for reaching the door, one for collecting all 3 dots, one for not falling once. The result card shows them popping in and says what's missing.
+- **Three lives:** the three little humps at the top. Fall three times and the level starts over from the beginning (dots and checkpoints reset).
 - **Run:** put your left thumb anywhere on the left half and drag left or right (a ring shows the joystick; the further you drag, the faster you run).
 - **Jump:** tap with the other finger (anywhere on the right half, or anywhere while the left thumb is on the joystick). The character lifts out of the line and leaves a hole that closes again; in the air both ends of the piece swing round and meet, so it becomes a round outline — a wobbly blob. It melts back into the line when it lands.
 - **Double jump:** tap once more in the air to jump even higher — but a little drop splits off the blob and falls away (the blob is smaller until it lands, then it's whole again).

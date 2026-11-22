@@ -35,6 +35,30 @@ body{font-family:var(--font);color:var(--fg);-webkit-user-select:none;user-selec
 .logo{display:block;width:min(300px,80%);height:auto;margin:2px auto 4px}
 h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
 .card p{margin:4px 0;font-size:14px;line-height:1.4;font-weight:500}
+/* stars: an outline, filled when earned */
+.st{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round}
+.st.on{fill:currentColor}
+.stars{display:flex;justify-content:center;gap:3px}
+.big .st{width:46px;height:46px;stroke-width:1.8}
+.big .st.on{animation:pop .45s cubic-bezier(.3,1.8,.5,1) both}
+.big .st:nth-child(2){animation-delay:.25s}.big .st:nth-child(3){animation-delay:.5s}
+@keyframes pop{0%{transform:scale(0) rotate(-40deg)}100%{transform:none}}
+.total{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;letter-spacing:.1em;margin:2px 0 4px}
+.total .st{width:15px;height:15px}
+/* level overview: every level in its own colour */
+#levelsOv .card{width:min(680px,100%);display:flex;flex-direction:column}
+.grid{min-height:0;flex:1 1 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:10px;overflow-y:auto;padding:6px 4px 8px;margin:6px 0}
+.tile{font:inherit;color:var(--tf);background:var(--tb);border:2px solid var(--tf);border-radius:16px;padding:8px 2px 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px}
+.tile b{font-size:22px;line-height:1}
+.tile .st{width:13px;height:13px}
+.tile:disabled{opacity:.35;cursor:default}
+.tile.cur{box-shadow:0 0 0 3px var(--fg)}
+.tile:focus-visible{outline:2px dashed var(--fg);outline-offset:3px}
+.lives{display:flex;gap:5px}
+.lives svg{width:20px;height:12px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.lives svg.lost{opacity:.25}
+#toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);font-size:14px;font-weight:700;letter-spacing:.08em;padding:8px 16px;border:2px solid var(--fg);border-radius:999px;background:var(--bg);pointer-events:none;opacity:0;transition:opacity .3s;white-space:nowrap}
+#toast.on{opacity:1}
 .lvl{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:6px 0 2px;font-size:11px;letter-spacing:.16em;font-weight:700}
 .lv{display:flex;gap:6px;max-width:100%;overflow-x:auto;padding:3px}
 .lv button{flex:none;font:inherit;font-size:13px;letter-spacing:0;width:34px;height:34px;border-radius:50%;border:2px solid var(--fg);background:none;color:var(--fg);cursor:pointer;padding:0}
@@ -57,11 +81,12 @@ h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
   <div class="hud" id="hud" hidden>
     <span id="lvChip">LEVEL 1</span>
     <span class="dots" id="dots"><i></i><i></i><i></i></span>
-    <span class="falls" id="fallChip"></span>
+    <span class="lives" id="lives"></span>
     <button type="button" id="sndBtn" aria-label="Sound" aria-pressed="true"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M2 7h3l4-3.5v11L5 11H2Z" fill="currentColor"/><path class="wv" d="M12 6.5a3.5 3.5 0 0 1 0 5M14 4.5a6.5 6.5 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="x" d="M12 7l4 4M16 7l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     <button type="button" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.5" height="12" rx="1.5" fill="currentColor"/><rect x="8.5" y="1" width="3.5" height="12" rx="1.5" fill="currentColor"/></svg></button>
   </div>
 
+  <div id="toast" aria-live="polite"></div>
   <div class="overlay" id="startOv">
     <div class="card">
       <svg class="logo" viewBox="0 0 300 70" aria-label="THE LINE" role="img">
@@ -69,9 +94,18 @@ h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
         <path d="M6 56H128C134 56 136 45 145 45C153 45 155 56 161 56H200M222 56H294" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
         <circle cx="152" cy="49.5" r="1.8" fill="var(--bg)"/>
       </svg>
-      <div class="lvl" id="lvlRow"><span data-i18n="level">LEVEL</span><div class="lv" id="lv" role="group"></div></div>
-      <div class="btns"><button type="button" class="btn" id="playBtn" data-i18n="play">SPIELEN</button></div>
+      <div class="total" id="totalStars"></div>
+      <div class="btns"><button type="button" class="btn" id="playBtn" data-i18n="play">SPIELEN</button><button type="button" class="btn alt" id="levelsBtn" data-i18n="levels">LEVELS</button></div>
       <a class="home" href="../" data-i18n="home">← ALLE SPIELE</a>
+    </div>
+  </div>
+
+  <div class="overlay" id="levelsOv" hidden>
+    <div class="card">
+      <h1 data-i18n="levels">LEVELS</h1>
+      <div class="total" id="totalStars2"></div>
+      <div class="grid" id="grid"></div>
+      <div class="btns"><button type="button" class="btn alt" id="backBtn" data-i18n="back">ZURÜCK</button></div>
     </div>
   </div>
 
@@ -79,20 +113,21 @@ h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
     <div class="card">
       <h1 data-i18n="paused">PAUSE</h1>
       <div class="btns"><button type="button" class="btn" id="resumeBtn" data-i18n="resume">WEITER</button><button type="button" class="btn alt" id="restartBtn" data-i18n="restart">NEU STARTEN</button></div>
-      <div class="btns"><button type="button" class="btn alt" id="menuBtn" data-i18n="menu">MENÜ</button></div>
+      <div class="btns"><button type="button" class="btn alt" id="menuBtn" data-i18n="menu">MENÜ</button><button type="button" class="btn alt" id="levelsBtn2" data-i18n="levels">LEVELS</button></div>
     </div>
   </div>
 
   <div class="overlay" id="doneOv" hidden>
     <div class="card">
       <h1 id="doneTitle">LEVEL 1</h1>
-      <p data-i18n="done"></p>
+      <div class="stars big" id="doneStars"><svg class="st" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"/></svg><svg class="st" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"/></svg><svg class="st" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"/></svg></div>
+      <p id="doneWhy"></p>
       <div class="stats">
         <div><span data-i18n="dotsL">PUNKTE</span><div class="dots" id="doneDots"><i></i><i></i><i></i></div></div>
         <div><span data-i18n="time">ZEIT</span><b id="doneTime">0:00</b></div>
         <div><span data-i18n="falls">STÜRZE</span><b id="doneFalls">0</b></div>
       </div>
-      <div class="btns"><button type="button" class="btn" id="nextBtn" data-i18n="next">WEITER</button><button type="button" class="btn alt" id="againBtn" data-i18n="again">NOCHMAL</button></div>
+      <div class="btns"><button type="button" class="btn" id="nextBtn" data-i18n="next">WEITER</button><button type="button" class="btn alt" id="againBtn" data-i18n="again">NOCHMAL</button><button type="button" class="btn alt" id="levelsBtn3" data-i18n="levels">LEVELS</button></div>
       <a class="home" href="../" data-i18n="home">← ALLE SPIELE</a>
     </div>
   </div>
@@ -103,12 +138,12 @@ const $=id=>document.getElementById(id);
 
 /* ---------- languages (shared with the other games) ---------- */
 const LANG={
-  de:{level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',fall:'✕'},
-  en:{level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',fall:'✕'},
-  fr:{level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',fall:'✕'},
-  es:{level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',fall:'✕'},
-  it:{level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',fall:'✕'},
-  pt:{level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',fall:'✕'}
+  de:{levels:'LEVELS',back:'ZURÜCK',reset:'Dreimal gestürzt – das Level beginnt von vorn',s3:'Alle Punkte, kein Sturz!',sDots:'Sammle alle 3 Punkte',sFalls:'Schaff es ohne Sturz',level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',fall:'✕'},
+  en:{levels:'LEVELS',back:'BACK',reset:'Three falls – the level starts over',s3:'All dots, no falls!',sDots:'Collect all 3 dots',sFalls:'Make it without a fall',level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',fall:'✕'},
+  fr:{levels:'NIVEAUX',back:'RETOUR',reset:'Trois chutes – le niveau recommence',s3:'Tous les points, aucune chute !',sDots:'Ramasse les 3 points',sFalls:'Réussis sans tomber',level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',fall:'✕'},
+  es:{levels:'NIVELES',back:'VOLVER',reset:'Tres caídas: el nivel empieza de nuevo',s3:'¡Todos los puntos, sin caídas!',sDots:'Recoge los 3 puntos',sFalls:'Hazlo sin caerte',level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',fall:'✕'},
+  it:{levels:'LIVELLI',back:'INDIETRO',reset:'Tre cadute: il livello ricomincia',s3:'Tutti i punti, nessuna caduta!',sDots:'Raccogli tutti e 3 i punti',sFalls:'Fallo senza cadere',level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',fall:'✕'},
+  pt:{levels:'NÍVEIS',back:'VOLTAR',reset:'Três quedas: o nível recomeça',s3:'Todos os pontos, sem quedas!',sDots:'Pegue os 3 pontos',sFalls:'Consiga sem cair',level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',fall:'✕'}
 };
 let lang='de',T=LANG.de;
 function setLang(k){lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.lang=lang;
@@ -117,7 +152,9 @@ function setLang(k){lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.la
 /* ---------- storage ---------- */
 const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(_){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}}};
 let unlocked=Math.max(1,store.get('line.unlocked',1)|0);
-let bestDots=store.get('line.dots',{});
+let bestDots=store.get('line.dots',{}),bestStars=store.get('line.stars',{});
+const STAR='<svg class="st" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8Z"/></svg>';
+const starsHtml=n=>[0,1,2].map(i=>STAR.replace('class="st"','class="st'+(i<n?' on':'')+'"')).join('');
 
 /* ---------- sound: Commodore-64-style blips (pulse wave like the SID chip) ---------- */
 let AC=null,PW=null,soundOn=store.get('line.sound',true)!==false;
@@ -316,6 +353,7 @@ function flipNow(x,y,f){
 }
 function respawnEat(){P.eat=null}
 function respawn(){respawnEat();
+  if(falls>=3){const c=curtain;startLevel(levelN);curtain=c;touchedEarly=true;state='play';toast(T.reset);return}
   shards=[];holes=[];
   for(const p of plats)if(p.mv)p.dx=p.dy=0;
   for(const f of flips)f.used=0;
@@ -772,21 +810,29 @@ function frame(now){
 const startOv=$('startOv'),pauseOv=$('pauseOv'),doneOv=$('doneOv'),hud=$('hud');
 let sel=Math.min(unlocked,store.get('line.last',unlocked)|0||1);
 function fmt(s){s=Math.floor(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+const LIFE='<svg viewBox="0 0 20 12"><path d="M1 10h4c2 0 3-7 5-7s3 7 5 7h4"/></svg>';
 function updateHud(){
   $('lvChip').textContent=T.level+' '+levelN;
   [...$('dots').children].forEach((el,i)=>el.classList.toggle('on',!!(sparks[i]&&sparks[i].got)));
-  $('fallChip').textContent=falls?T.fall+' '+falls:'';
+  $('lives').innerHTML=[0,1,2].map(i=>LIFE.replace('<svg','<svg class="'+(i<3-falls?'':'lost')+'"')).join('');
 }
-function buildLevels(){
-  const box=$('lv');box.innerHTML='';
-  $('lvlRow').hidden=unlocked<2;
-  for(let i=1;i<=unlocked;i++){const b=document.createElement('button');b.type='button';b.textContent=i;b.setAttribute('aria-pressed',i===sel);
-    b.onclick=()=>{sel=i;buildLevels();preview()};box.append(b)}
-  const on=box.querySelector('[aria-pressed="true"]');if(on)box.scrollLeft=on.offsetLeft-box.clientWidth/2;
+function totalStars(){let s=0;for(const k in bestStars)s+=bestStars[k];return s}
+function paintTotals(){const h=STAR.replace('class="st"','class="st on"')+' '+totalStars()+' / '+unlocked*3;$('totalStars').innerHTML=h;$('totalStars2').innerHTML=h}
+function levelColours(n){const h=(200+(n-1)*47)%360;return[hslHex(h,36,19),hslHex(h,72,77)]}
+function showLevels(){
+  state='menu';hud.hidden=true;startOv.hidden=pauseOv.hidden=doneOv.hidden=true;$('levelsOv').hidden=false;
+  setTheme(levelN||1);paintTotals();
+  const grid=$('grid');grid.innerHTML='';
+  for(let i=1;i<=unlocked+3;i++){const b=document.createElement('button');b.type='button';b.className='tile'+(i===unlocked?' cur':'');
+    const [bg,fg]=levelColours(i);b.style.setProperty('--tb',bg);b.style.setProperty('--tf',fg);
+    b.innerHTML='<b>'+i+'</b><span class="stars">'+starsHtml(bestStars[i]||0)+'</span>';
+    if(i>unlocked)b.disabled=true;else b.onclick=()=>{$('levelsOv').hidden=true;play(i)};grid.append(b)}
+  const cur=grid.querySelector('.cur');if(cur)cur.scrollIntoView({block:'center'});
 }
 function preview(){setTheme(sel);gen(sel);levelN=sel;camX=-viewW*.3;camY=-VIEW_H*.6;t=0}
-function showMenu(){state='menu';hud.hidden=true;pauseOv.hidden=doneOv.hidden=true;startOv.hidden=false;buildLevels();preview()}
-function play(n){goLandscape();audio();store.set('line.last',n);startOv.hidden=doneOv.hidden=pauseOv.hidden=true;hud.hidden=false;joy.id=null;startLevel(n);state='play';lastT=performance.now();accT=0}
+function showMenu(){state='menu';hud.hidden=true;pauseOv.hidden=doneOv.hidden=true;$('levelsOv').hidden=true;startOv.hidden=false;sel=unlocked;paintTotals();preview()}
+function play(n){goLandscape();audio();store.set('line.last',n);startOv.hidden=doneOv.hidden=pauseOv.hidden=true;$('levelsOv').hidden=true;hud.hidden=false;joy.id=null;startLevel(n);state='play';lastT=performance.now();accT=0}
+let toastT=0;function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2600)}
 function pause(){if(state!=='play'&&state!=='dead')return;state='paused';joy.id=null;pauseOv.hidden=false}
 function resume(){pauseOv.hidden=true;state='play';lastT=performance.now();accT=0}
 function levelDone(){
@@ -796,12 +842,19 @@ function levelDone(){
   const got=sparks.filter(s=>s.got).length;
   if(levelN+1>unlocked){unlocked=levelN+1;store.set('line.unlocked',unlocked)}
   if(got>(bestDots[levelN]||0)){bestDots[levelN]=got;store.set('line.dots',bestDots)}
+  // stars: one for making it, one for all three dots, one for not falling once
+  const stars=1+(got===3?1:0)+(falls===0?1:0);
+  if(stars>(bestStars[levelN]||0)){bestStars[levelN]=stars;store.set('line.stars',bestStars)}
+  $('doneStars').innerHTML=starsHtml(stars);
+  $('doneWhy').textContent=stars===3?T.s3:[got<3?T.sDots:'',falls>0?T.sFalls:''].filter(Boolean).join(' · ');
   $('doneTitle').textContent=T.level+' '+levelN;
   [...$('doneDots').children].forEach((el,i)=>el.classList.toggle('on',i<got));
   $('doneTime').textContent=fmt(lvTime);$('doneFalls').textContent=falls;
   hud.hidden=true;doneOv.hidden=false;$('nextBtn').focus({preventScroll:true});
 }
-$('playBtn').onclick=()=>play(sel);
+$('playBtn').onclick=()=>play(unlocked);
+$('levelsBtn').onclick=$('levelsBtn2').onclick=$('levelsBtn3').onclick=showLevels;
+$('backBtn').onclick=showMenu;
 $('pauseBtn').onclick=pause;
 function paintSnd(){$('sndBtn').setAttribute('aria-pressed',soundOn)}
 $('sndBtn').onclick=()=>{soundOn=!soundOn;store.set('line.sound',soundOn);paintSnd();if(soundOn)sfx.dot()};
