@@ -806,7 +806,7 @@ function update(dt){
   }else{
     const py=P.y;P.vy+=g*G*dt;if(g*P.vy>1100)P.vy=g*1100;P.y+=P.vy*dt;
     if(g*P.vy>=0){let best=null;
-      for(const p of plats){const f=floorAt(p,P.x);if(f===null)continue;if(g*(py-(f-p.dy))>=-STEP&&g*(f-P.y)<=0&&(!best||g*f<g*best.y))best={y:f,p}}
+      for(const p of plats){const f=floorAt(p,P.x);if(f===null)continue;if(g*(py-(f-p.dy))<=STEP&&g*(f-P.y)<=0&&(!best||g*f<g*best.y))best={y:f,p}}
       if(best){P.y=best.y;P.on=best.p;P.ground=true;P.squash=.18;P.dj=true;P.split=0;if(g*P.vy>250){sfx.land();ripples.push({p:best.p,x:P.x-best.p.ox,t:0,g,a:Math.min(5,g*P.vy/160)})}P.vy=0}}
   }
   // into the water?
@@ -932,7 +932,8 @@ function drawSand(p){
   const a=p.pts[0][0]+p.ox,b=p.pts[1][0]+p.ox,y=p.pts[0][1],sd=p.sand;ctx.fillStyle=FG;
   let i=0;for(let x=a;x<=b;x+=2.2,i++){if(floorAt(p,x)===null)continue;
     const h1=Math.sin(i*12.9898+sd.seed)*43758.5453,r1=h1-Math.floor(h1),h2=Math.sin(i*78.233+sd.seed)*12345.678,r2=h2-Math.floor(h2);
-    ctx.fillRect(x-1.1,y-2+r1*1.2,2.2,2.2+r2*1.4);if(r2>.55)ctx.fillRect(x-.8+r1,y+1.4+r2*2,1.6,1.6)}
+    // a thick packed layer at the line (about as thick as the line), looser grains hanging below it
+    ctx.fillRect(x-1.2,y-2.6+r1*1.0,2.4,4.6+r2*1.2);if(r2>.45)ctx.fillRect(x-.9+r1,y+2.4+r2*2,1.8,1.8);if(r1>.7)ctx.fillRect(x-.7,y+5+r2*3,1.4,1.4)}
 }
 // a ghost: a dome with a wavy hem; hunting it shows its eyes and an open mouth, watched it goes shy and see-through
 function drawGhost(k){
