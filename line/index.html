@@ -347,6 +347,8 @@ const sfx={
   chew(){tone(140,110,.05,.07,0,'square')},
   burp(){tone(190,90,.28,.09,0,'sawtooth');tone(95,60,.28,.06,0,'square')},
   crack(){tone(260,70,.22,.09,0,'sawtooth');tone(520,120,.08,.05,0,'square')},
+  swim(){tone(330,620,.07,.05,0,'triangle')},
+  splash(){tone(1200,180,.18,.05,0,'sawtooth');tone(600,120,.12,.04,0,'square')},
   jump2(){tone(392,1568,.13,.09);tone(1568,1568,.05,.05,.13);tone(2093,2093,.06,.04,.18)},
   land(){tone(140,70,.06,.07,0,'triangle')},
   dot(){tone(1047,1047,.06,.08);tone(1568,1568,.1,.08,.065)},
@@ -402,7 +404,7 @@ function gen(n){
   const R=rng(n*7919+13),ri=(a,b)=>a+R()*(b-a);
   const d=Math.min(1,(n-1)/16);
   const target=Math.min(7200,1900+n*380);
-  plats=[];spikes=[];sparks=[];cps=[];flips=[];sharks=[];eyes=[];ghosts=[];
+  plats=[];spikes=[];sparks=[];cps=[];flips=[];sharks=[];eyes=[];ghosts=[];pools=[];
   let cx=0,cy=0,cur=[[-500,0]],g=1;   // g: which side of the line you're on (1 = on top, -1 = underneath)
   const cands=[],flats=[];
   const end=()=>{if(cur.length>1)plats.push(mkPlat(cur,true))};
@@ -410,8 +412,8 @@ function gen(n){
   const flip=()=>{flat(70);flips.push({x:cx,y:cy,used:0,p:{pts:cur,ox:0,oy:0}});g=-g;flat(ri(110,150))};
   flat(380);
   // new things come in one at a time; in the level where one is new it shows up a few times
-  const INTRO={stairs:2,spikes:3,floats:4,shark:5,mover:6,sand:7,eyes:8,ghost:9,flip:10};
-  const base={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:2.2,flip:1.3,shark:1.4,floats:1.4,mover:1.2,eyes:1.5,sand:1.3,ghost:1},W={};
+  const INTRO={stairs:2,spikes:3,floats:4,shark:5,mover:6,sand:7,eyes:8,ghost:9,flip:10,water:11};
+  const base={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:2.2,flip:1.3,shark:1.4,floats:1.4,mover:1.2,eyes:1.5,sand:1.3,ghost:1,water:1.2},W={};
   for(const k in base)W[k]=n>=(INTRO[k]||1)?base[k]:0;
   const fresh=Object.keys(INTRO).find(k=>INTRO[k]===n),freshAt=[.18,.45,.72];let freshN=0;
   const pick=last=>{let tot=0;for(const k in W)if(k!==last)tot+=W[k];let r=R()*tot;for(const k in W){if(k===last)continue;if((r-=W[k])<0)return k}return 'flat'};
@@ -440,6 +442,8 @@ function gen(n){
     }
     else if(k==='ghost'){   // a ghost waiting a bit ahead, floating above the line on your side
       flat(ri(160,240));{const hx=cx-ri(10,60),hy=cy-g*ri(34,62);ghosts.push({hx,hy,x:hx,y:hy,eye:1,face:-1,still:0})}flat(ri(60,110))}
+    else if(k==='water'&&g>0){   // a pool: swim by tapping, stop tapping and you sink and drown; a dot waits under water
+      end();const L=ri(140,230+60*d);pools.push({x0:cx,x1:cx+L,y:cy,ph:R()*6});cands.push([cx+L*.5,cy+38]);cx+=L;cur=[[cx,cy]];flat(ri(100,150))}
     else if(k==='sand'&&g>0){   // a stretch of sand over a pit: it trickles all the time, slows you down, and you sink through if you stand still
       end();const L=ri(170,260+80*d);const pl=mkPlat([[cx,cy],[cx+L,cy]],false);pl.sand={holes:[],seed:R()*99};plats.push(pl);
       cands.push([cx+L*.6,cy-g*55]);cx+=L;cur=[[cx,cy]];flat(ri(100,150))}
@@ -492,6 +496,7 @@ const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:
 let sandParts=[];
 const START={x:-500,y:0,armed:true};
 let secret=null,winDoor=null;
+let pools=[],bubbles=[];
 let drops=[],flips=[],sharks=[],eyes=[],ghosts=[],killTop=-400,endFlip=null;
 let curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
@@ -512,7 +517,7 @@ function die(){
   const g=P.g,fell=P.y>killY||P.y<killTop;
   // three ways to go: melt into the line (and shake it with three ripples), splash at the screen edge, or burst in the air
   let line=null;if(!fell)for(const p of plats){const f=floorAt(p,P.x);if(f!==null&&Math.abs(f-P.y)<=30&&(!line||Math.abs(f-P.y)<Math.abs(line.f-P.y)))line={p,f}}
-  P.kind=P.eat?'eaten':fell?'fall':line?'line':'air';P.vx=0;P.ax=P.x;P.ay=P.y;
+  P.kind=P.eat?'eaten':P.water?'drown':fell?'fall':line?'line':'air';P.vx=0;P.ax=P.x;P.ay=P.y;
   if(P.kind==='line'){P.lp=line.p;P.lx=P.x-line.p.ox;P.dy0=line.f;P.rq=[0,.2,.4]}
   else if(P.kind==='fall'){
     const ye=g>0?camY+VIEW_H+4:camY-4;P.dx0=P.x;P.dy0=ye;
@@ -544,7 +549,7 @@ function respawn(){respawnEat();
   if(falls>=3){const c=curtain;startLevel(levelN);curtain=c;touchedEarly=true;state='play';toast(T.reset);return}
   shards=[];holes=[];
   for(const p of plats)if(p.mv)p.dx=p.dy=0;
-  resetGhosts();
+  resetGhosts();P.water=null;bubbles=[];
   for(const p of plats)if(p.sand)p.sand.holes=[];P.sink=0;sandParts=[];
   for(const p of plats)if(p.cr){p.cr.t=0;p.cr.fall=false;p.cr.vy=0;p.oy=0;p.dy=0}
   for(const f of flips)f.used=0;
@@ -596,6 +601,7 @@ function update(dt){
     for(const h of sd.holes)h.t+=dt;sd.holes=sd.holes.filter(h=>h.t<2.6);
     const n=(b-a)/100*9*dt;for(let i=0;i<n||Math.random()<n-i;i++){const x=a+Math.random()*(b-a);if(floorAt(p,x)!==null)sandParts.push({x,y:y+2,vy:20+Math.random()*30,t:0});if(i>50)break}
     for(const h of sd.holes)if(h.t<2.2)for(let i=0;i<3;i++)sandParts.push({x:p.ox+(h.a+h.b)/2+(Math.random()-.5)*(h.b-h.a)*.8,y:y,vy:40+Math.random()*60,t:0})}
+  for(const b of bubbles){b.t+=dt;b.y-=(28+b.r*8)*dt;b.x+=Math.sin(b.t*9+b.r)*12*dt}bubbles=bubbles.filter(b=>b.y>b.w.y+1&&b.t<3);
   for(const q of sandParts){q.t+=dt;q.vy+=600*dt;q.y+=q.vy*dt}sandParts=sandParts.filter(q=>q.t<.7);
   if(state==='play'){const on=P.ground&&P.on&&P.on.sand?P.on:null;
     if(on){const still=Math.abs(P.vx)<SPEED*.2;P.sink=Math.max(0,(P.sink||0)+(still?dt:-dt*1.5));
@@ -637,7 +643,7 @@ function update(dt){
   const g=P.g;
   const dir=joy.id!==null?joyDir():keys.r-keys.l;
   if(dir!==0){P.face=dir>0?1:-1;hintMoved=true}
-  const onSand=P.ground&&P.on&&P.on.sand,tgt=dir*SPEED*(onSand?.55:1),acc=P.ground?ACC_G:ACC_A;
+  const onSand=P.ground&&P.on&&P.on.sand,tgt=dir*SPEED*(onSand?.55:P.water?.42:1),acc=P.ground?ACC_G:ACC_A;
   P.vx+=Math.max(-acc*dt,Math.min(acc*dt,tgt-P.vx));
   if(!P.ground)P.air+=dt;
   if(P.buf>0)P.buf-=dt;if(P.coy>0)P.coy-=dt;if(P.squash>0)P.squash-=dt;if(P.flipT>0)P.flipT-=dt;
@@ -655,14 +661,24 @@ function update(dt){
     P.walk+=Math.abs(P.vx)*dt*.016;   // about three steps a second at full speed
     const s=support(P.x,P.y);
     if(s){P.y=s.y;P.on=s.p}else{P.ground=false;P.on=null;P.coy=.1;P.vy=0}
+  }else if(P.water){
+    // swimming: you slowly sink; every tap is a stroke upwards, a tap right at the surface jumps you out
+    const W=P.water;P.vy+=G*.16*dt;if(P.vy>70)P.vy=70;P.y+=P.vy*dt;P.air=1;P.dj=true;P.split=0;
+    if(Math.random()<dt*3)bubbles.push({x:P.x+(Math.random()-.5)*8,y:P.y-12,r:1.2+Math.random()*1.6,t:0,w:W});
+    if(P.y<W.y)P.water=null;   // back above the surface
   }else{
     const py=P.y;P.vy+=g*G*dt;if(g*P.vy>1100)P.vy=g*1100;P.y+=P.vy*dt;
     if(g*P.vy>=0){let best=null;
       for(const p of plats){const f=floorAt(p,P.x);if(f===null)continue;if(g*(py-(f-p.dy))>=-STEP&&g*(f-P.y)<=0&&(!best||g*f<g*best.y))best={y:f,p}}
       if(best){P.y=best.y;P.on=best.p;P.ground=true;P.squash=.18;P.dj=true;P.split=0;if(g*P.vy>250){sfx.land();ripples.push({p:best.p,x:P.x-best.p.ox,t:0,g,a:Math.min(5,g*P.vy/160)})}P.vy=0}}
   }
+  // into the water?
+  if(!P.ground&&!P.water&&g>0)for(const W of pools)if(P.x>W.x0&&P.x<W.x1&&P.y>W.y){P.water=W;P.vy=Math.min(P.vy,160)*.35;pops.push({x:P.x,y:W.y,t:0});
+    for(let i=0;i<6;i++)drops.push({x:P.x+(Math.random()-.5)*10,y:W.y-3,vx:(Math.random()-.5)*160,vy:-160-Math.random()*160,r:2+Math.random()*1.5,t:0,g:1});sfx.splash();break}
+  if(P.buf>0&&P.water){const depth=P.y-P.water.y;P.buf=0;
+    if(depth<12){P.vy=-JV*.9;P.water=null;P.air=0;sfx.jump()}else{P.vy=-235;sfx.swim();for(let i=0;i<3;i++)bubbles.push({x:P.x+(Math.random()-.5)*12,y:P.y-8,r:1+Math.random()*2,t:0,w:P.water})}}
   // jump: the piece lifts out of the line and leaves a hole that closes again
-  if(P.buf>0&&(P.ground||P.coy>0)){
+  else if(P.buf>0&&(P.ground||P.coy>0)){
     if(P.ground&&P.on){const sp=lineSpan(P.on,P.x,CL/2+1);holes.push({p:P.on,x:P.x-P.on.ox,l:sp.el-P.on.ox,r:sp.er-P.on.ox,t:0})}
     if(P.on)ripples.push({p:P.on,x:P.x-P.on.ox,t:0,g,a:2.5});
     P.vy=-g*JV;P.ground=false;P.on=null;P.coy=0;P.buf=0;P.air=0;sfx.jump();
@@ -673,6 +689,7 @@ function update(dt){
   }
   for(const d of drops){d.t+=dt;d.vy+=d.g*G*dt;const py=d.y;d.x+=d.vx*dt;d.y+=d.vy*dt;
     for(const p of plats){const f=floorAt(p,d.x);if(f!==null&&d.g*(py-f)<=0&&d.g*(d.y-f)>=0){d.dead=1;pops.push({x:d.x,y:f,t:.3,s:1});break}}
+    for(const W of pools)if(d.x>W.x0&&d.x<W.x1&&d.y>W.y&&d.vy>0)d.dead=1;   // splashes vanish back into the water
     if(d.y>killY||d.y<killTop)d.dead=1}
   drops=drops.filter(d=>!d.dead);
   // gravity switch: walk through it and you're on the other side of the line
@@ -705,8 +722,10 @@ function update(dt){
     if(dist<14){die();return}}
   // floating eyes: touch them and they turn into a monster that eats you
   for(const e of eyes){const [ex,ey]=eyePos(e);if(Math.hypot(P.x-ex,P.y-P.g*9-ey)<16){P.eat=e;P.ex=ex;P.ey=ey;die();return}}
+  // under water too long, too deep: drowned
+  if(P.water&&P.y-P.water.y>74){die();return}
   // fell below the line: gone (no climbing back up from underneath with the double jump)
-  if(!P.ground){let low=null;for(const p of plats){if(p.x1<P.x-320||p.x0>P.x+320)continue;const v=P.g>0?p.lo:p.hi;if(low===null||P.g*(v-low)>0)low=v}
+  if(!P.ground&&!P.water){let low=null;for(const p of plats){if(p.x1<P.x-320||p.x0>P.x+320)continue;const v=P.g>0?p.lo:p.hi;if(low===null||P.g*(v-low)>0)low=v}
     if(low!==null&&P.g*(P.y-low)>110){die();return}}
   if(P.y>killY||P.y<killTop){die();return}
   for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-P.g*9-s.y)<20){s.got=true;s.pop=.001;buzz(12);sfx.dot();updateHud()}
@@ -846,6 +865,10 @@ function drawChar(){
   if(state==='dead'){
     const d=P.dead;
     if(P.kind==='eaten'){drawMonster(d);return}
+    if(P.kind==='drown'){   // sinks away, the last bubbles go up
+      const y=P.ay+d*28,a=Math.max(0,1-d/1.1);ctx.globalAlpha=a;ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.ellipse(P.ax,y-8,7.5,8.5,0,0,6.2832);ctx.stroke();
+      ctx.lineWidth=2;for(let i=0;i<4;i++){const by=P.ay-12-((d*60+i*14)%60);if(by>P.water.y){ctx.beginPath();ctx.arc(P.ax+Math.sin(d*8+i)*4,by,1.5+i*.5,0,6.2832);ctx.stroke()}}
+      ctx.globalAlpha=1;return}
     if(P.kind==='line'){   // the hump sinks back into the line and is gone
       const k=Math.min(1,d/.14);if(k>=1)return;const p=P.lp,x=P.lx+p.ox,len=CL*(1+k*.6),h=P.g*9*(1-k)*(1-k);
       strokeAlong(p,x-len/2,x+len/2,BG,LW+3);const pts=humpPts(x-len/2,x+len/2,px=>{const f=floorAt(p,px);return f===null?P.dy0:f},h,P.face,.85);
@@ -960,6 +983,11 @@ function render(){
   if(endFlip&&endFlip.x>vx0&&endFlip.x<vx1){const f=endFlip,r=5+.6*Math.sin(t*4);   // the line ends in a little ring
     ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.arc(f.x+r,f.y,r,0,6.2832);ctx.stroke()}
   for(const k of sharks)if(k.x1>vx0&&k.x0<vx1)drawShark(k);
+  for(const W of pools){if(W.x1<vx0||W.x0>vx1)continue;
+    const wave=x=>W.y+1.6*Math.sin(x*.09+t*3+W.ph)*Math.min(1,(x-W.x0)/10,(W.x1-x)/10);
+    ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();for(let x=W.x0;x<=W.x1;x+=3)x===W.x0?ctx.moveTo(x,wave(x)):ctx.lineTo(x,wave(x));ctx.lineTo(W.x1,W.y);ctx.stroke();
+    ctx.lineWidth=2;for(const [dd,al] of[[26,.28],[52,.16],[78,.08]]){ctx.globalAlpha=al;ctx.beginPath();for(let x=W.x0+8;x<=W.x1-8;x+=4){const y=W.y+dd+1.5*Math.sin(x*.07-t*2+dd);x===W.x0+8?ctx.moveTo(x,y):ctx.lineTo(x,y)}ctx.stroke()}ctx.globalAlpha=1}
+  ctx.strokeStyle=FG;ctx.lineWidth=1.6;for(const b of bubbles){ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.2832);ctx.stroke()}
   for(const k of ghosts){if(k.x<vx0-30||k.x>vx1+30)continue;drawGhost(k)}
   for(const e of eyes){if(state==='dead'&&P.kind==='eaten'&&P.eat===e)continue;const [ex,ey]=eyePos(e);if(ex<vx0||ex>vx1)continue;
     drawEyes(ex,ey,e.g,1,[P.x,P.y-P.g*9],((t+e.blink)%4.1)<.12?1:0)}
