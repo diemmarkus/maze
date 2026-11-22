@@ -243,7 +243,7 @@ function gen(n){
   const R=rng(n*7919+13),ri=(a,b)=>a+R()*(b-a);
   const d=Math.min(1,(n-1)/16);
   const target=Math.min(7200,1900+n*380);
-  plats=[];spikes=[];sparks=[];cps=[];flips=[];sharks=[];eyes=[];
+  plats=[];spikes=[];sparks=[];cps=[];flips=[];sharks=[];eyes=[];ghosts=[];
   let cx=0,cy=0,cur=[[-500,0]],g=1;   // g: which side of the line you're on (1 = on top, -1 = underneath)
   const cands=[],flats=[];
   const end=()=>{if(cur.length>1)plats.push(mkPlat(cur,true))};
@@ -251,8 +251,8 @@ function gen(n){
   const flip=()=>{flat(70);flips.push({x:cx,y:cy,used:0,p:{pts:cur,ox:0,oy:0}});g=-g;flat(ri(110,150))};
   flat(380);
   // new things come in one at a time; in the level where one is new it shows up a few times
-  const INTRO={stairs:2,spikes:3,floats:4,shark:5,mover:6,crumble:7,eyes:8,flip:10};
-  const base={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:2.2,flip:1.3,shark:1.4,floats:1.4,mover:1.2,eyes:1.5,crumble:1.3},W={};
+  const INTRO={stairs:2,spikes:3,floats:4,shark:5,mover:6,crumble:7,eyes:8,ghost:9,flip:10};
+  const base={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:2.2,flip:1.3,shark:1.4,floats:1.4,mover:1.2,eyes:1.5,crumble:1.3,ghost:1},W={};
   for(const k in base)W[k]=n>=(INTRO[k]||1)?base[k]:0;
   const fresh=Object.keys(INTRO).find(k=>INTRO[k]===n),freshAt=[.18,.45,.72];let freshN=0;
   const pick=last=>{let tot=0;for(const k in W)if(k!==last)tot+=W[k];let r=R()*tot;for(const k in W){if(k===last)continue;if((r-=W[k])<0)return k}return 'flat'};
@@ -279,6 +279,8 @@ function gen(n){
       for(let i=0;i<m;i++){const sub=ri(58,82+22*d),pw=ri(55,85);x+=sub;fy=cy-g*ri(8,44);plats.push(mkPlat([[x,fy],[x+pw,fy]],false));cands.push([x+pw/2,fy-g*42]);x+=pw}
       x+=ri(58,80+20*d);cx=x;cy=fy+g*ri(-20,35);cur=[[cx,cy]];flat(ri(100,150));
     }
+    else if(k==='ghost'){   // a ghost waiting a bit ahead, floating above the line on your side
+      flat(ri(160,240));{const hx=cx-ri(10,60),hy=cy-g*ri(34,62);ghosts.push({hx,hy,x:hx,y:hy,eye:1,face:-1,still:0})}flat(ri(60,110))}
     else if(k==='crumble'){   // a row of short tiles over a pit: they wobble while you stand on them and drop if you stay too long
       end();const m=3+Math.round(R()*(1+2*d));
       for(let i=0;i<m;i++){const tl=ri(44,60);const pl=mkPlat([[cx,cy],[cx+tl,cy]],false);pl.cr={t:0,fall:false,vy:0};plats.push(pl);if(i===1)cands.push([cx+tl/2,cy-g*55]);cx+=tl+5}
@@ -321,7 +323,7 @@ function ledgeAt(x,y){const g=P.g;let b=null;for(const p of plats){if(!p.solid)c
 function wallAt(x,y){const g=P.g;for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f!==null&&g*(y-f)>STEP)return true}return false}
 
 const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0,air:0,dj:true,split:0,g:1,flipT:0};
-let drops=[],flips=[],sharks=[],eyes=[],killTop=-400,endFlip=null;
+let drops=[],flips=[],sharks=[],eyes=[],ghosts=[],killTop=-400,endFlip=null;
 let curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
 let camX=0,camY=0,hintMoved=false,hintJumped=false,touchedEarly=false;
@@ -363,6 +365,7 @@ function startCurtain(){
     x+=thin?w*2+Math.random()*20:w*(1.1+Math.random()*1.5)}
 }
 function eyePos(e){return[e.x+10*Math.sin(t*1.3+e.ph),e.y-e.g*(88+58*Math.sin(t*6.2832/e.per+e.ph))]}
+function resetGhosts(){for(const k of ghosts){k.x=k.hx;k.y=k.hy;k.eye=1;k.still=0}}
 function flipNow(x,y,f){
   P.g=-P.g;P.y=y;P.vy=0;P.flipT=.25;P.dj=true;P.split=0;if(f)f.used=.4;
   sfx.flip();buzz(15);pops.push({x,y,t:0});
@@ -372,6 +375,7 @@ function respawn(){respawnEat();
   if(falls>=3){const c=curtain;startLevel(levelN);curtain=c;touchedEarly=true;state='play';toast(T.reset);return}
   shards=[];holes=[];
   for(const p of plats)if(p.mv)p.dx=p.dy=0;
+  resetGhosts();
   for(const p of plats)if(p.cr){p.cr.t=0;p.cr.fall=false;p.cr.vy=0;p.oy=0;p.dy=0}
   for(const f of flips)f.used=0;
   for(const k of sharks)k.rise=0;
@@ -506,6 +510,13 @@ function update(dt){
     if(dx<11&&h<14&&h>-6){die();return}                     // the fin
     if(k.rise>.2&&dx<18&&h>-6&&h<k.rise*50+4){die();return}  // the mouth
   }
+  // ghosts: they creep up on you while you look away, and freeze (eyes fading) when you face them
+  for(const k of ghosts){const dx=P.x-k.x,dy=(P.y-P.g*9)-k.y,dist=Math.hypot(dx,dy);
+    if(dist>viewW*.8){continue}
+    const watched=P.face*(k.x-P.x)>0;
+    if(watched){k.eye=Math.max(0,k.eye-dt*2.5);k.still+=dt}
+    else{k.eye=Math.min(1,k.eye+dt*4);k.still=0;const sp=(48+14*Math.min(1,levelN/20))*dt;k.x+=dx/dist*sp;k.y+=dy/dist*sp;k.face=dx>0?1:-1}
+    if(dist<14){die();return}}
   // floating eyes: touch them and they turn into a monster that eats you
   for(const e of eyes){const [ex,ey]=eyePos(e);if(Math.hypot(P.x-ex,P.y-P.g*9-ey)<16){P.eat=e;P.ex=ex;P.ey=ey;die();return}}
   // fell below the line: gone (no climbing back up from underneath with the double jump)
@@ -564,6 +575,19 @@ function drawBlob(){
   for(let i=0;i<24;i++){const a=i/24*6.2832,w=1+wob*(.07*Math.sin(3*a+t*15)+.05*Math.sin(5*a-t*11));pts.push([cx+Math.cos(a)*rx*w,cy+Math.sin(a)*ry*w])}
   strokePts(pts,true);
   ctx.fillStyle=FG;ctx.beginPath();ctx.arc(cx+P.face*rx*.38,cy-g*ry*.2,1.9,0,6.2832);ctx.fill();
+}
+// a ghost: a dome with a wavy hem; hunting it shows its eyes and an open mouth, watched it goes shy and see-through
+function drawGhost(k){
+  const sh=k.eye<.5?Math.sin(t*60)*.6:0,bob=Math.sin(t*3+k.hx)*2.5,x=k.x+sh,y=k.y+bob,f=k.face;
+  ctx.save();ctx.globalAlpha=.45+.55*k.eye;ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.lineJoin='round';
+  ctx.beginPath();ctx.moveTo(x-12,y+11);ctx.lineTo(x-12,y-3);ctx.arc(x,y-3,12,Math.PI,0);ctx.lineTo(x+12,y+11);
+  for(let i=0;i<=12;i++){const u=i/12,xx=x+12-u*24,yy=y+11+Math.sin(u*Math.PI*3+t*7)*2.6;ctx.lineTo(xx,yy)}
+  ctx.stroke();
+  if(k.eye>.02){ctx.globalAlpha=k.eye;ctx.fillStyle=FG;
+    for(const s of[-1,1]){ctx.beginPath();ctx.ellipse(x+f*2+s*4.6,y-4,2,3.2,0,0,6.2832);ctx.fill()}
+    ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x+f*3,y+4,2.2*k.eye,2.8*k.eye,0,0,6.2832);ctx.stroke()}
+  else{ctx.globalAlpha=.5;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-7,y-4);ctx.lineTo(x-2,y-3);ctx.moveTo(x+2,y-3);ctx.lineTo(x+7,y-4);ctx.stroke()}   // eyes shut, shy
+  ctx.restore();
 }
 // two eyes watching you; the pupils follow the character
 function drawEyes(ex,ey,g,sc,look,lid){
@@ -739,6 +763,7 @@ function render(){
   if(endFlip&&endFlip.x>vx0&&endFlip.x<vx1){const f=endFlip,r=5+.6*Math.sin(t*4);   // the line ends in a little ring
     ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.arc(f.x+r,f.y,r,0,6.2832);ctx.stroke()}
   for(const k of sharks)if(k.x1>vx0&&k.x0<vx1)drawShark(k);
+  for(const k of ghosts){if(k.x<vx0-30||k.x>vx1+30)continue;drawGhost(k)}
   for(const e of eyes){if(state==='dead'&&P.kind==='eaten'&&P.eat===e)continue;const [ex,ey]=eyePos(e);if(ex<vx0||ex>vx1)continue;
     drawEyes(ex,ey,e.g,1,[P.x,P.y-P.g*9],((t+e.blink)%4.1)<.12?1:0)}
   // ripples running along the line away from where you landed
