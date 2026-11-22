@@ -878,90 +878,64 @@ function drawGhost(k){
 
 // two eyes watching you; the pupils follow the character
 function drawEyes(ex,ey,g,sc,look,lid){
-  ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=2.5;
-  for(const s of[-1,1]){const cx=ex+s*7.5*sc,r=6*sc;
-    ctx.beginPath();ctx.arc(cx,ey,r,0,6.2832);ctx.stroke();
-    if(lid>=1){ctx.beginPath();ctx.moveTo(cx-r,ey);ctx.lineTo(cx+r,ey);ctx.stroke();continue}
+  // two tall eyes side by side, touching in the middle, with upright oval pupils (after the drawing)
+  ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=2.6;
+  for(const s of[-1,1]){const cx=ex+s*6.6*sc,rx=6.6*sc,ry=8.6*sc;
+    ctx.beginPath();ctx.ellipse(cx,ey,rx,ry,0,0,6.2832);ctx.stroke();
+    if(lid>=1){ctx.beginPath();ctx.moveTo(cx-rx*.8,ey);ctx.lineTo(cx+rx*.8,ey);ctx.stroke();continue}
     const dx=look[0]-cx,dy=look[1]-ey,l=Math.hypot(dx,dy)||1;
-    ctx.beginPath();ctx.arc(cx+dx/l*r*.45,ey+dy/l*r*.45,2.6*sc,0,6.2832);ctx.fill()}
+    ctx.beginPath();ctx.ellipse(cx+dx/l*rx*.4,ey+dy/l*ry*.3,1.9*sc,3.6*sc,0,0,6.2832);ctx.fill()}
 }
+
 // eaten: the eyes stare, a head pops up round them, the mouth gapes and sucks you in, SNAP, chew chew chew, gulp, burp, gone
 function drawMonster(d){
-  const ex=P.ex,ey=P.ey,g=P.g;
-  const cl=x=>Math.max(0,Math.min(1,x)),ease=x=>{x=cl(x);return x*x*(3-2*x)};
-  const back=x=>{x=cl(x);const c=1.9;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};   // overshoots, then settles
-  const out=EAT_CURTAIN+.15;
-  const grow=d<out?back((d-.08)/.22):1-ease((d-out)/.25);
-  // mouth: gapes wide, holds a moment, snaps shut
+  // after the drawing: a big round head arching over the two eyes, a wide snout with two nostrils, two fangs below,
+  // and little shock lines above. Story: stare – head pops up – snout gapes and sucks you in – SNAP – chew – gulp – burp – wink.
+  const ex=P.ex,ey=P.ey,g=P.g,cl=x=>Math.max(0,Math.min(1,x)),ease=x=>{x=cl(x);return x*x*(3-2*x)};
+  const back=x=>{x=cl(x);const c=1.9;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+  const out=EAT_CURTAIN+.15,grow=d<out?back((d-.08)/.22):1-ease((d-out)/.25);
   const open=d<.12?0:d<.24?ease((d-.12)/.12):d<.3?1:d<.34?1-ease((d-.3)/.04):0;
-  // chewing squashes the head; the gulp stretches it
   const ch=d>.36&&d<.9?Math.sin((d-.36)/.54*3*6.2832)*(1-(d-.36)/.54*.4):0,gulp=d>.9&&d<1.02?Math.sin((d-.9)/.12*Math.PI):0;
-  const sx=1-.1*ch+.06*open-.08*gulp,sy=1+.12*ch+.05*open+.14*gulp;
-  const R=30*grow,hx=ex,hy=ey+g*12*grow,my=ey+g*(20+4*open)*grow;
-  if(grow>.02){
-    // head: a wobbly round outline
-    ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();
-    for(let i=0;i<=32;i++){const a=i/32*6.2832,w=1+.045*Math.sin(a*4+t*8)+.03*Math.sin(a*7-t*5);ctx.lineTo(hx+Math.cos(a)*R*sx*w,hy+Math.sin(a)*R*sy*w)}
-    ctx.closePath();ctx.stroke();
-    // mouth
-    const W=(19+6*open)*grow*sx;
+  const S=grow,sx=1-.08*ch+.05*open-.06*gulp,sy=1+.1*ch+.04*open+.12*gulp;
+  const Y=v=>ey+g*v*S*sy,X=u=>ex+u*S*sx;   // local coordinates, scaled and squashed
+  ctx.save();ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=LW;ctx.lineCap='round';ctx.lineJoin='round';
+  // shock lines above the head while it stares
+  if(d<.45){const a=Math.min(1,d/.06)*(1-cl((d-.3)/.15));ctx.globalAlpha=a;ctx.lineWidth=3;
+    for(let i=0;i<5;i++){const an=-Math.PI/2+(i-2)*.42,r0=(S>.05?30*S:14)+4,r1=r0+6;ctx.beginPath();ctx.moveTo(ex+Math.cos(an)*r0,ey+g*(Math.sin(an)*r0-(S>.05?6*S:0)));ctx.lineTo(ex+Math.cos(an)*r1,ey+g*(Math.sin(an)*r1-(S>.05?6*S:0)));ctx.stroke()}
+    ctx.globalAlpha=1;ctx.lineWidth=LW}
+  if(S>.03){
+    // the head: a dome over the eyes, coming down the sides to the snout
+    ctx.beginPath();ctx.moveTo(X(-21),Y(12));ctx.bezierCurveTo(X(-25),Y(-8),X(-18),Y(-27),X(0),Y(-27));ctx.bezierCurveTo(X(18),Y(-27),X(25),Y(-8),X(21),Y(12));ctx.stroke();
+    // the snout: a wide oval; when it gapes the lower half drops away as a jaw
+    const sy0=Y(22),rx=27*S*sx,ry=11*S*sy,drop=open*24*S;
     if(open>.03){
-      const top=my-g*open*9*grow,bot=my+g*open*24*grow;
-      const lip=(cy,n)=>{const o=[];for(let i=0;i<=n;i++){const u=i/n;o.push([ex-W+2*W*u,my+(cy-my)*Math.sin(Math.PI*u)])}return o};
-      const U=lip(top,16),L2=lip(bot,16);
-      ctx.fillStyle=BG;ctx.beginPath();U.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));for(let i=L2.length-1;i>=0;i--)ctx.lineTo(L2[i][0],L2[i][1]);ctx.closePath();ctx.fill();
-      ctx.lineWidth=LW*.85;strokePts(U,false);strokePts(L2,false);
-      // teeth: triangles hanging from the top lip and standing on the bottom one
-      ctx.fillStyle=FG;const tz=(P2,dir,n,sz)=>{for(let i=1;i<n;i++){const k=i/n,j=Math.round(k*16),[x,y]=P2[j],w2=W/n*.8;
-        ctx.beginPath();ctx.moveTo(x-w2,y);ctx.lineTo(x,y+g*dir*sz);ctx.lineTo(x+w2,y);ctx.closePath();ctx.fill()}};
-      tz(U,1,6,7*open*grow);tz(L2,-1,5,6*open*grow);
+      ctx.fillStyle=BG;ctx.beginPath();ctx.ellipse(ex,sy0,rx,ry,0,Math.PI,0,g<0);ctx.lineTo(ex+rx,sy0+g*drop);ctx.ellipse(ex,sy0+g*drop,rx,ry,0,0,Math.PI,g<0);ctx.closePath();ctx.fill();ctx.fillStyle=FG;
+      ctx.beginPath();ctx.ellipse(ex,sy0,rx,ry,0,Math.PI,0,g<0);ctx.stroke();                       // upper lip with the nostrils
+      ctx.beginPath();ctx.ellipse(ex,sy0+g*drop,rx,ry,0,0,Math.PI,g<0);ctx.stroke();                // lower jaw
+      ctx.beginPath();ctx.moveTo(ex-rx,sy0);ctx.lineTo(ex-rx,sy0+g*drop);ctx.moveTo(ex+rx,sy0);ctx.lineTo(ex+rx,sy0+g*drop);ctx.stroke();
+      // the two fangs hang from the upper lip into the open mouth
+      for(const s2 of[-1,1]){const fx=ex+s2*10*S*sx;ctx.beginPath();ctx.moveTo(fx-4*S,sy0);ctx.lineTo(fx+s2*1.5*S,sy0+g*11*S*open);ctx.lineTo(fx+4*S,sy0);ctx.closePath();ctx.fill()}
     }else{
-      // closed: a wide grin that wobbles while chewing, a couple of teeth poking out
-      const pts=[];for(let i=0;i<=14;i++){const u=i/14;pts.push([ex-W+2*W*u,my+g*(4*Math.sin(u*Math.PI)+(ch?2.2*Math.sin(u*14+d*30):0))*grow])}
-      ctx.lineWidth=LW*.85;strokePts(pts,false);
-      ctx.fillStyle=FG;for(const u of[.3,.7]){const x=ex-W+2*W*u,y=my+g*4*Math.sin(u*Math.PI)*grow;ctx.beginPath();ctx.moveTo(x-2.5,y);ctx.lineTo(x,y+g*4.5);ctx.lineTo(x+2.5,y);ctx.closePath();ctx.fill()}
-      // cheeks bulge with you inside
-      if(ch){ctx.lineWidth=2;for(const s of[-1,1]){ctx.beginPath();ctx.arc(ex+s*(W+3),my-g*3,3+Math.abs(ch)*2,s<0?Math.PI*.6:-Math.PI*.4,s<0?Math.PI*1.4:Math.PI*.4);ctx.stroke()}}
+      ctx.beginPath();ctx.ellipse(ex,sy0+g*(ch?1.5*Math.sin(d*40):0),rx,ry,0,0,6.2832);ctx.stroke();
+      // fangs poking out below the closed snout, wiggling while it chews
+      for(const s2 of[-1,1]){const fx=ex+s2*10*S*sx,fy=sy0+g*ry;ctx.beginPath();ctx.moveTo(fx-s2*5*S,fy-g*1);ctx.lineTo(fx+s2*(1+Math.abs(ch)*2)*S,fy+g*10*S);ctx.lineTo(fx+s2*5*S,fy-g*2);ctx.stroke()}
     }
+    // nostrils
+    for(const s2 of[-1,1]){ctx.beginPath();ctx.arc(ex+s2*4*S,sy0-g*ry*.45,1.9*S,0,6.2832);ctx.fill()}
   }
-  // you: frozen for a moment, then sucked in, stretched towards the mouth
-  if(d<.32){const k=ease((d-.1)/.2),cx=P.ax+(ex-P.ax)*k,cy=(P.ay-g*9)+(my-(P.ay-g*9))*k,r=8.5*(1-.5*k),tr=d<.1?Math.sin(d*160)*1.4:0;
-    const ang=Math.atan2(my-cy,ex-cx);ctx.save();ctx.translate(cx+tr,cy);ctx.rotate(ang);ctx.strokeStyle=FG;ctx.lineWidth=LW;
-    ctx.beginPath();ctx.ellipse(0,0,r*(1+.7*k),r*(1-.35*k),0,0,6.2832);ctx.stroke();ctx.restore()}
+  // you: frozen, then sucked into the mouth, stretched
+  if(d<.32){const my=Y(22)+g*open*10*S,k=ease((d-.1)/.2),cx=P.ax+(ex-P.ax)*k,cy=(P.ay-g*9)+(my-(P.ay-g*9))*k,r=8.5*(1-.5*k),tr=d<.1?Math.sin(d*160)*1.4:0;
+    const ang=Math.atan2(my-cy,ex-cx);ctx.save();ctx.translate(cx+tr,cy);ctx.rotate(ang);ctx.beginPath();ctx.ellipse(0,0,r*(1+.7*k),r*(1-.35*k),0,0,6.2832);ctx.stroke();ctx.restore()}
   // burp bubble
-  if(d>.95&&d<1.4){const k=(d-.95)/.45;ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-k;ctx.beginPath();ctx.arc(ex+8,my-g*(6+k*40),3+k*5,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
-  // eyes: wide with shock, then happy while chewing, a wink at the end
-  const es=(d<.1?1+.45*ease(d/.1):1.45-.2*ease((d-.3)/.2))*Math.max(.6,grow||.6),eyY=ey-g*4*grow;
-  if(d>.36&&d<.95){ctx.strokeStyle=FG;ctx.lineWidth=2.5;for(const s of[-1,1]){const cx=ex+s*8*es;ctx.beginPath();ctx.arc(cx,eyY+g*2,5*es,g>0?Math.PI*1.15:Math.PI*.15,g>0?Math.PI*1.85:Math.PI*.85);ctx.stroke()}}
+  if(d>.95&&d<1.4){const k=(d-.95)/.45;ctx.lineWidth=2;ctx.globalAlpha=1-k;ctx.beginPath();ctx.arc(ex+16*S,Y(18)-g*k*36,3+k*5,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
+  // the eyes: wide with shock, happy arcs while chewing, a wink at the end
+  const es=(d<.1?1+.4*ease(d/.1):1.4-.15*ease((d-.3)/.2))*Math.max(.75,S||.75),eyY=Y(-6)+(S<.05?0:0);
+  if(d>.36&&d<.95){ctx.lineWidth=2.6;for(const s2 of[-1,1]){const cx=ex+s2*6.6*es;ctx.beginPath();ctx.ellipse(cx,eyY,6.6*es,8.6*es,0,0,6.2832);ctx.stroke();
+      ctx.beginPath();ctx.arc(cx,eyY+g*2*es,3.4*es,g>0?Math.PI*1.1:Math.PI*.1,g>0?Math.PI*1.9:Math.PI*.9);ctx.stroke()}}
   else drawEyes(ex,eyY,g,es,d<.36?[P.ax,P.ay]:[ex+P.face*30,eyY],d>1.05&&d<1.2?1:0);
+  ctx.restore();
 }
-// fried: lifted off the line and shaking, flickering between outline-with-bolts and a lit-up x-ray;
-// then it smokes, chars, and crumbles into ash that blows away
-function drawZap(d){
-  const g=P.g,lift=Math.min(1,d/.08)*7*(d<.6?1:Math.max(0,1-(d-.6)/.2)),cx=P.ax+(d<.55?(Math.random()-.5)*3:0),cy=P.ay-g*(10+lift);
-  const rnd=(i)=>{const h=Math.sin(i*91.7+Math.floor(d*30)*13.1)*43758.5;return h-Math.floor(h)};
-  ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineJoin='miter';
-  if(d<.55){
-    if(Math.floor(d/.06)%2===0){
-      ctx.lineWidth=LW;ctx.beginPath();ctx.ellipse(cx,cy,9,9.5,0,0,6.2832);ctx.stroke();
-      ctx.lineWidth=2;for(let b=0;b<4;b++){const a=rnd(b)*6.2832,ex=P.ax+(rnd(b+9)-.5)*60,ey=P.ay;let x=cx+Math.cos(a)*9,y=cy+Math.sin(a)*9;
-        ctx.beginPath();ctx.moveTo(x,y);for(let i=1;i<=4;i++){const u=i/4;ctx.lineTo(x+(ex-x)*u+(i<4?(rnd(b*7+i)-.5)*10:0),y+(ey-y)*u+(i<4?(rnd(b*5+i)-.5)*8:0))}ctx.stroke()}
-    }else{   // the x-ray: lit up solid, a zigzag spine and crossed-out eyes showing through
-      ctx.beginPath();ctx.ellipse(cx,cy,10,10.5,0,0,6.2832);ctx.fill();
-      ctx.strokeStyle=BG;ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx-1,cy-g*1);for(let i=1;i<=4;i++)ctx.lineTo(cx+(i%2?2.5:-2.5),cy+g*(i*2.2-1));ctx.stroke();
-      for(const s of[-1,1]){const ex=cx+s*4,ey=cy-g*4;ctx.beginPath();ctx.moveTo(ex-1.6,ey-1.6);ctx.lineTo(ex+1.6,ey+1.6);ctx.moveTo(ex+1.6,ey-1.6);ctx.lineTo(ex-1.6,ey+1.6);ctx.stroke()}
-      ctx.strokeStyle=FG}
-  }else if(d<.82){   // charred: a broken, shrinking outline
-    const k=(d-.55)/.27;ctx.lineWidth=LW*.8;ctx.setLineDash([3,3.5]);ctx.beginPath();ctx.ellipse(cx,cy+g*k*4,9*(1-k*.25),9.5*(1-k*.45),0,0,6.2832);ctx.stroke();ctx.setLineDash([])
-  }else{   // a little heap of ash on the line, blowing away
-    const k=Math.min(1,(d-.82)/.5);ctx.globalAlpha=1-k;
-    for(let i=0;i<9;i++){const u=(i/8-.5),x=P.ax+u*16+k*(18+i*5)*(i%2?1:.6),y=P.ay-g*(2+Math.abs(u)*-3+k*i*1.5);ctx.beginPath();ctx.arc(x,y,1.4+(i%3)*.4,0,6.2832);ctx.fill()}
-    ctx.globalAlpha=1}
-  // smoke curling up once it's fried
-  if(d>.5){ctx.lineWidth=2;for(let i=0;i<3;i++){const tt=d-.5-i*.12;if(tt<0||tt>.9)continue;ctx.globalAlpha=Math.max(0,.7-tt*.8);
-    ctx.beginPath();ctx.arc(P.ax+Math.sin(tt*6+i*2)*5+i*3,P.ay-g*(16+tt*55),3+tt*9,0,6.2832);ctx.stroke()}ctx.globalAlpha=1}
-  ctx.lineJoin='round';
-}
+
 function drawChar(){
   if(state==='dead'){
     const d=P.dead;
