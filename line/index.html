@@ -305,15 +305,15 @@ function gen(n){
     else if(k==='eyes'){   // a pair of eyes bobbing up and down over some spikes: jump when they're up high
       flat(70);const t2=3+Math.round(R()),w=t2*12;spikes.push({x0:cx,x1:cx+w,y:cy,n:t2,g});
       eyes.push({x:cx+w/2,y:cy,g,per:ri(3.4,2.8-.4*d),ph:R()*6.283,blink:R()*4});cx+=w;cur.push([cx,cy]);flat(ri(90,130))}
-    else if(k==='shark'){flat(50);const L=ri(170,240+60*d);sharks.push({p:{pts:cur,ox:0,oy:0},x0:cx,x1:cx+L,y:cy,g,pos:cx+L*R(),dir:R()<.5?-1:1,sp:ri(45,70+45*d),rise:0});cands.push([cx+L/2,cy-g*75]);cx+=L;cur.push([cx,cy]);flat(ri(70,110))}
+    else if(k==='shark'){flat(50);const L=ri(170,240+60*d);sharks.push({p:{pts:cur,ox:0,oy:0},x0:cx,x1:cx+L,y:cy,g,pos:cx+L*R(),dir:R()<.5?-1:1,sp:ri(45,70+45*d),rise:0});cands.push([cx+L/2,cy-g*90]);cx+=L;cur.push([cx,cy]);flat(ri(70,110))}
     else if(k==='slope'){const L=ri(120,260),dy=ri(25,Math.min(110,L*.55))*(R()<.5?-1:1);cx+=L;cy+=dy;cur.push([cx,cy]);flat(ri(50,100))}
     else if(k==='step'){const up=R()<.55,dy=g*(up?-ri(18,28+34*d):ri(25,60+40*d));cur.push([cx,cy+dy]);cy+=dy;flat(ri(80,150))}
     else if(k==='stairs'){const up=R()<.5,m=3+(R()<.5?1:0);for(let i=0;i<m;i++){const dy=ri(14,22)*(up?-1:1);cur.push([cx,cy+dy]);cy+=dy;flat(ri(44,64))}flat(70)}
     else if(k==='gap'){
       const dy=ri(-30-22*d,50),up=Math.max(0,-dy),w=ri(48,Math.min(130,72+58*d)-up*.6);
-      end();cands.push([cx+w/2,cy+g*(Math.min(0,dy)-58)]);cx+=w;cy+=g*dy;cur=[[cx,cy]];flat(ri(100,160));
+      end();cands.push([cx+w/2,cy-g*88]);cx+=w;cy+=g*dy;cur=[[cx,cy]];flat(ri(100,160));
     }
-    else if(k==='spikes'){flat(60);const t=Math.round(ri(2,3.4+4*d)),w=t*12;spikes.push({x0:cx,x1:cx+w,y:cy,n:t,g});cands.push([cx+w/2,cy-g*62]);cx+=w;cur.push([cx,cy]);flat(ri(80,130))}
+    else if(k==='spikes'){flat(60);const t=Math.round(ri(2,3.4+4*d)),w=t*12;spikes.push({x0:cx,x1:cx+w,y:cy,n:t,g});cands.push([cx+w/2,cy-g*92]);cx+=w;cur.push([cx,cy]);flat(ri(80,130))}
     else if(k==='floats'){
       end();const m=1+(R()<.3+.4*d?1:0);let x=cx;let fy=cy;
       for(let i=0;i<m;i++){const sub=ri(58,82+22*d),pw=ri(55,85);x+=sub;fy=cy-g*ri(8,44);plats.push(mkPlat([[x,fy],[x+pw,fy]],false));cands.push([x+pw/2,fy-g*42]);x+=pw}
