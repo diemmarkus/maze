@@ -951,6 +951,33 @@ function drawMonster(d){
   ctx.restore();
 }
 
+// fried: lifted off the line and shaking, flickering between outline-with-bolts and a lit-up x-ray;
+// then it smokes, chars, and crumbles into ash that blows away
+function drawZap(d){
+  const g=P.g,lift=Math.min(1,d/.08)*7*(d<.6?1:Math.max(0,1-(d-.6)/.2)),cx=P.ax+(d<.55?(Math.random()-.5)*3:0),cy=P.ay-g*(10+lift);
+  const rnd=(i)=>{const h=Math.sin(i*91.7+Math.floor(d*30)*13.1)*43758.5;return h-Math.floor(h)};
+  ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineJoin='miter';
+  if(d<.55){
+    if(Math.floor(d/.06)%2===0){
+      ctx.lineWidth=LW;ctx.beginPath();ctx.ellipse(cx,cy,9,9.5,0,0,6.2832);ctx.stroke();
+      ctx.lineWidth=2;for(let b=0;b<4;b++){const a=rnd(b)*6.2832,ex=P.ax+(rnd(b+9)-.5)*60,ey=P.ay;let x=cx+Math.cos(a)*9,y=cy+Math.sin(a)*9;
+        ctx.beginPath();ctx.moveTo(x,y);for(let i=1;i<=4;i++){const u=i/4;ctx.lineTo(x+(ex-x)*u+(i<4?(rnd(b*7+i)-.5)*10:0),y+(ey-y)*u+(i<4?(rnd(b*5+i)-.5)*8:0))}ctx.stroke()}
+    }else{   // the x-ray: lit up solid, a zigzag spine and crossed-out eyes showing through
+      ctx.beginPath();ctx.ellipse(cx,cy,10,10.5,0,0,6.2832);ctx.fill();
+      ctx.strokeStyle=BG;ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx-1,cy-g*1);for(let i=1;i<=4;i++)ctx.lineTo(cx+(i%2?2.5:-2.5),cy+g*(i*2.2-1));ctx.stroke();
+      for(const s of[-1,1]){const ex=cx+s*4,ey=cy-g*4;ctx.beginPath();ctx.moveTo(ex-1.6,ey-1.6);ctx.lineTo(ex+1.6,ey+1.6);ctx.moveTo(ex+1.6,ey-1.6);ctx.lineTo(ex-1.6,ey+1.6);ctx.stroke()}
+      ctx.strokeStyle=FG}
+  }else if(d<.82){   // charred: a broken, shrinking outline
+    const k=(d-.55)/.27;ctx.lineWidth=LW*.8;ctx.setLineDash([3,3.5]);ctx.beginPath();ctx.ellipse(cx,cy+g*k*4,9*(1-k*.25),9.5*(1-k*.45),0,0,6.2832);ctx.stroke();ctx.setLineDash([])
+  }else{   // a little heap of ash on the line, blowing away
+    const k=Math.min(1,(d-.82)/.5);ctx.globalAlpha=1-k;
+    for(let i=0;i<9;i++){const u=(i/8-.5),x=P.ax+u*16+k*(18+i*5)*(i%2?1:.6),y=P.ay-g*(2+Math.abs(u)*-3+k*i*1.5);ctx.beginPath();ctx.arc(x,y,1.4+(i%3)*.4,0,6.2832);ctx.fill()}
+    ctx.globalAlpha=1}
+  // smoke curling up once it's fried
+  if(d>.5){ctx.lineWidth=2;for(let i=0;i<3;i++){const tt=d-.5-i*.12;if(tt<0||tt>.9)continue;ctx.globalAlpha=Math.max(0,.7-tt*.8);
+    ctx.beginPath();ctx.arc(P.ax+Math.sin(tt*6+i*2)*5+i*3,P.ay-g*(16+tt*55),3+tt*9,0,6.2832);ctx.stroke()}ctx.globalAlpha=1}
+  ctx.lineJoin='round';
+}
 function drawChar(){
   if(state==='dead'){
     const d=P.dead;
@@ -1169,11 +1196,12 @@ let lastT=performance.now(),accT=0;
 function frame(now){
   let dt=Math.min(.1,(now-lastT)/1000);lastT=now;
   if(state==='menu'){t+=dt;for(const p of plats)if(p.mv)p.ox=p.mv.amp*Math.sin(t*6.2832/p.mv.per+p.mv.ph);camX+=dt*30;if(goal&&camX>goal.x)camX=-viewW*.3;}
-  else if(state!=='paused'&&state!=='done'){accT+=dt;while(accT>=1/120){update(1/120);accT-=1/120}}
+  else if(state!=='paused'&&state!=='done'){accT+=dt;try{while(accT>=1/120){update(1/120);accT-=1/120}}catch(e){console.error(e);accT=0}}
   dtFrame=state==='paused'?0:dt;
   if(curtain&&state!=='paused'){curtain.t+=dt;if(curtain.t>1.9)curtain=null}
   if(shake>0)shake=Math.max(0,shake-dt);
-  render();requestAnimationFrame(frame);
+  try{render()}catch(e){console.error(e)}   // a drawing mistake must never freeze the game
+  requestAnimationFrame(frame);
 }
 
 /* ---------- screens ---------- */
