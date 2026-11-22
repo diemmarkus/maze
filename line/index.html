@@ -600,11 +600,13 @@ function die(){
 }
 const EAT_CURTAIN=1.05,ZAP_CURTAIN=.95;   // the monster gets about a second on screen before the blood comes down
 function startCurtain(){
+  // a few big, wide runs (like thick paint), one or two of them long, some dropping a round drop below them
   curtain={t:0,drips:[],ph:Math.random()*9};
-  for(let x=Math.random()*20-10;x<SW+40;){const thin=Math.random()<.3,w=thin?4+Math.random()*6:14+Math.random()*26;
-    curtain.drips.push({x,w,v:(thin?.6:.4)+Math.random()*.9,dl:Math.random()*.25,seed:Math.random()*99,asym:(Math.random()-.5)*.5,bulb:1.35+Math.random()*.35});
-    x+=thin?w*2+Math.random()*20:w*(1.1+Math.random()*1.5)}
+  for(let x=Math.random()*30-20;x<SW+60;){const w=Math.max(44,SW*(.07+Math.random()*.07)),long=Math.random()<.4;
+    curtain.drips.push({x:x+w/2,w,v:long?.75+Math.random()*.5:.22+Math.random()*.3,dl:Math.random()*.2,drop:long&&Math.random()<.7?{off:0,v:0}:null});
+    x+=w+SW*(.03+Math.random()*.08)}
 }
+
 function eyePos(e){return[e.x+10*Math.sin(t*1.3+e.ph),e.y-e.g*(88+58*Math.sin(t*6.2832/e.per+e.ph))]}
 function resetGhosts(){for(const k of ghosts){k.x=k.hx;k.y=k.hy;k.eye=1;k.still=0}}
 function flipNow(x,y,f){
@@ -1133,29 +1135,22 @@ function render(){
   // blood running down the whole screen, in the line colour
   if(curtain){const c=curtain,a=c.t<1.35?1:Math.max(0,1-(c.t-1.35)/.5);
     ctx.globalAlpha=a;ctx.fillStyle=FG;
-    // the curtain: an uneven lower edge that sinks until the whole screen is covered
-    const e=Math.max(0,Math.min(1,(c.t-.05)/1.05)),B=(SH+60)*e*e*(1.4-.4*e)+Math.min(1,c.t/.12)*18;
-    const edge=x=>B+6*Math.sin(x*.021+c.ph)+3.5*Math.sin(x*.057+c.ph*2.3+c.t*1.5)+1.8*Math.sin(x*.13+c.ph*3.1);
-    ctx.beginPath();ctx.moveTo(-5,0);ctx.lineTo(SW+5,0);for(let x=SW+5;x>=-5;x-=4)ctx.lineTo(x,edge(x));ctx.closePath();ctx.fill();
-    // runs: they flare out of the curtain, wobble a little in width, and end in a lopsided, swelling drop
-    for(const d of c.drips){const tt=Math.max(0,c.t-d.dl);if(tt<=0)continue;
-      const cx=d.x,w=d.w,hw=w/2,top=edge(cx)-2,L=top+Math.min(SH*1.3,SH*d.v*(tt*1.1+tt*tt*.9)),fl=w*.8;
-      const sw=1+.12*Math.sin(c.t*3+d.seed),bw=hw*d.bulb*sw,bh=w*1.5*sw,neck=L-bh;
-      ctx.beginPath();ctx.moveTo(cx-hw-fl,top-3);
-      if(neck<top+fl){   // still a bulge growing out of the edge
-        const k=Math.max(0,L-top);ctx.bezierCurveTo(cx-hw-fl*.2,top,cx-bw,top+k*.4,cx-bw*.7+d.asym*hw,top+k*.9);
-        ctx.quadraticCurveTo(cx+d.asym*hw,top+k*1.05,cx+bw*.7+d.asym*hw,top+k*.9);ctx.bezierCurveTo(cx+bw,top+k*.4,cx+hw+fl*.2,top,cx+hw+fl,top-3);
-        ctx.closePath();ctx.fill();continue}
-      ctx.quadraticCurveTo(cx-hw,top,cx-hw,top+fl);
-      const wob=y=>hw*(.12*Math.sin(y*.045+d.seed)+.06*Math.sin(y*.11+d.seed*2));
-      for(let y=top+fl;y<neck;y+=8){const th=1-.18*(y-top)/Math.max(1,neck-top);ctx.lineTo(cx-hw*th+wob(y),y)}
-      // the drop: swells out, a little to one side, and rounds off at the bottom
-      const as=d.asym*hw;
-      ctx.bezierCurveTo(cx-hw*.8,neck+bh*.25,cx-bw+as,neck+bh*.35,cx-bw*.92+as,neck+bh*.68);
-      ctx.bezierCurveTo(cx-bw*.82+as,L+bh*.02,cx+bw*.82+as,L+bh*.02,cx+bw*.92+as,neck+bh*.68);
-      ctx.bezierCurveTo(cx+bw+as,neck+bh*.35,cx+hw*.8,neck+bh*.25,cx+hw*.82,neck);
-      for(let y=neck;y>top+fl;y-=8){const th=1-.18*(y-top)/Math.max(1,neck-top);ctx.lineTo(cx+hw*th+wob(y+40),y)}
-      ctx.lineTo(cx+hw,top+fl);ctx.quadraticCurveTo(cx+hw,top,cx+hw+fl,top-3);ctx.closePath();ctx.fill()}
+    // the band at the top sinks until the whole screen is covered; the runs hang from it with round ends,
+    // and where a run meets the band the corner is filled in smoothly, like a thick liquid
+    const e=Math.max(0,Math.min(1,(c.t-.05)/1.1)),B=Math.min(1,c.t/.15)*SH*.09+(SH+80)*e*e*(1.35-.35*e);
+    const len=d=>{const tt=Math.max(0,c.t-d.dl);return SH*d.v*(tt*1.4+tt*tt*1.2)};
+    // the lower edge: each run hangs down with a round end; the gaps between runs are round arches (like in Jonas' drawing)
+    const D=c.drips,Ls=D.map(len);
+    const edge=x=>{
+      for(let i=0;i<D.length;i++){const d=D[i],r=d.w/2,u=(x-d.x)/r;if(Math.abs(u)<1)return Ls[i]>r?B+Ls[i]-r*(1-Math.sqrt(1-u*u)):B+Ls[i]*Math.sqrt(1-u*u)}
+      let i=0;while(i<D.length&&D[i].x<x)i++;
+      const a=D[i-1],b=D[i],xl=a?a.x+a.w/2:-60,xr=b?b.x-b.w/2:SW+60,half=(xr-xl)/2;
+      const R=Math.min(half,Math.max(0,Math.min(a?Ls[i-1]-a.w/2:1e9,b?Ls[i]-b.w/2:1e9)));
+      const v=(x-(xl+xr)/2)/half;return B+R*(1-Math.sqrt(Math.max(0,1-v*v)))};
+    ctx.beginPath();ctx.moveTo(-5,0);ctx.lineTo(SW+5,0);for(let x=SW+5;x>=-5;x-=3)ctx.lineTo(x,edge(x));ctx.closePath();ctx.fill();
+    // round drops that let go of the long runs and fall
+    for(const d of c.drips){if(!d.drop)continue;const L=len(d);if(L<SH*.3)continue;const q=d.drop;q.v+=dtFrame*1500;q.off+=q.v*dtFrame;
+      const y=B+L+d.w*.35+q.off;if(y<SH+d.w){ctx.beginPath();ctx.arc(d.x+d.w*.05,y,d.w*.28,0,6.2832);ctx.fill()}}
     ctx.globalAlpha=1}
   if(joy.id!==null&&state==='play'){
     ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=.35;
