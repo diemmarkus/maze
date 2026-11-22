@@ -1139,7 +1139,7 @@ function render(){
     // and where a run meets the band the corner is filled in smoothly, like a thick liquid
     const e=Math.max(0,Math.min(1,(c.t-.05)/1.1)),B=Math.min(1,c.t/.15)*SH*.09+(SH+80)*e*e*(1.35-.35*e);
     const len=d=>{const tt=Math.max(0,c.t-d.dl);return SH*d.v*(tt*1.4+tt*tt*1.2)};
-    // the lower edge: each run hangs down with a round end; the gaps between runs are round arches (like in Jonas' drawing)
+    // the lower edge: each run hangs down with a round end; the gaps between runs are round arches (like in the drawing)
     const D=c.drips,Ls=D.map(len);
     const edge=x=>{
       for(let i=0;i<D.length;i++){const d=D[i],r=d.w/2,u=(x-d.x)/r;if(Math.abs(u)<1)return Ls[i]>r?B+Ls[i]-r*(1-Math.sqrt(1-u*u)):B+Ls[i]*Math.sqrt(1-u*u)}
