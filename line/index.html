@@ -433,6 +433,7 @@ const sfx={
   splash(){tone(1200,180,.18,.05,0,'sawtooth');tone(600,120,.12,.04,0,'square')},
   fizzle(){tone(700,90,.5,.05,0,'sawtooth')},
   zap(){tone(90,60,.35,.1,0,'sawtooth');tone(1800,400,.25,.05,0,'square');tone(120,120,.3,.06,0,'square')},
+  flap(){tone(900,1400,.05,.035,0,'square');tone(1100,1600,.05,.03,.06,'square')},
   jump2(){tone(392,1568,.13,.09);tone(1568,1568,.05,.05,.13);tone(2093,2093,.06,.04,.18)},
   land(){tone(140,70,.06,.07,0,'triangle')},
   dot(){tone(1047,1047,.06,.08);tone(1568,1568,.1,.08,.065)},
@@ -488,7 +489,7 @@ function gen(n){
   const R=rng(n*7919+13),ri=(a,b)=>a+R()*(b-a);
   const d=Math.min(1,(n-1)/16);
   const target=Math.min(7200,1900+n*380);
-  plats=[];spikes=[];sparks=[];cps=[];flips=[];sharks=[];eyes=[];ghosts=[];pools=[];zaps=[];
+  plats=[];spikes=[];sparks=[];cps=[];flips=[];sharks=[];eyes=[];ghosts=[];pools=[];zaps=[];birds=[];
   let cx=0,cy=0,cur=[[-500,0]],g=1;   // g: which side of the line you're on (1 = on top, -1 = underneath)
   const cands=[],flats=[];
   const end=()=>{if(cur.length>1)plats.push(mkPlat(cur,true))};
@@ -496,8 +497,8 @@ function gen(n){
   const flip=()=>{flat(70);flips.push({x:cx,y:cy,used:0,p:{pts:cur,ox:0,oy:0}});g=-g;flat(ri(110,150))};
   flat(380);
   // new things come in one at a time; in the level where one is new it shows up a few times
-  const INTRO={stairs:2,spikes:3,floats:4,shark:5,mover:6,sand:7,eyes:8,ghost:9,flip:10,water:11,wire:12};
-  const base={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:2.2,flip:1.3,shark:1.4,floats:1.4,mover:1.2,eyes:1.5,sand:1.3,ghost:1,water:1.2,wire:1.3},W={};
+  const INTRO={stairs:2,spikes:3,floats:4,shark:5,mover:6,sand:7,eyes:8,ghost:9,flip:10,water:11,wire:12,birds:13};
+  const base={flat:1.5,slope:3,step:2.2,stairs:1,gap:3,spikes:2.2,flip:1.3,shark:1.4,floats:1.4,mover:1.2,eyes:1.5,sand:1.3,ghost:1,water:1.2,wire:1.3,birds:1.3},W={};
   for(const k in base)W[k]=n>=(INTRO[k]||1)?base[k]:0;
   const fresh=Object.keys(INTRO).find(k=>INTRO[k]===n),freshAt=[.18,.45,.72];let freshN=0;
   const pick=last=>{let tot=0;for(const k in W)if(k!==last)tot+=W[k];let r=R()*tot;for(const k in W){if(k===last)continue;if((r-=W[k])<0)return k}return 'flat'};
@@ -526,6 +527,9 @@ function gen(n){
     }
     else if(k==='ghost'){   // a ghost waiting a bit ahead, floating above the line on your side
       flat(ri(160,240));{const hx=cx-ri(10,60),hy=cy-g*ri(34,62);ghosts.push({hx,hy,x:hx,y:hy,eye:1,face:-1,still:0,g})}flat(ri(60,110))}
+    else if(k==='birds'&&g>0){   // a few birds sitting on the line: walk up and they fly off; storm in at full speed and you hit one
+      const L=ri(170,230);flat(40);const m=2+Math.floor(R()*3);for(let i=0;i<m;i++){const hx=cx+20+i*(L-40)/Math.max(1,m-1)+ri(-8,8);birds.push({hx,x:hx,y:cy,by:cy,fly:0,alarm:0,vx:0,vy:0,face:R()<.5?-1:1,seed:R()*9,delay:ri(.35,.4)})}
+      cx+=L;cur.push([cx,cy]);flat(ri(60,100))}
     else if(k==='wire'){   // a live wire: a spark of electricity races back and forth along this bit of the line
       flat(50);const L=ri(170,250+60*d);zaps.push({x0:cx,x1:cx+L,y:cy,p:{pts:cur,ox:0,oy:0},pos:cx+L*R(),dir:R()<.5?-1:1,sp:ri(95,140+70*d)});
       cands.push([cx+L/2,cy-g*90]);cx+=L;cur.push([cx,cy]);flat(ri(70,110))}
@@ -583,7 +587,8 @@ const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:
 let sandParts=[];
 const START={x:-500,y:0,armed:true};
 let secret=null,winDoor=null;
-let pools=[],bubbles=[],zaps=[],flash=0;
+let pools=[],bubbles=[],zaps=[],flash=0,birds=[];
+function resetBirds(){for(const b of birds){b.x=b.hx;b.by=b.y;b.fly=0;b.alarm=0;b.vx=0;b.vy=0}}
 let drops=[],flips=[],sharks=[],eyes=[],ghosts=[],killTop=-400,endFlip=null;
 let skullFx=null,curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
@@ -604,7 +609,7 @@ function die(){
   const g=P.g,fell=P.y>killY||P.y<killTop;
   // three ways to go: melt into the line (and shake it with three ripples), splash at the screen edge, or burst in the air
   let line=null;if(!fell)for(const p of plats){const f=floorAt(p,P.x);if(f!==null&&Math.abs(f-P.y)<=30&&(!line||Math.abs(f-P.y)<Math.abs(line.f-P.y)))line={p,f}}
-  P.kind=P.eat?'eaten':P.zapped?'zap':P.water?'drown':fell?'fall':line?'line':'air';P.vx=0;P.ax=P.x;P.ay=P.y;
+  P.kind=P.eat?'eaten':P.zapped?'zap':P.water?'drown':fell?'fall':(line&&!P.boom)?'line':'air';P.boom=0;P.vx=0;P.ax=P.x;P.ay=P.y;
   if(P.zapped){flash=.35;sfx.zap();buzz([30,20,30,20,60])}
   if(P.kind==='line'){P.lp=line.p;P.lx=P.x-line.p.ox;P.dy0=line.f;P.rq=[0,.2,.4]}
   else if(P.kind==='fall'){
@@ -642,7 +647,7 @@ function respawn(){respawnEat();P.zapped=0;
   if(falls>=3){const c=curtain;startLevel(levelN);curtain=c;touchedEarly=true;state='play';return}
   shards=[];holes=[];
   for(const p of plats)if(p.mv)p.dx=p.dy=0;
-  resetGhosts();P.water=null;bubbles=[];
+  resetGhosts();resetBirds();P.water=null;bubbles=[];
   for(const p of plats)if(p.sand)p.sand.holes=[];P.sink=0;sandParts=[];
   for(const p of plats)if(p.cr){p.cr.t=0;p.cr.fall=false;p.cr.vy=0;p.oy=0;p.dy=0}
   for(const f of flips)f.used=0;
@@ -712,6 +717,7 @@ function update(dt){
   for(const s of sparks)if(s.pop>0)s.pop+=dt;
   for(const q of pops)q.t+=dt;pops=pops.filter(q=>q.t<.6);
   for(const f of flips)if(f.used>0)f.used=Math.max(0,f.used-dt);
+  if(state==='dead')for(const b of birds)if(b.fly){b.vy=Math.max(-170,b.vy-60*dt);b.x+=b.vx*dt;b.by+=b.vy*dt;b.fly+=dt}
   for(const z of zaps){z.pos+=z.dir*z.sp*dt;if(z.pos<z.x0+8){z.pos=z.x0+8;z.dir=1}if(z.pos>z.x1-8){z.pos=z.x1-8;z.dir=-1}}
   if(flash>0)flash=Math.max(0,flash-dt);
   // sharks swim along under the line, only the fin sticks out; they jump up with open mouth when you fly over them
@@ -806,6 +812,13 @@ function update(dt){
   // spikes, sharks, falling, dots, checkpoints, goal
   for(const s of spikes)if(s.g===P.g&&P.x+8>s.x0&&P.x-8<s.x1){const h=s.g*(s.y-P.y);if(h<11&&h>-30){die();return}}
   for(const z of zaps){if(Math.abs(P.x-z.pos)<13&&Math.abs(P.y-z.y)<13){P.zapped=1;die();return}}
+  // birds: they notice you coming and need a moment to take off - storm in at full speed and you crash into one
+  for(const b of birds){
+    if(!b.fly){const dx=Math.abs(P.x-b.x),near=dx<85&&Math.abs(P.y-b.y)<60;
+      if(near)b.alarm+=dt;else b.alarm=Math.max(0,b.alarm-dt);
+      if(b.alarm>b.delay){b.fly=1;b.vx=(b.x>=P.x?1:-1)*(70+Math.random()*60);b.vy=-150-Math.random()*60;b.face=b.vx>0?1:-1;sfx.flap()}
+      if(dx<15&&Math.abs((P.y-9)-(b.y-5))<14){b.fly=1;b.vx=(b.x>=P.x?1:-1)*120;b.vy=-220;P.boom=1;die();return}}
+    else{b.vy=Math.max(-170,b.vy-60*dt);b.x+=b.vx*dt;b.by+=b.vy*dt;b.fly+=dt}}
   for(const k of sharks){if(k.g!==P.g)continue;const h=k.g*(k.y-P.y),dx=Math.abs(P.x-k.pos);
     if(dx<11&&h<14&&h>-6){die();return}                     // the fin
     if(k.rise>.2&&dx<18&&h>-6&&h<k.rise*50+4){die();return}  // the mouth
@@ -987,6 +1000,21 @@ function drawZap(d){
     ctx.beginPath();ctx.arc(P.ax+Math.sin(tt*6+i*2)*5+i*3,P.ay-g*(16+tt*55),3+tt*9,0,6.2832);ctx.stroke()}ctx.globalAlpha=1}
   ctx.lineJoin='round';
 }
+// a little bird: round body, head with a beak, a tail; sitting it bobs and pecks, flying it flaps its wings
+function drawBird(b){
+  const f=b.face,x=b.x,y=b.by;ctx.save();ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=2.4;ctx.lineCap='round';ctx.lineJoin='round';
+  if(!b.fly){const peck=Math.max(0,Math.sin(t*1.7+b.seed*3))**12,bob=Math.sin(t*5+b.seed)*.6;
+    ctx.beginPath();ctx.moveTo(x-1.5,y);ctx.lineTo(x-2,y-3);ctx.moveTo(x+1.5,y);ctx.lineTo(x+1,y-3);ctx.stroke();           // legs on the line
+    ctx.beginPath();ctx.ellipse(x,y-7+bob,5.5,4.2,0,0,6.2832);ctx.stroke();                                                  // body
+    ctx.beginPath();ctx.moveTo(x-f*5,y-8+bob);ctx.lineTo(x-f*10,y-11+bob);ctx.stroke();                                       // tail
+    const hx=x+f*(5+peck*2),hy=y-12+bob+peck*5;ctx.beginPath();ctx.arc(hx,hy,2.8,0,6.2832);ctx.stroke();                     // head
+    ctx.beginPath();ctx.moveTo(hx+f*2.6,hy-.8);ctx.lineTo(hx+f*5.5,hy+.4);ctx.lineTo(hx+f*2.6,hy+1.4);ctx.fill()}            // beak
+  else{const fl=Math.sin(b.fly*28);
+    ctx.beginPath();ctx.ellipse(x,y,5,3.5,0,0,6.2832);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x-6,y-1-fl*6);ctx.quadraticCurveTo(x-3,y-2,x,y-1);ctx.quadraticCurveTo(x+3,y-2,x+6,y-1-fl*6);ctx.stroke();   // wings
+    ctx.beginPath();ctx.arc(x+f*5.5,y-2,2.4,0,6.2832);ctx.stroke();ctx.beginPath();ctx.moveTo(x+f*7.6,y-2.6);ctx.lineTo(x+f*10,y-1.6);ctx.lineTo(x+f*7.6,y-.8);ctx.fill()}
+  ctx.restore();
+}
 function drawChar(){
   if(state==='dead'){
     const d=P.dead;
@@ -1109,6 +1137,7 @@ function render(){
   if(START.x>vx0-20&&START.x<vx1){const r=5+.6*Math.sin(t*4+1);ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.arc(START.x-r,START.y,r,0,6.2832);ctx.stroke()}
   if(endFlip&&endFlip.x>vx0&&endFlip.x<vx1){const f=endFlip,r=5+.6*Math.sin(t*4);   // the line ends in a little ring
     ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.arc(f.x+r,f.y,r,0,6.2832);ctx.stroke()}
+  for(const b of birds){if(b.x<vx0-20||b.x>vx1+20||b.by<camY-60)continue;drawBird(b)}
   for(const z of zaps){if(z.x1<vx0||z.x0>vx1)continue;
     // the spark: the line goes jagged where it is, with little arcs jumping off
     const x=z.pos,w=12;strokeAlong(z.p,x-w,x+w,BG,LW+3);
