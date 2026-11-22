@@ -467,7 +467,7 @@ function gen(n){
   const idx=cands.length>=3?[.15,.5,.85].map(f=>Math.floor(f*(cands.length-1))):cands.map((_,i)=>i);
   [...new Set(idx)].forEach(i=>sparks.push({x:cands[i][0],y:cands[i][1],got:false,pop:0}));
   while(sparks.length<3){const f=flats[(sparks.length*7+3)%flats.length];sparks.push({x:f[0],y:f[1]-f[2]*60,got:false,pop:0})}
-  secret=null;{const R2=rng(n*31+7);if(n>=3&&R2()<.4){const y=245+R2()*35,x0=-800,pl=mkPlat([[x0,y],[x0+200,y]],true);plats.push(pl);secret={x:x0+80,y,p:pl}}}
+  secret=null;{const R2=rng(n*31+7);if(n>=4&&R2()<.16){const y=245+R2()*35,x0=-885,pl=mkPlat([[x0,y],[x0+70,y]],true);plats.push(pl);secret={x:x0+36,y,p:pl}}}   // only a late double jump from the very edge gets there
   let maxY=-1e9,minY=1e9;for(const p of plats){const a=p.mv?p.mv.amp:0;p.x0=p.pts[0][0]-a;p.x1=p.pts[p.pts.length-1][0]+a;p.lo=-1e9;p.hi=1e9;
     for(const q of p.pts){maxY=Math.max(maxY,q[1]);minY=Math.min(minY,q[1]);p.lo=Math.max(p.lo,q[1]);p.hi=Math.min(p.hi,q[1])}}killY=maxY+300;killTop=minY-300;
 }
