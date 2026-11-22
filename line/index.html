@@ -291,7 +291,9 @@ function gen(n){
     }
     else if(k==='mover'){
       end();const G=ri(250,330+60*d),pw=72,c=cx+G/2,amp=G/2-pw/2-2;
-      plats.push(mkPlat([[c-pw/2,cy],[c+pw/2,cy]],false,{amp,per:ri(3.9,3.1-.5*d),ph:R()*6.283}));
+      const mp=mkPlat([[c-pw/2,cy],[c+pw/2,cy]],false,{amp,per:ri(3.9,3.1-.5*d),ph:R()*6.283});
+      if(n>=12&&g>0&&R()<.5)mp.sand={holes:[],seed:R()*99};   // later on, some moving bridges are made of sand too
+      plats.push(mp);
       cands.push([c,cy-g*48]);cx+=G;cur=[[cx,cy]];flat(ri(110,160));
     }
   }
@@ -428,15 +430,16 @@ function update(dt){
   t+=dt;
   for(const p of plats)if(p.mv){const nx=p.mv.amp*Math.sin(t*6.2832/p.mv.per+p.mv.ph);p.dx=nx-p.ox;p.ox=nx}
   // sand: grains trickle down all the time, holes close up again
-  for(const p of plats)if(p.sand){const sd=p.sand,a=p.pts[0][0],b=p.pts[1][0],y=p.pts[0][1];
+  for(const p of plats)if(p.sand){const sd=p.sand,a=p.pts[0][0]+p.ox,b=p.pts[1][0]+p.ox,y=p.pts[0][1];
     for(const h of sd.holes)h.t+=dt;sd.holes=sd.holes.filter(h=>h.t<2.6);
     const n=(b-a)/100*9*dt;for(let i=0;i<n||Math.random()<n-i;i++){const x=a+Math.random()*(b-a);if(floorAt(p,x)!==null)sandParts.push({x,y:y+2,vy:20+Math.random()*30,t:0});if(i>50)break}
-    for(const h of sd.holes)if(h.t<2.2)for(let i=0;i<3;i++)sandParts.push({x:(h.a+h.b)/2+(Math.random()-.5)*(h.b-h.a)*.8,y:y,vy:40+Math.random()*60,t:0})}
+    for(const h of sd.holes)if(h.t<2.2)for(let i=0;i<3;i++)sandParts.push({x:p.ox+(h.a+h.b)/2+(Math.random()-.5)*(h.b-h.a)*.8,y:y,vy:40+Math.random()*60,t:0})}
   for(const q of sandParts){q.t+=dt;q.vy+=600*dt;q.y+=q.vy*dt}sandParts=sandParts.filter(q=>q.t<.7);
   if(state==='play'){const on=P.ground&&P.on&&P.on.sand?P.on:null;
     if(on){const still=Math.abs(P.vx)<SPEED*.2;P.sink=Math.max(0,(P.sink||0)+(still?dt:-dt*1.5));
       if(still&&Math.random()<dt*25*(P.sink+.2))sandParts.push({x:P.x+(Math.random()-.5)*20,y:P.y+2,vy:30+Math.random()*40,t:0});
-      if(P.sink>1.1){const lx=P.x-on.ox;on.sand.holes.push({a:lx-17,b:lx+17,t:0});P.sink=0;P.ground=false;P.on=null;P.vy=0;sfx.crack()}}
+      if(P.sink>1.1){const lx=P.x-on.ox;on.sand.holes.push(on.mv?{a:on.pts[0][0]-1,b:on.pts[1][0]+1,t:0}:{a:lx-17,b:lx+17,t:0});   // a sand bridge gives way completely
+        P.sink=0;P.ground=false;P.on=null;P.vy=0;sfx.crack()}}
     else P.sink=Math.max(0,(P.sink||0)-dt*2)}
   for(const p of plats)if(p.cr){const c=p.cr,prev=p.oy;
     if(!c.fall&&state==='play'&&P.ground&&P.on===p){c.t+=dt;if(c.t>.6){c.fall=true;sfx.crack();buzz(20)}}
@@ -595,7 +598,7 @@ function drawBlob(){
 }
 // sand: the line made of grains (packed tight on top, looser below), with gaps where it has given way
 function drawSand(p){
-  const a=p.pts[0][0],b=p.pts[1][0],y=p.pts[0][1],sd=p.sand;ctx.fillStyle=FG;
+  const a=p.pts[0][0]+p.ox,b=p.pts[1][0]+p.ox,y=p.pts[0][1],sd=p.sand;ctx.fillStyle=FG;
   let i=0;for(let x=a;x<=b;x+=2.2,i++){if(floorAt(p,x)===null)continue;
     const h1=Math.sin(i*12.9898+sd.seed)*43758.5453,r1=h1-Math.floor(h1),h2=Math.sin(i*78.233+sd.seed)*12345.678,r2=h2-Math.floor(h2);
     ctx.fillRect(x-1.1,y-2+r1*1.2,2.2,2.2+r2*1.4);if(r2>.55)ctx.fillRect(x-.8+r1,y+1.4+r2*2,1.6,1.6)}
