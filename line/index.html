@@ -269,13 +269,15 @@ function noise(t0,dur,vol,type,freq,q,f1,att){
   g.gain.exponentialRampToValueAtTime(.0005,t0+dur);
   s.connect(f).connect(g).connect(MUS.out);s.start(t0,Math.random()*.5);s.stop(t0+dur+.03);
 }
-function kick(t0,v){const c=MUS.ac,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(160,t0);o.frequency.exponentialRampToValueAtTime(44,t0+.11);
+// mix: more beat, less keyboard
+const DRUMS=1.35,KEYS=.6;
+function kick(t0,v){v*=DRUMS;const c=MUS.ac,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(160,t0);o.frequency.exponentialRampToValueAtTime(44,t0+.11);
   g.gain.setValueAtTime(v,t0);g.gain.exponentialRampToValueAtTime(.001,t0+.2);o.connect(g).connect(MUS.out);o.start(t0);o.stop(t0+.22);noise(t0,.012,v*.25,'lowpass',3000)}
-const hat=(t0,open)=>open?noise(t0,.13,.08,'highpass',7500):noise(t0,.03,.035,'highpass',9000);
-function clap(t0){for(let k=0;k<3;k++)noise(t0+k*.011,.012,.14,'bandpass',1500,1.2);noise(t0+.033,.16,.13,'bandpass',1400,1.1)}
-function snare(t0,v){noise(t0,.11,v,'bandpass',1900,.9);voice(t0,.03,{f:200,type:'triangle',vol:v*.8,rel:.05})}
+const hat=(t0,open)=>open?noise(t0,.13,.08*DRUMS,'highpass',7500):noise(t0,.03,.035*DRUMS,'highpass',9000);
+function clap(t0){for(let k=0;k<3;k++)noise(t0+k*.011,.012,.14*DRUMS,'bandpass',1500,1.2);noise(t0+.033,.16,.13*DRUMS,'bandpass',1400,1.1)}
+function snare(t0,v){v*=DRUMS;noise(t0,.11,v,'bandpass',1900,.9);voice(t0,.03,{f:200,type:'triangle',vol:v*.8,rel:.05})}
 // the C64 trick for chords: one voice running through the notes 40 times a second
-function sidChord(t0,dur,notes,vol,lp0,lp1){
+function sidChord(t0,dur,notes,vol,lp0,lp1){vol*=KEYS;
   const c=MUS.ac,o=c.createOscillator(),q=c.createBiquadFilter(),g=c.createGain();o.setPeriodicWave(wave(.3));
   for(let k=0,t=t0;t<t0+dur+.1;k++,t+=.025)o.frequency.setValueAtTime(mf(notes[k%notes.length]),t);
   q.type='lowpass';q.Q.value=4;q.frequency.setValueAtTime(lp0,t0);q.frequency.exponentialRampToValueAtTime(lp1||lp0,t0+dur);
@@ -317,9 +319,9 @@ function say(word,t0,note,o){
 
 // which tune plays in which bar: the old catchy one in the groove and the second theme, the new one in the theme and the first drop, both in the second drop
 function tuneAt(b){if(b>=4&&b<8)return [OLD,(b-4)*16];if(b>=8&&b<16)return [LEAD,(b-8)*16];if(b>=24&&b<32)return [LEAD,(b-24)*16];if(b>=32&&b<40)return [OLD,(b-32)%4*16];if(b>=46&&b<50)return [OLD,(b-46)*16];if(b>=50)return [LEAD,64+(b-50)*16];return null}
-function tuneNote(arr,k,st,o){const n=arr[k];if(!n)return;let l=1;while(l<4&&!arr[(k+l)%arr.length])l++;
+function tuneNote(arr,k,st,o){o={...o,vol:o.vol*KEYS};const n=arr[k];if(!n)return;let l=1;while(l<4&&!arr[(k+l)%arr.length])l++;
   voice(o.t0,SPS*l*.92,{f:mf(n+(o.up||0)),f0:MUS.prev?mf(MUS.prev+(o.up||0)):0,glide:.035,duty:o.duty,vol:o.vol,vib:.007,rel:.08,echo:.45});
-  if(o.dbl)voice(o.t0,SPS*l*.92,{f:mf(n+12),duty:.5-o.duty*.6,vol:.03,vib:.007,rel:.06,echo:.3});
+  if(o.dbl)voice(o.t0,SPS*l*.92,{f:mf(n+12),duty:.5-o.duty*.6,vol:.03*KEYS,vib:.007,rel:.06,echo:.3});
   MUS.prev=n}
 function musStep(i,t0){
   const b=(i>>4)%BARS,st=i%16,ci=b%4,ch=CHORDS[ci],root=ROOTS[ci],sec=SECTION(b);
@@ -339,7 +341,7 @@ function musStep(i,t0){
     else if(st%2)voice(t0,SPS*.5,{f:mf(root),duty:.45,vol:.1,lp:[900,200,6]});
     if(st%4===2)voice(t0,SPS*.8,{f:mf(root),type:'sine',vol:.12});
     // the running arpeggio from the first version
-    if(sec!=='intro')voice(t0,SPS*.8,{f:mf(ch[st%3]+12),duty:.125,vol:sec==='groove'?.04:.03,rel:.03,echo:.2});
+    if(sec!=='intro')voice(t0,SPS*.8,{f:mf(ch[st%3]+12),duty:.125,vol:(sec==='groove'?.04:.03)*KEYS,rel:.03,echo:.2});
     // the tunes, legato with SID portamento
     const tn=tuneAt(b);if(tn)tuneNote(tn[0],tn[1]+st,st,{t0,duty,vol:tn[0]===OLD?.07:.075,dbl:sec==='drop'});
     // Gigi-style off-beat chord stabs in the drop
@@ -354,12 +356,12 @@ function musStep(i,t0){
     if(sec==='soft'){   // no kick, just hats and claps, bright chord stabs
       if(st%4===2)hat(t0,true);if(st===4||st===12)clap(t0);
       if(st===2||st===10)sidChord(t0,SPS*2,ch.map(x=>x+12),.065,3200,1200);
-      voice(t0,SPS*.7,{f:mf(ch[st%3]+24),duty:.125,vol:.025,rel:.03,echo:.25});
+      voice(t0,SPS*.7,{f:mf(ch[st%3]+24),duty:.125,vol:.025*KEYS,rel:.03,echo:.25});
     }
     if(sec==='slow'){   // half time: everything at half the speed
       if(st===0)kick(t0,.6);if(st===8)clap(t0);if(st%4===0)hat(t0,st%8===4);
       if(st===0||st===8)sidChord(t0,SPS*6,ch.map(x=>x+12),.05,2200,500);
-      if(st%2===0)voice(t0,SPS*1.4,{f:mf(ch[(st/2)%3]+12),duty:.125,vol:.03,rel:.05,echo:.3});
+      if(st%2===0)voice(t0,SPS*1.4,{f:mf(ch[(st/2)%3]+12),duty:.125,vol:.03*KEYS,rel:.05,echo:.3});
     }
     if(sec==='blob'){   // the beat is back, with a bubbling bass
       if(st%4===0)kick(t0,.55);if(st%4===2)hat(t0,true);if(st===4||st===12)clap(t0);
