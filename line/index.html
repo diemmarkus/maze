@@ -856,7 +856,7 @@ function update(dt){
     else{b.vy=Math.max(-170,b.vy-60*dt);b.x+=b.vx*dt;b.by+=b.vy*dt;b.fly+=dt}}
   for(const k of sharks){if(k.g!==P.g)continue;const h=k.g*(k.y-P.y),dx=Math.abs(P.x-k.pos);
     if(dx<11&&h<14&&h>-6){if(!soft())die();return}                     // the fin
-    if(k.rise>.2&&dx<26&&h>-6&&h<k.rise*68+4){if(!soft())die();return}  // the mouth
+    if(k.rise>.2&&dx<24&&h>-6&&h<k.rise*66+4){if(!soft())die();return}  // the mouth
   }
   // ghosts: they creep up on you while you look away, and freeze (eyes fading) when you face them
   for(const k of ghosts){const dx=P.x-k.x,dy=(P.y-P.g*9)-k.y,dist=Math.hypot(dx,dy);
@@ -1120,31 +1120,30 @@ function drawShark(k){
     strokePts([[x+b*12,y],[x+b*6,y-fh*5],[x+b*1+lean,y-fh*10],[x-b*3+lean,y-fh*14],[x-b*6+lean*1.4,y-fh*17],[x-b*5+lean,y-fh*11],[x-b*5,y-fh*5],[x-b*7,y]],false);
     return;
   }
-  // after the drawing: a pointed shark head rises out of the line - angry eye with a brow, a nostril,
-  // and the jaw on the swimming side, wide open with a row of teeth top and bottom
-  const sd=k.dir,rise=1-Math.pow(1-r,2),op=r;
-  strokeAlong(k.p,x-40,x+38,BG,LW+3);
-  ctx.save();ctx.beginPath();if(g>0)ctx.rect(x-120,y-220,240,220+LW/2);else ctx.rect(x-120,y-LW/2,240,220);ctx.clip();
-  ctx.translate(x,y);ctx.scale(sd*1.25,g*1.25);ctx.translate(0,(1-rise)*66);
-  const V=v=>-v;   // up, away from the line
-  // the mouth: upper jaw from under the nose down to the corner, lower jaw from the corner out to its tip;
-  // big triangle teeth along the outer part of each jaw, pointing into the mouth
-  const Mt=[20,V(38)],C=[1,V(21)],Lj=[26,V(3+5*op)],L0=[25,0],MC=[15,V(20)];
-  const teeth=(a,b,n,from)=>{const o=[],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;let nx=-dy/l,ny=dx/l;
-    if(nx*(MC[0]-a[0])+ny*(MC[1]-a[1])<0){nx=-nx;ny=-ny}
-    const s0=from?0:.3,s1=from?.7:1,P_=u=>[a[0]+dx*u,a[1]+dy*u];if(!from)o.push(P_(s0));
-    for(let i=0;i<n;i++){const u0=s0+(s1-s0)*i/n,um=s0+(s1-s0)*(i+.5)/n,m=P_(um);o.push(P_(u0),[m[0]+nx*8*op,m[1]+ny*8*op])}o.push(P_(s1));o.push(b);return o};
-  const head=[[-31,0],[-29,V(16)],[-20,V(38)],[-6,V(56)],[2,V(62)],[8,V(60)],[13,V(52)],[17,V(44)],Mt,
-    ...teeth(Mt,C,2,1),...teeth(C,Lj,2,0),L0];
-  ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=LW/1.25;ctx.lineJoin='round';ctx.lineCap='round';
-  ctx.beginPath();head.forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py));ctx.stroke();
-  // angry eye: a ring with a pupil, a brow slanting down towards the nose
-  ctx.lineWidth=2.6;ctx.beginPath();ctx.arc(-7,V(36),3.6,0,6.2832);ctx.stroke();ctx.beginPath();ctx.arc(-6.2,V(35.5),1.5,0,6.2832);ctx.fill();
-  ctx.lineWidth=LW*.8;ctx.beginPath();ctx.moveTo(-14,V(44));ctx.lineTo(-1,V(39));ctx.stroke();
-  ctx.beginPath();ctx.arc(6,V(46),2,0,6.2832);ctx.fill();   // nostril
+  // after the drawing (green lines): a pointed head grows up out of the line - its outline starts and ends on the line -
+  // eye at the back, the upper jaw coming down to the line with teeth, a small lower jaw with teeth at the waterline; the jaws snap
+  const sd=k.dir,rise=1-Math.pow(1-r,2),SC=1.15;
+  const op=r*(r>.6?.55+.45*Math.sin(t*13+k.x0):1);   // once it's up, the jaws keep snapping
+  const jx=4*op,W=u=>x+sd*u*SC;
+  // cut the line exactly where the head and the lower jaw stand on it (the bit inside the mouth stays: that's the waterline)
+  const cut=(u0,u1)=>{const a=W(u0),b=W(u1);strokeAlong(k.p,Math.min(a,b),Math.max(a,b),BG,LW+3)};cut(-32,4);cut(14+jx,26+jx);
+  ctx.save();ctx.translate(x,y);ctx.scale(sd*SC,g*SC*Math.max(.02,rise));   // grows up out of the line, its feet stay put
+  const V=v=>-v;
+  const zig=(a,b,n,tx,ty)=>{const o=[a];for(let i=0;i<n;i++){const m=(i+.5)/n,e=(i+1)/n;o.push([a[0]+(b[0]-a[0])*m+tx,a[1]+(b[1]-a[1])*m+ty],[a[0]+(b[0]-a[0])*e,a[1]+(b[1]-a[1])*e])}return o};
+  ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineJoin='round';ctx.lineCap='round';
+  // keep the stroke as thick as the line even though the head is squashed while it grows
+  const st=()=>{ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.lineWidth=LW*DPR*K;ctx.stroke();ctx.restore()};
+  // head: one smooth curve up to the rounded tip and down the snout, then the upper jaw back to the line with its teeth
+  const J0=[13,V(40)],J1=[11,V(30)];
+  ctx.beginPath();ctx.moveTo(-32,0);ctx.quadraticCurveTo(-22,V(40),-3,V(59));ctx.quadraticCurveTo(2,V(64),6,V(59));ctx.quadraticCurveTo(12,V(52),J0[0],J0[1]);ctx.lineTo(J1[0],J1[1]);
+  zig(J1,[4,0],3,6*op,0).slice(1).forEach(([px,py])=>ctx.lineTo(px,py));st();
+  // lower jaw, swinging out and in, teeth pointing up into the mouth
+  const jaw=[[14+jx,0],...zig([14+jx,0],[19+jx,V(17)],2,-5*op,0).slice(1),[26+jx,V(16)],[26+jx,0]];
+  ctx.beginPath();jaw.forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py));st();
+  // the eye at the back
+  if(rise>.35){ctx.beginPath();ctx.ellipse(-13.5,V(21),3.6,3.6,0,0,6.2832);ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.lineWidth=2.6*DPR*K;ctx.stroke();ctx.restore();
+    ctx.beginPath();ctx.ellipse(-12.8,V(21.5),1.5,1.5,0,0,6.2832);ctx.fill()}
   ctx.restore();
-  // a little splash where it breaks through
-  ctx.fillStyle=FG;for(let i=0;i<4;i++){const u=(i-1.5)/1.5,yy=y-g*(4+r*10*(1-Math.abs(u)*.5));ctx.beginPath();ctx.arc(x+u*26,yy,1.8*r,0,6.2832);ctx.fill()}
 }
 function render(){
   const k=DPR*K;
