@@ -487,6 +487,7 @@ function hslHex(h,s,l){s/=100;l/=100;const f=n=>{const k=(n+h/30)%12,c=l-s*Math.
 function setTheme(n){
   const h=(200+(n-1)*47)%360;
   BG=hslHex(h,36,19);FG=hslHex(h,72,77);
+  if(n===42)[BG,FG]=[FG,BG];   // the answer: everything the other way round
   const r=document.documentElement.style;r.setProperty('--bg',BG);r.setProperty('--fg',FG);
   document.querySelector('meta[name=theme-color]').setAttribute('content',BG);
 }
