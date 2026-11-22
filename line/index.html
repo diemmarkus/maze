@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#1E3440">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="The Line">
+<link rel="manifest" href="manifest.webmanifest">
 <title>The Line</title>
 <meta name="description" content="Ein Jump &amp; Run auf einer einzigen Linie: lauf, spring, schwimm – und pass auf Haie, Geister und Sand auf. Eines von Jonas' Spielen.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -61,6 +64,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
 .big .sw.got{animation:pop .45s cubic-bezier(.3,1.8,.5,1) both}
 .big .sw:nth-child(2){animation-delay:.25s}.big .sw:nth-child(3){animation-delay:.5s}
 @keyframes pop{0%{transform:scale(0) rotate(-40deg)}100%{transform:none}}
+.iosHint{font-size:12px;opacity:.8;margin:8px 0 0}
 .total{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;letter-spacing:.1em;margin:2px 0 4px}
 .total .st{width:15px;height:15px}
 /* level overview: every level in its own colour */
@@ -115,6 +119,8 @@ h1{font-size:30px;font-weight:700;letter-spacing:.22em;margin:4px 0 8px}
       </svg>
       <div class="total" id="totalStars"></div>
       <div class="btns"><button type="button" class="btn" id="playBtn" data-i18n="play">SPIELEN</button><button type="button" class="btn alt" id="levelsBtn" data-i18n="levels">LEVELS</button></div>
+      <div class="btns"><button type="button" class="btn alt" id="installBtn" data-i18n="install" hidden>ALS APP INSTALLIEREN</button></div>
+      <p class="iosHint" id="iosHint" hidden></p>
       <a class="home" href="../" data-i18n="home">← ALLE SPIELE</a>
     </div>
   </div>
@@ -157,12 +163,12 @@ const $=id=>document.getElementById(id);
 
 /* ---------- languages (shared with the other games) ---------- */
 const LANG={
-  de:{secret:'Geheimtür gefunden!',sTime:'Etwas schneller wäre besser',levels:'LEVELS',back:'ZURÜCK',reset:'Dreimal gestürzt – das Level beginnt von vorn',s3:'Alle Punkte, kein Sturz!',sDots:'Sammle alle 3 Punkte',sFalls:'Schaff es ohne Sturz',level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',fall:'✕'},
-  en:{secret:'Secret door!',sTime:'A bit faster next time',levels:'LEVELS',back:'BACK',reset:'Three falls – the level starts over',s3:'All dots, no falls!',sDots:'Collect all 3 dots',sFalls:'Make it without a fall',level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',fall:'✕'},
-  fr:{secret:'Porte secrète !',sTime:'Un peu plus vite la prochaine fois',levels:'NIVEAUX',back:'RETOUR',reset:'Trois chutes – le niveau recommence',s3:'Tous les points, aucune chute !',sDots:'Ramasse les 3 points',sFalls:'Réussis sans tomber',level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',fall:'✕'},
-  es:{secret:'¡Puerta secreta!',sTime:'Un poco más rápido la próxima vez',levels:'NIVELES',back:'VOLVER',reset:'Tres caídas: el nivel empieza de nuevo',s3:'¡Todos los puntos, sin caídas!',sDots:'Recoge los 3 puntos',sFalls:'Hazlo sin caerte',level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',fall:'✕'},
-  it:{secret:'Porta segreta!',sTime:'Un po’ più veloce la prossima volta',levels:'LIVELLI',back:'INDIETRO',reset:'Tre cadute: il livello ricomincia',s3:'Tutti i punti, nessuna caduta!',sDots:'Raccogli tutti e 3 i punti',sFalls:'Fallo senza cadere',level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',fall:'✕'},
-  pt:{secret:'Porta secreta!',sTime:'Um pouco mais rápido da próxima vez',levels:'NÍVEIS',back:'VOLTAR',reset:'Três quedas: o nível recomeça',s3:'Todos os pontos, sem quedas!',sDots:'Pegue os 3 pontos',sFalls:'Consiga sem cair',level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',fall:'✕'}
+  de:{install:'ALS APP INSTALLIEREN',ios:'Als App: Teilen-Knopf ⬆︎ → „Zum Home-Bildschirm“',secret:'Geheimtür gefunden!',sTime:'Etwas schneller wäre besser',levels:'LEVELS',back:'ZURÜCK',reset:'Dreimal gestürzt – das Level beginnt von vorn',s3:'Alle Punkte, kein Sturz!',sDots:'Sammle alle 3 Punkte',sFalls:'Schaff es ohne Sturz',level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',fall:'✕'},
+  en:{install:'INSTALL AS APP',ios:'As an app: Share button ⬆︎ → “Add to Home Screen”',secret:'Secret door!',sTime:'A bit faster next time',levels:'LEVELS',back:'BACK',reset:'Three falls – the level starts over',s3:'All dots, no falls!',sDots:'Collect all 3 dots',sFalls:'Make it without a fall',level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',fall:'✕'},
+  fr:{install:'INSTALLER L’APP',ios:'En app : bouton Partager ⬆︎ → « Sur l’écran d’accueil »',secret:'Porte secrète !',sTime:'Un peu plus vite la prochaine fois',levels:'NIVEAUX',back:'RETOUR',reset:'Trois chutes – le niveau recommence',s3:'Tous les points, aucune chute !',sDots:'Ramasse les 3 points',sFalls:'Réussis sans tomber',level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',fall:'✕'},
+  es:{install:'INSTALAR COMO APP',ios:'Como app: botón Compartir ⬆︎ → «Añadir a pantalla de inicio»',secret:'¡Puerta secreta!',sTime:'Un poco más rápido la próxima vez',levels:'NIVELES',back:'VOLVER',reset:'Tres caídas: el nivel empieza de nuevo',s3:'¡Todos los puntos, sin caídas!',sDots:'Recoge los 3 puntos',sFalls:'Hazlo sin caerte',level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',fall:'✕'},
+  it:{install:'INSTALLA COME APP',ios:'Come app: tasto Condividi ⬆︎ → «Aggiungi alla schermata Home»',secret:'Porta segreta!',sTime:'Un po’ più veloce la prossima volta',levels:'LIVELLI',back:'INDIETRO',reset:'Tre cadute: il livello ricomincia',s3:'Tutti i punti, nessuna caduta!',sDots:'Raccogli tutti e 3 i punti',sFalls:'Fallo senza cadere',level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',fall:'✕'},
+  pt:{install:'INSTALAR COMO APP',ios:'Como app: botão Compartilhar ⬆︎ → “Adicionar à Tela de Início”',secret:'Porta secreta!',sTime:'Um pouco mais rápido da próxima vez',levels:'NÍVEIS',back:'VOLTAR',reset:'Três quedas: o nível recomeça',s3:'Todos os pontos, sem quedas!',sDots:'Pegue os 3 pontos',sFalls:'Consiga sem cair',level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',fall:'✕'}
 };
 let lang='de',T=LANG.de;
 function setLang(k){lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.lang=lang;
@@ -1211,6 +1217,15 @@ $('menuBtn').onclick=()=>{sel=levelN;showMenu()};
 $('nextBtn').onclick=()=>{sel=levelN+1;play(sel)};
 $('againBtn').onclick=()=>play(levelN);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
+/* ---------- install as an app ---------- */
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+let installEv=null;
+const standalone=matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEv=e;$('installBtn').hidden=false});
+addEventListener('appinstalled',()=>{installEv=null;$('installBtn').hidden=true});
+$('installBtn').onclick=async()=>{if(!installEv)return;installEv.prompt();try{await installEv.userChoice}catch(_){}installEv=null;$('installBtn').hidden=true};
+// iPhone/iPad: no install button there, so a one-line hint (only in Safari, only if not installed yet)
+if(!standalone&&/iP(hone|ad|od)/.test(navigator.userAgent)){$('iosHint').hidden=false;$('iosHint').textContent=T.ios}
 
 {let want='de';try{const s=localStorage.getItem('irrgarten.lang');if(LANG[s])want=s;else{const n=(navigator.language||'de').slice(0,2);if(LANG[n])want=n}}catch(_){}setLang(want)}
 showMenu();
