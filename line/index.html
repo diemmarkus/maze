@@ -604,7 +604,7 @@ function resetBirds(){for(const b of birds){b.x=b.hx;b.by=b.y;b.fly=0;b.alarm=0;
 let drops=[],flips=[],sharks=[],eyes=[],ghosts=[],killTop=-400,endFlip=null;
 let skullFx=null,curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
-let camX=0,camY=0,hintMoved=false,hintJumped=false,touchedEarly=false;
+let camX=0,camY=0,scrollX=null,scrollV=0,scrollWait=0,hintMoved=false,hintJumped=false,touchedEarly=false;
 
 function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;drops=[]}
 function startLevel(n){
@@ -612,6 +612,8 @@ function startLevel(n){
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
   spawn={x:40,y:0,g:1};placeAt(40,0,1);P.face=1;P.win=0;
   camX=P.x-viewW*.35;camY=P.y-VIEW_H*.6;
+  // every 10th level the screen keeps moving on: slowly, but it doesn't wait for you
+  scrollX=n%10===0?camX:null;scrollV=Math.min(SPEED*.5,goal.x/parTime());scrollWait=1.5;
   hintMoved=hintJumped=false;touchedEarly=false;
   updateHud();
 }
@@ -641,7 +643,7 @@ function updateRescue(dt){
     r.cx=r.fx+(r.to.x-r.fx)*k;r.cy=(r.fy-G0*95)+((r.to.y-g*95)-(r.fy-G0*95))*k-Math.sin(k*Math.PI)*25*g;r.len=Math.max(30,(Math.abs(r.fy-(r.fy-G0*95))-16)*(1-k*.4));hang()}   // reels you back
   else if(r.t<2.3){const k=ease((r.t-1.95)/.35);r.len=(95-16-21)*k+(1-k)*r.len;r.hy=r.cy+g*r.len;r.hx=r.cx;P.x=r.hx;P.y=Math.min(1,k*1.2)<1?r.hy+g*21:r.to.y}   // lowers you onto the line
   else if(r.t<2.6){r.len=Math.max(0,r.len-dt*300);r.cy-=g*dt*90;r.hx=r.cx;r.hy=r.cy+g*r.len;P.x=r.to.x;P.y=r.to.y}            // lets go, reels in, floats off
-  else{const s=support(r.to.x,r.to.y,g)||support(r.to.x,r.to.y-g*30,g);P.g=g;P.x=r.to.x;P.y=s?s.y:r.to.y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.inv=1.2;P.dj=true;state='play';rescue=null;return}
+  else{const s=support(r.to.x,r.to.y,g)||support(r.to.x,r.to.y-g*30,g);P.g=g;P.x=r.to.x;P.y=s?s.y:r.to.y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.inv=1.2;P.dj=true;state='play';rescue=null;if(scrollX!==null){scrollX=Math.min(scrollX,P.x-viewW*.38);scrollWait=1}return}
   P.air=1;
 }
 function die(){
@@ -694,6 +696,7 @@ function respawn(){respawnEat();P.zapped=0;
   for(const f of flips)f.used=0;
   for(const k of sharks)k.rise=0;
   placeAt(spawn.x,spawn.y,spawn.g);camX=P.x-viewW*.38;camY=P.y-VIEW_H*(P.g>0?.6:.4);state='play';
+  if(scrollX!==null){scrollX=camX;scrollWait=1.5}
 }
 function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(_){}}
 
@@ -784,6 +787,9 @@ function update(dt){
   if(state==='rescue'){lvTime+=dt;updateRescue(dt);return}
   if(state!=='play')return;
   lvTime+=dt;
+  // the moving screen: once it catches you at its left edge, it pushes you along (if a wall is in the way, it waits)
+  if(scrollX!==null){scrollWait-=dt;if(scrollWait<=0)scrollX=Math.min(scrollX+scrollV*dt,goal.x-viewW*.6);
+    if(P.x<scrollX+12){const nx=scrollX+12;if(wallAt(nx,P.y))scrollX=P.x-12;else{P.x=nx;P.vx=Math.max(P.vx,0)}}}
   const g=P.g;
   const dir=joy.id!==null?joyDir():keys.r-keys.l;
   if(dir!==0){P.face=dir>0?1:-1;hintMoved=true}
@@ -1169,10 +1175,17 @@ function render(){
   if(state==='play'||state==='win'||state==='rescue'){
     const tx=P.x-viewW*.38+P.vx*.35,ty=P.y-VIEW_H*(P.g>0?.6:.4);
     camX+=(tx-camX)*.08;camY+=(ty-camY)*.06;
+    if(scrollX!==null)camX=Math.max(camX,scrollX);
   }
   let sx=0,sy=0;if(shake>0){sx=(Math.random()-.5)*shake*30;sy=(Math.random()-.5)*shake*30}
   ctx.setTransform(k,0,0,k,-(camX+sx)*k,-(camY+sy)*k);
   ctx.lineCap='round';ctx.lineJoin='round';
+  // moving screen: little arrows at the left edge, they pulse and get stronger when it's about to catch you
+  if(scrollX!==null&&(state==='play'||state==='rescue')){const near=Math.max(0,Math.min(1,1-(P.x-camX)/(viewW*.35)));
+    ctx.strokeStyle=FG;ctx.lineWidth=3;
+    for(let i=0;i<3;i++){const y=camY+VIEW_H*(.3+.2*i),x=camX+12+((t*1.6+i*.33)%1)*8;
+      ctx.globalAlpha=(.18+.5*near)*(.75+.25*Math.sin(t*(4+8*near)));ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x+7,y);ctx.lineTo(x,y+7);ctx.stroke()}
+    ctx.globalAlpha=1}
   const vx0=camX-40,vx1=camX+viewW+40;
   // the line
   ctx.strokeStyle=FG;ctx.lineWidth=LW;
@@ -1341,7 +1354,7 @@ function updateHud(){
 function parTime(){return goal.x/205*1.5+3*(plats.filter(p=>p.mv).length+eyes.length)+6}
 function totalStars(){let s=0;for(const k in bestStars)s+=bestStars[k];return s}
 function paintTotals(){const h=STAR.replace('class="st"','class="st on"')+' '+fmtStars(totalStars())+' / '+unlocked*3;$('totalStars').innerHTML=h;$('totalStars2').innerHTML=h}
-function levelColours(n){const h=(200+(n-1)*47)%360;return[hslHex(h,36,19),hslHex(h,72,77)]}
+function levelColours(n){const h=(200+(n-1)*47)%360,c=[hslHex(h,36,19),hslHex(h,72,77)];return n===42?c.reverse():c}
 function showLevels(){
   state='menu';hud.hidden=true;startOv.hidden=pauseOv.hidden=doneOv.hidden=true;$('levelsOv').hidden=false;
   setTheme(levelN||1);paintTotals();
