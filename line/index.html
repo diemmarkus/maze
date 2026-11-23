@@ -1175,7 +1175,7 @@ function render(){
   if(state==='play'||state==='win'||state==='rescue'){
     const tx=P.x-viewW*.38+P.vx*.35,ty=P.y-VIEW_H*(P.g>0?.6:.4);
     camX+=(tx-camX)*.08;camY+=(ty-camY)*.06;
-    if(scrollX!==null)camX=Math.max(camX,scrollX);
+    if(scrollX!==null){scrollX=Math.max(scrollX,Math.min(camX,P.x-viewW*.38));camX=Math.max(camX,scrollX)}   // run ahead and it carries on from where you are
   }
   let sx=0,sy=0;if(shake>0){sx=(Math.random()-.5)*shake*30;sy=(Math.random()-.5)*shake*30}
   ctx.setTransform(k,0,0,k,-(camX+sx)*k,-(camY+sy)*k);
