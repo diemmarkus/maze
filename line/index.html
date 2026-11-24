@@ -610,7 +610,7 @@ let BT=0,INV=0,INVgo=false,invCss=false,NOCAM=false,skullFx=null,curtain=null,sh
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
 let camX=0,camY=0,scrollX=null,scrollV=0,scrollWait=0,hintMoved=false,hintJumped=false,touchedEarly=false;
 
-function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;P.ride=null;P.lock=false;P.rollT=0;drops=[]}
+function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;P.ride=null;P.intro=false;P.rollT=0;drops=[]}
 function startLevel(n){
   ripples=[];winDoor=null;rescue=null;safeTrail.length=0;P.half=false;P.inv=0;levelN=n;INV=0;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];curtain=null;shake=0;
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
@@ -812,7 +812,7 @@ function update(dt){
   if(state==='rescue'){lvTime+=dt;updateRescue(dt);return}
   if(state==='build'){BT+=dt;if(BT>=BUILD_LINE){   // the line is there: you jump up out of it and land, then it's your turn
       if(P.on){const sp=lineSpan(P.on,P.x,CL/2+1);holes.push({p:P.on,x:P.x-P.on.ox,l:sp.el-P.on.ox,r:sp.er-P.on.ox,t:0})}
-      P.vy=-P.g*JV*.72;P.ground=false;P.on=null;P.air=0;P.coy=0;P.lock=true;sfx.jump();state='play'}return}
+      P.vy=-P.g*JV*.72;P.ground=false;P.on=null;P.air=0;P.coy=0;P.intro=true;sfx.jump();state='play'}return}   // you're in control from the jump on
   if(state!=='play')return;
   lvTime+=dt;
   if(P.ride){const r=P.ride;r.t+=dt;P.vx=r.dir*SPEED;P.face=r.dir;
@@ -823,8 +823,8 @@ function update(dt){
   if(scrollX!==null){scrollWait-=dt;if(scrollWait<=0)scrollX=Math.min(scrollX+scrollV*dt,goal.x-viewW*.6);
     if(P.x<scrollX+12){const nx=scrollX+12;if(wallAt(nx,P.y))scrollX=P.x-12;else{P.x=nx;P.vx=Math.max(P.vx,0)}}}
   const g=P.g;
-  if(P.lock){P.buf=0;if(P.ground&&P.vy===0)P.lock=false}
-  const dir=P.lock?0:joy.id!==null?joyDir():keys.r-keys.l;
+  if(P.intro&&P.ground){P.intro=false;INVgo=true}   // landed: the inverted colours fade back by themselves
+  const dir=joy.id!==null?joyDir():keys.r-keys.l;
   if(dir!==0){P.face=dir>0?1:-1;hintMoved=true}
   const onSand=P.ground&&P.on&&P.on.sand,tgt=dir*SPEED*(onSand?.55:P.water?.42:1),acc=P.ground?ACC_G:ACC_A;
   P.vx+=Math.max(-acc*dt,Math.min(acc*dt,tgt-P.vx));
@@ -1476,9 +1476,9 @@ function frame(now){
   if(curtain&&state!=='paused'){curtain.t+=dt;if(curtain.t>1.9)curtain=null}
   if(shake>0)shake=Math.max(0,shake-dt);
   if(skullFx&&state!=='paused'){skullFx.t+=dt;
-    if(state==='play'&&!P.lock&&skullFx.t>0&&(Math.abs(P.vx)>8||!P.ground))skullFx.go=1;   // you start moving: it blurs and fades
+    if(state==='play'&&!P.intro&&skullFx.t>0&&(Math.abs(P.vx)>8||!P.ground))skullFx.go=1;   // you start moving: it blurs and fades
     if(skullFx.go){skullFx.gone+=dt/.9;if(skullFx.gone>=1)skullFx=null}}
-  if(INV>0&&state!=='paused'){if(state==='play'&&!P.lock&&(Math.abs(P.vx)>8||!P.ground))INVgo=true;if(INVgo)INV=Math.max(0,INV-dt/.6)}
+  if(INV>0&&state!=='paused'){if(state==='play'&&!P.intro&&(Math.abs(P.vx)>8||!P.ground))INVgo=true;if(INVgo)INV=Math.max(0,INV-dt/.6)}
   if((INV>.5)!==invCss){invCss=INV>.5;const r=document.documentElement.style;r.setProperty('--bg',invCss?FG:BG);r.setProperty('--fg',invCss?BG:FG)}
   try{render();if(INV>0)renderInverted()}catch(e){console.error(e)}   // a drawing mistake must never freeze the game
   requestAnimationFrame(frame);
