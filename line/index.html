@@ -455,7 +455,7 @@ const sfx={
 };
 
 /* ---------- landscape stage ---------- */
-const stage=$('stage'),cv=$('c'),ctx=cv.getContext('2d');
+const stage=$('stage'),cv=$('c');let ctx=cv.getContext('2d');
 const VIEW_H=300;               // world units that fit the screen height
 let SW=640,SH=360,rot=false,DPR=1,K=1,viewW=640;
 function layout(){
@@ -606,13 +606,13 @@ let secret=null,winDoor=null,robot=null;
 let pools=[],bubbles=[],zaps=[],flash=0,birds=[];
 function resetBirds(){for(const b of birds){b.x=b.hx;b.by=b.y;b.fly=0;b.alarm=0;b.vx=0;b.vy=0}}
 let drops=[],flips=[],sharks=[],eyes=[],ghosts=[],killTop=-400,endFlip=null;
-let skullFx=null,curtain=null,shake=0,dtFrame=0,ripples=[];
+let INV=0,INVgo=false,invCss=false,NOCAM=false,skullFx=null,curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
 let camX=0,camY=0,scrollX=null,scrollV=0,scrollWait=0,hintMoved=false,hintJumped=false,touchedEarly=false;
 
 function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;P.ride=null;P.rollT=0;drops=[]}
 function startLevel(n){
-  ripples=[];winDoor=null;rescue=null;safeTrail.length=0;P.half=false;P.inv=0;levelN=n;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];curtain=null;shake=0;
+  ripples=[];winDoor=null;rescue=null;safeTrail.length=0;P.half=false;P.inv=0;levelN=n;INV=0;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];curtain=null;shake=0;
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
   spawn={x:40,y:0,g:1};placeAt(40,0,1);P.face=1;P.win=0;
   camX=P.x-viewW*.35;camY=P.y-VIEW_H*.6;
@@ -697,7 +697,9 @@ function flipNow(x,y,f){
 }
 function respawnEat(){P.eat=null}
 function respawn(){respawnEat();P.zapped=0;
-  if(falls>=3){const c=curtain;startLevel(levelN);curtain=c;touchedEarly=true;state='play';return}
+  // the blood stays: you come back on a screen in the inverted colours, it fades back once you move
+  if(curtain){curtain=null;INV=1;INVgo=false}
+  if(falls>=3){const c=curtain;startLevel(levelN);if(c){INV=1;INVgo=false}touchedEarly=true;state='play';return}
   shards=[];holes=[];
   for(const p of plats)if(p.mv)p.dx=p.dy=0;
   resetGhosts();resetBirds();P.water=null;bubbles=[];
@@ -1298,7 +1300,7 @@ function render(){
   if(!goal)return;
   if(state==='done'){ctx.fillStyle=FG;ctx.fillRect(0,0,cv.width,cv.height);return}
   // camera: a bit ahead of where you run
-  if(state==='play'||state==='win'||state==='rescue'){
+  if(!NOCAM&&(state==='play'||state==='win'||state==='rescue')){
     const tx=P.x-viewW*.38+P.vx*.35,ty=P.y-VIEW_H*(P.g>0?.6:.4);
     camX+=(tx-camX)*.08;camY+=(ty-camY)*.06;
     if(scrollX!==null){scrollX=Math.max(scrollX,Math.min(camX,P.x-viewW*.38));camX=Math.max(camX,scrollX)}   // run ahead and it carries on from where you are
@@ -1449,6 +1451,14 @@ function render(){
 }
 
 /* ---------- loop ---------- */
+// the same picture in swapped colours, laid over the normal one (fully after a death, fading out as you start moving)
+const invCv=document.createElement('canvas'),ictx=invCv.getContext('2d');
+function renderInverted(){
+  if(invCv.width!==cv.width||invCv.height!==cv.height){invCv.width=cv.width;invCv.height=cv.height}
+  const m=ctx,d=dtFrame,b=BG;ctx=ictx;BG=FG;FG=b;dtFrame=0;NOCAM=true;
+  try{render()}finally{ctx=m;FG=BG;BG=b;dtFrame=d;NOCAM=false}
+  const k=INV*INV*(3-2*INV);ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=k;ctx.drawImage(invCv,0,0);ctx.restore();
+}
 let lastT=performance.now(),accT=0;
 function frame(now){
   let dt=Math.min(.1,(now-lastT)/1000);lastT=now;
@@ -1460,7 +1470,9 @@ function frame(now){
   if(skullFx&&state!=='paused'){skullFx.t+=dt;
     if(state==='play'&&skullFx.t>0&&(Math.abs(P.vx)>8||!P.ground))skullFx.go=1;   // you start moving: it blurs and fades
     if(skullFx.go){skullFx.gone+=dt/.9;if(skullFx.gone>=1)skullFx=null}}
-  try{render()}catch(e){console.error(e)}   // a drawing mistake must never freeze the game
+  if(INV>0&&state!=='paused'){if(state==='play'&&(Math.abs(P.vx)>8||!P.ground))INVgo=true;if(INVgo)INV=Math.max(0,INV-dt/.6)}
+  if((INV>.5)!==invCss){invCss=INV>.5;const r=document.documentElement.style;r.setProperty('--bg',invCss?FG:BG);r.setProperty('--fg',invCss?BG:FG)}
+  try{render();if(INV>0)renderInverted()}catch(e){console.error(e)}   // a drawing mistake must never freeze the game
   requestAnimationFrame(frame);
 }
 
