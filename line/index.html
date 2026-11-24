@@ -173,12 +173,12 @@ const $=id=>document.getElementById(id);
 
 /* ---------- languages (shared with the other games) ---------- */
 const LANG={
-  de:{kids:'Kindermodus',kidsOn:'Kindermodus an: jedes Herz hält zwei Treffer, eine Wolke fängt dich auf',kidsOff:'Kindermodus aus',allGames:'Alle Spiele',share:'Teilen',shareText:'Spiel mit mir The Line – ein Jump & Run auf einer einzigen Linie!',copied:'Link kopiert – schick ihn deinen Freunden',install:'ALS APP INSTALLIEREN',ios:'Als App: Teilen-Knopf ⬆︎ → „Zum Home-Bildschirm“',secret:'Geheimtür gefunden!',sTime:'Etwas schneller wäre besser',levels:'LEVELS',back:'ZURÜCK',reset:'Dreimal gestürzt – das Level beginnt von vorn',s3:'Alle Punkte, kein Sturz!',sDots:'Sammle alle 3 Punkte',sFalls:'Schaff es ohne Sturz',level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',fall:'✕'},
-  en:{kids:'Kids mode',kidsOn:'Kids mode on: every heart takes two hits, a cloud catches you',kidsOff:'Kids mode off',allGames:'All games',share:'Share',shareText:'Play The Line with me – a jump & run on a single line!',copied:'Link copied – send it to your friends',install:'INSTALL AS APP',ios:'As an app: Share button ⬆︎ → “Add to Home Screen”',secret:'Secret door!',sTime:'A bit faster next time',levels:'LEVELS',back:'BACK',reset:'Three falls – the level starts over',s3:'All dots, no falls!',sDots:'Collect all 3 dots',sFalls:'Make it without a fall',level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',fall:'✕'},
-  fr:{kids:'Mode enfant',kidsOn:'Mode enfant : chaque cœur tient deux coups, un nuage te rattrape',kidsOff:'Mode enfant désactivé',allGames:'Tous les jeux',share:'Partager',shareText:'Joue à The Line avec moi – un jeu de plateforme sur une seule ligne !',copied:'Lien copié – envoie-le à tes amis',install:'INSTALLER L’APP',ios:'En app : bouton Partager ⬆︎ → « Sur l’écran d’accueil »',secret:'Porte secrète !',sTime:'Un peu plus vite la prochaine fois',levels:'NIVEAUX',back:'RETOUR',reset:'Trois chutes – le niveau recommence',s3:'Tous les points, aucune chute !',sDots:'Ramasse les 3 points',sFalls:'Réussis sans tomber',level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',fall:'✕'},
-  es:{kids:'Modo niños',kidsOn:'Modo niños: cada corazón aguanta dos golpes y una nube te recoge',kidsOff:'Modo niños desactivado',allGames:'Todos los juegos',share:'Compartir',shareText:'¡Juega conmigo a The Line, un juego de saltos sobre una sola línea!',copied:'Enlace copiado: envíalo a tus amigos',install:'INSTALAR COMO APP',ios:'Como app: botón Compartir ⬆︎ → «Añadir a pantalla de inicio»',secret:'¡Puerta secreta!',sTime:'Un poco más rápido la próxima vez',levels:'NIVELES',back:'VOLVER',reset:'Tres caídas: el nivel empieza de nuevo',s3:'¡Todos los puntos, sin caídas!',sDots:'Recoge los 3 puntos',sFalls:'Hazlo sin caerte',level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',fall:'✕'},
-  it:{kids:'Modalità bambini',kidsOn:'Modalità bambini: ogni cuore regge due colpi, una nuvola ti prende',kidsOff:'Modalità bambini disattivata',allGames:'Tutti i giochi',share:'Condividi',shareText:'Gioca con me a The Line – un platform su un’unica linea!',copied:'Link copiato – mandalo ai tuoi amici',install:'INSTALLA COME APP',ios:'Come app: tasto Condividi ⬆︎ → «Aggiungi alla schermata Home»',secret:'Porta segreta!',sTime:'Un po’ più veloce la prossima volta',levels:'LIVELLI',back:'INDIETRO',reset:'Tre cadute: il livello ricomincia',s3:'Tutti i punti, nessuna caduta!',sDots:'Raccogli tutti e 3 i punti',sFalls:'Fallo senza cadere',level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',fall:'✕'},
-  pt:{kids:'Modo infantil',kidsOn:'Modo infantil: cada coração aguenta dois golpes e uma nuvem te pega',kidsOff:'Modo infantil desligado',allGames:'Todos os jogos',share:'Compartilhar',shareText:'Jogue The Line comigo – um jogo de pulo numa única linha!',copied:'Link copiado – mande para seus amigos',install:'INSTALAR COMO APP',ios:'Como app: botão Compartilhar ⬆︎ → “Adicionar à Tela de Início”',secret:'Porta secreta!',sTime:'Um pouco mais rápido da próxima vez',levels:'NÍVEIS',back:'VOLTAR',reset:'Três quedas: o nível recomeça',s3:'Todos os pontos, sem quedas!',sDots:'Pegue os 3 pontos',sFalls:'Consiga sem cair',level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',fall:'✕'}
+  de:{robot:["Noch eine Tür. Wie aufregend.", "Ach. Du schon wieder.", "Ich würde winken, aber ich habe keine Arme.", "Lass dich nicht stören. Tut eh keiner."],kids:'Kindermodus',kidsOn:'Kindermodus an: jedes Herz hält zwei Treffer, eine Wolke fängt dich auf',kidsOff:'Kindermodus aus',allGames:'Alle Spiele',share:'Teilen',shareText:'Spiel mit mir The Line – ein Jump & Run auf einer einzigen Linie!',copied:'Link kopiert – schick ihn deinen Freunden',install:'ALS APP INSTALLIEREN',ios:'Als App: Teilen-Knopf ⬆︎ → „Zum Home-Bildschirm“',secret:'Geheimtür gefunden!',sTime:'Etwas schneller wäre besser',levels:'LEVELS',back:'ZURÜCK',reset:'Dreimal gestürzt – das Level beginnt von vorn',s3:'Alle Punkte, kein Sturz!',sDots:'Sammle alle 3 Punkte',sFalls:'Schaff es ohne Sturz',level:'LEVEL',play:'SPIELEN',paused:'PAUSE',resume:'WEITER',restart:'NEU STARTEN',menu:'MENÜ',done:'Geschafft!',dotsL:'PUNKTE',time:'ZEIT',falls:'STÜRZE',next:'WEITER',again:'NOCHMAL',home:'← ALLE SPIELE',fall:'✕'},
+  en:{robot:["Another door. How thrilling.", "Oh. It's you. Again.", "I'd wave, but I have no arms.", "Don't mind me. Nobody does."],kids:'Kids mode',kidsOn:'Kids mode on: every heart takes two hits, a cloud catches you',kidsOff:'Kids mode off',allGames:'All games',share:'Share',shareText:'Play The Line with me – a jump & run on a single line!',copied:'Link copied – send it to your friends',install:'INSTALL AS APP',ios:'As an app: Share button ⬆︎ → “Add to Home Screen”',secret:'Secret door!',sTime:'A bit faster next time',levels:'LEVELS',back:'BACK',reset:'Three falls – the level starts over',s3:'All dots, no falls!',sDots:'Collect all 3 dots',sFalls:'Make it without a fall',level:'LEVEL',play:'PLAY',paused:'PAUSED',resume:'RESUME',restart:'RESTART',menu:'MENU',done:'Done!',dotsL:'DOTS',time:'TIME',falls:'FALLS',next:'NEXT',again:'AGAIN',home:'← ALL GAMES',fall:'✕'},
+  fr:{robot:["Encore une porte. Passionnant.", "Ah. C'est encore toi.", "Je ferais signe, mais je n'ai pas de bras.", "Ne fais pas attention à moi. Personne ne le fait."],kids:'Mode enfant',kidsOn:'Mode enfant : chaque cœur tient deux coups, un nuage te rattrape',kidsOff:'Mode enfant désactivé',allGames:'Tous les jeux',share:'Partager',shareText:'Joue à The Line avec moi – un jeu de plateforme sur une seule ligne !',copied:'Lien copié – envoie-le à tes amis',install:'INSTALLER L’APP',ios:'En app : bouton Partager ⬆︎ → « Sur l’écran d’accueil »',secret:'Porte secrète !',sTime:'Un peu plus vite la prochaine fois',levels:'NIVEAUX',back:'RETOUR',reset:'Trois chutes – le niveau recommence',s3:'Tous les points, aucune chute !',sDots:'Ramasse les 3 points',sFalls:'Réussis sans tomber',level:'NIVEAU',play:'JOUER',paused:'PAUSE',resume:'REPRENDRE',restart:'RECOMMENCER',menu:'MENU',done:'Réussi !',dotsL:'POINTS',time:'TEMPS',falls:'CHUTES',next:'SUIVANT',again:'ENCORE',home:'← TOUS LES JEUX',fall:'✕'},
+  es:{robot:["Otra puerta. Qué emoción.", "Ah. Eres tú. Otra vez.", "Te saludaría, pero no tengo brazos.", "No me hagas caso. Nadie lo hace."],kids:'Modo niños',kidsOn:'Modo niños: cada corazón aguanta dos golpes y una nube te recoge',kidsOff:'Modo niños desactivado',allGames:'Todos los juegos',share:'Compartir',shareText:'¡Juega conmigo a The Line, un juego de saltos sobre una sola línea!',copied:'Enlace copiado: envíalo a tus amigos',install:'INSTALAR COMO APP',ios:'Como app: botón Compartir ⬆︎ → «Añadir a pantalla de inicio»',secret:'¡Puerta secreta!',sTime:'Un poco más rápido la próxima vez',levels:'NIVELES',back:'VOLVER',reset:'Tres caídas: el nivel empieza de nuevo',s3:'¡Todos los puntos, sin caídas!',sDots:'Recoge los 3 puntos',sFalls:'Hazlo sin caerte',level:'NIVEL',play:'JUGAR',paused:'PAUSA',resume:'SEGUIR',restart:'REINICIAR',menu:'MENÚ',done:'¡Lo lograste!',dotsL:'PUNTOS',time:'TIEMPO',falls:'CAÍDAS',next:'SIGUIENTE',again:'OTRA VEZ',home:'← TODOS LOS JUEGOS',fall:'✕'},
+  it:{robot:["Un'altra porta. Che emozione.", "Ah. Sei tu. Di nuovo.", "Ti saluterei, ma non ho le braccia.", "Non badare a me. Nessuno lo fa."],kids:'Modalità bambini',kidsOn:'Modalità bambini: ogni cuore regge due colpi, una nuvola ti prende',kidsOff:'Modalità bambini disattivata',allGames:'Tutti i giochi',share:'Condividi',shareText:'Gioca con me a The Line – un platform su un’unica linea!',copied:'Link copiato – mandalo ai tuoi amici',install:'INSTALLA COME APP',ios:'Come app: tasto Condividi ⬆︎ → «Aggiungi alla schermata Home»',secret:'Porta segreta!',sTime:'Un po’ più veloce la prossima volta',levels:'LIVELLI',back:'INDIETRO',reset:'Tre cadute: il livello ricomincia',s3:'Tutti i punti, nessuna caduta!',sDots:'Raccogli tutti e 3 i punti',sFalls:'Fallo senza cadere',level:'LIVELLO',play:'GIOCA',paused:'PAUSA',resume:'RIPRENDI',restart:'RICOMINCIA',menu:'MENU',done:'Fatto!',dotsL:'PUNTI',time:'TEMPO',falls:'CADUTE',next:'AVANTI',again:'ANCORA',home:'← TUTTI I GIOCHI',fall:'✕'},
+  pt:{robot:["Outra porta. Que emoção.", "Ah. É você. De novo.", "Eu acenaria, mas não tenho braços.", "Não ligue pra mim. Ninguém liga."],kids:'Modo infantil',kidsOn:'Modo infantil: cada coração aguenta dois golpes e uma nuvem te pega',kidsOff:'Modo infantil desligado',allGames:'Todos os jogos',share:'Compartilhar',shareText:'Jogue The Line comigo – um jogo de pulo numa única linha!',copied:'Link copiado – mande para seus amigos',install:'INSTALAR COMO APP',ios:'Como app: botão Compartilhar ⬆︎ → “Adicionar à Tela de Início”',secret:'Porta secreta!',sTime:'Um pouco mais rápido da próxima vez',levels:'NÍVEIS',back:'VOLTAR',reset:'Três quedas: o nível recomeça',s3:'Todos os pontos, sem quedas!',sDots:'Pegue os 3 pontos',sFalls:'Consiga sem cair',level:'NÍVEL',play:'JOGAR',paused:'PAUSA',resume:'CONTINUAR',restart:'REINICIAR',menu:'MENU',done:'Conseguiu!',dotsL:'PONTOS',time:'TEMPO',falls:'QUEDAS',next:'PRÓXIMO',again:'DE NOVO',home:'← TODOS OS JOGOS',fall:'✕'}
 };
 let lang='de',T=LANG.de;
 function setLang(k){lang=LANG[k]?k:'en';T=LANG[lang];document.documentElement.lang=lang;
@@ -430,6 +430,8 @@ setInterval(()=>{
     musStep(MUS.step,MUS.next);MUS.next+=SPS;MUS.step=(MUS.step+1)%SONG;if(MUS.step%16===0)store.set('line.musPos',MUS.step)}
 },25);
 const sfx={
+  sigh(){tone(300,140,.7,.05,0,'triangle')},
+  grumble(){tone(150,120,.12,.06,0,'square');tone(130,95,.16,.06,.15,'square');tone(110,80,.28,.05,.34,'square')},
   jump(){tone(180,760,.15,.1);tone(360,1520,.15,.03,0,'square')},
   flip(){tone(880,220,.12,.08);tone(220,880,.12,.08,.1)},
   gasp(){tone(660,990,.08,.06);tone(990,1320,.06,.05,.08)},
@@ -570,6 +572,7 @@ function gen(n){
   const cpN=target>4200?2:1;
   for(let i=1;i<=cpN;i++){const want=target*i/(cpN+1);let b=null;for(const f of flats)if(f[0]>300&&(!b||Math.abs(f[0]-want)<Math.abs(b[0]-want)))b=f;if(b&&!cps.some(c=>c.x===b[0]))cps.push({x:b[0],y:b[1],g:b[2],p:{pts:b[3],ox:0,oy:0},on:false})}
   cps.sort((a,b)=>a.x-b.x);
+  robot=n===42?{x:goal.x-120,y:goal.y,sigh:0,every:3,shrug:0,shrugT:0,wave:0,said:false,talk:0}:null;   // level 42: a gloomy little robot sits by the door
   // three dots, spread out over the level
   cands.sort((a,b)=>a[0]-b[0]);
   const idx=cands.length>=3?[.15,.5,.85].map(f=>Math.floor(f*(cands.length-1))):cands.map((_,i)=>i);
@@ -599,7 +602,7 @@ function wallAt(x,y){const g=P.g;for(const p of plats){if(!p.solid)continue;cons
 const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0,air:0,dj:true,split:0,g:1,flipT:0};
 let sandParts=[],sweat=[];const blink={at:-9,next:2,two:false};
 const START={x:-500,y:0,armed:true};
-let secret=null,winDoor=null;
+let secret=null,winDoor=null,robot=null;
 let pools=[],bubbles=[],zaps=[],flash=0,birds=[];
 function resetBirds(){for(const b of birds){b.x=b.hx;b.by=b.y;b.fly=0;b.alarm=0;b.vx=0;b.vy=0}}
 let drops=[],flips=[],sharks=[],eyes=[],ghosts=[],killTop=-400,endFlip=null;
@@ -666,6 +669,7 @@ function die(){
       shards.push({x:P.x,y:yc,vx:Math.cos(a)*v,vy:Math.sin(a)*v-g*120,r:1.6+Math.random()*3.2,stuck:0,g,d:.12+Math.random()*.05})}}
   P.endT=1.25;
   // the third fall: a skull shows up on the blood and stays at the start of the level until you move
+  if(robot&&Math.abs(P.x-robot.x)<viewW*.8){robot.shrugT=1.8;robot.said=false}
   if(falls>=3)skullFx={t:-((P.kind==='eaten'?EAT_CURTAIN:P.kind==='zap'?ZAP_CURTAIN:0)+.45),gone:0};
   if(P.kind==='eaten'){P.endT=EAT_CURTAIN+1.25;sfx.gasp();return}
   if(P.kind==='zap'){P.endT=ZAP_CURTAIN+1.25;return}
@@ -1185,6 +1189,41 @@ function drawShark(k){
     ctx.beginPath();ctx.ellipse(-12.8,V(21.5),1.5,1.5,0,0,6.2832);ctx.fill()}
   ctx.restore();
 }
+
+// level 42's robot: a little stack of floating parts (three boxes and a round head) hovering over the line next to the door
+function drawRobot(r){
+  const x=r.x,y=r.y,e=k=>k*k*(3-2*k),dt=dtFrame;
+  // what it does: sighs now and then, mutters something when you come by, shrugs when you die, waves when you make it
+  r.sigh+=dt;if(r.sigh>(r.every||4)){r.sigh=0;r.every=5+Math.random()*4;if(Math.abs(P.x-x)<viewW*.7)sfx.sigh()}
+  if(!r.said&&state==='play'&&Math.abs(P.x-x)<150){r.said=true;const L=T.robot;r.text=L[(r.n=(r.n??Math.floor(Math.random()*L.length))+1)%L.length];r.talk=3.4;sfx.grumble()}
+  if(r.talk>0)r.talk=Math.max(0,r.talk-dt);
+  if(r.shrugT>0){r.shrugT=Math.max(0,r.shrugT-dt);r.shrug=Math.min(1,(1.8-r.shrugT)*4,r.shrugT*3)}else r.shrug=0;
+  r.wave=state==='win'&&winDoor===goal?Math.min(1,r.wave+dt*2):0;
+  const sg=r.sigh>0&&r.sigh<1.8?Math.sin(Math.PI*Math.min(1,r.sigh/1.8)):0;   // a sigh: everything sinks together, then floats back up
+  const sh=e(Math.min(1,r.shrug)),wv=Math.min(1,r.wave),tk=r.talk>0?1:0;
+  const look=Math.max(-1,Math.min(1,(P.x-x)/160));
+  ctx.save();ctx.translate(x,y);ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=LW*.6;ctx.lineJoin='round';ctx.lineCap='round';
+  // parts from the bottom up: [width, height]; each one bobs a little later than the one below (a slow wave up the stack)
+  const parts=[[18,7],[14,6],[10,5]];let py=-8+sg*3;
+  const bob=i=>Math.sin(t*2.4-i*.7)*1.3*(1-sg*.6)+(wv?Math.max(0,Math.sin(t*9-i*.9))*-5*wv:0)+(tk?Math.sin(t*12-i)*.6:0);
+  for(let i=0;i<3;i++){const [w,h]=parts[i],gap=3*(1-sg*.7)+sh*2.5*i,o=bob(i);
+    const tilt=(sh?(i%2?-1:1)*.18*sh:0)+(wv?Math.sin(t*6-i)*.12*wv:0);
+    ctx.save();ctx.translate(look*.4*i,py+o-h/2);ctx.rotate(tilt);ctx.beginPath();ctx.roundRect(-w/2,-h/2,w,h,2);ctx.stroke();ctx.restore();py-=h+gap}
+  // the head: a circle, floating above, a bit to the side you're on; tiny eyes that look at you and blink
+  const hr=7.5,hy=py-hr-1.5*(1-sg*.7)+bob(3)+sh*3,hx=look*2+(sh?Math.sin(t*5)*1.2*sh:0);
+  const ht=(sh?.25*sh:0)+(wv?Math.sin(t*6)*.25*wv:0)+sg*.25+look*.08;
+  ctx.save();ctx.translate(hx,hy);ctx.rotate(ht);ctx.beginPath();ctx.arc(0,0,hr,0,6.2832);ctx.stroke();
+  // antenna: a thin springy stalk with a little ball, it wobbles behind every move and flops over when it sighs; the ball blinks while it talks
+  {const sw=Math.sin(t*3.1+.8)*1.6+(wv?Math.sin(t*9-3.2)*3*wv:0)+(sh?Math.sin(t*7)*2*sh:0)-look*1.2,dr=sg*5;
+   const tx=sw+dr,ty=-hr-8+dr*.7+Math.abs(sw)*.15;ctx.lineWidth=LW*.45;ctx.beginPath();ctx.moveTo(0,-hr);ctx.quadraticCurveTo(sw*.2,-hr-5,tx,ty);ctx.stroke();
+   const on=!(r.talk>0&&Math.sin(t*16)<0);ctx.beginPath();ctx.arc(tx,ty,1.9,0,6.2832);if(on)ctx.fill();else{ctx.lineWidth=1;ctx.stroke()}}
+  ctx.lineWidth=LW*.6;
+  const bl=(t%3.7)<.12||((t+1.1)%7.3)<.12;for(const dx of[-2.6,2.6]){ctx.beginPath();if(bl)ctx.ellipse(dx+look*1.6,.5,1,.25,0,0,6.2832);else ctx.arc(dx+look*1.6,.5+sg*.8,.9,0,6.2832);ctx.fill()}
+  ctx.restore();
+  // what it says, small, above its head
+  if(r.talk>0&&r.text){ctx.globalAlpha=Math.min(1,r.talk*2);ctx.font='600 8px system-ui,sans-serif';ctx.textAlign='center';ctx.fillText(r.text,0,hy-hr-16);ctx.globalAlpha=1}
+  ctx.restore();
+}
 function drawArrows(){
   // moving screen: little arrows at the left edge, they pulse and get stronger when it's about to catch you
   if(scrollX!==null&&(state==='play'||state==='rescue')){const near=Math.max(0,Math.min(1,1-(P.x-camX)/(viewW*.35)));
@@ -1278,6 +1317,7 @@ function render(){
   for(const s of sparks){if(s.x<vx0||s.x>vx1)continue;
     if(!s.got){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(s.x,s.y+Math.sin(t*2.6+s.x)*3,5,0,6.2832);ctx.fill()}
     else if(s.pop<.5){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-s.pop*2;ctx.beginPath();ctx.arc(s.x,s.y,5+s.pop*40,0,6.2832);ctx.stroke();ctx.globalAlpha=1}}
+  if(robot&&robot.x>vx0-60&&robot.x<vx1+60)drawRobot(robot);
   // the door at the end (and the secret one down in the abyss): walk in, it lights up and its colour floods the screen
   for(const D of[goal,secret]){if(!D||D.x<vx0-40||D.x>vx1+40)continue;
     const gx=D.x,gy=D.y,dw=13,dh=42,mine=state==='win'&&(winDoor||goal)===D,lit=mine?Math.min(1,P.win/.3):0;
