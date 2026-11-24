@@ -610,7 +610,7 @@ let skullFx=null,curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
 let camX=0,camY=0,scrollX=null,scrollV=0,scrollWait=0,hintMoved=false,hintJumped=false,touchedEarly=false;
 
-function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;P.rollT=0;drops=[]}
+function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;P.ride=null;P.rollT=0;drops=[]}
 function startLevel(n){
   ripples=[];winDoor=null;rescue=null;safeTrail.length=0;P.half=false;P.inv=0;levelN=n;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];curtain=null;shake=0;
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
@@ -794,6 +794,10 @@ function update(dt){
   if(state==='rescue'){lvTime+=dt;updateRescue(dt);return}
   if(state!=='play')return;
   lvTime+=dt;
+  if(P.ride){const r=P.ride;r.t+=dt;P.vx=r.dir*SPEED*.5;P.face=r.dir;
+    if(r.t>=RIDE){const f=r.f;P.ride=null;P.x=f.x+r.dir*(15+CL/2);flipNow(P.x,f.y,f);P.ground=true;P.on=support(P.x,P.y)?.p||P.on;P.vx=r.dir*SPEED*.8}
+    else{P.x=r.x0+(r.f.x+r.dir*(15+CL/2)-r.x0)*(r.t/RIDE)}
+    return}
   // the moving screen: once it catches you at its left edge, it pushes you along (if a wall is in the way, it waits)
   if(scrollX!==null){scrollWait-=dt;if(scrollWait<=0)scrollX=Math.min(scrollX+scrollV*dt,goal.x-viewW*.6);
     if(P.x<scrollX+12){const nx=scrollX+12;if(wallAt(nx,P.y))scrollX=P.x-12;else{P.x=nx;P.vx=Math.max(P.vx,0)}}}
@@ -863,7 +867,8 @@ function update(dt){
   for(const f of flips){
     if(f.used>0)continue;
     // only when you walk through it on the line - jumping over it does nothing
-    if(P.ground&&Math.abs(P.y-f.y)<4&&((px0<f.x&&P.x>=f.x)||(px0>f.x&&P.x<=f.x)))flipNow(f.x,f.y,f);
+    // you thread yourself through the figure eight like a bead and come out on the other side of the line
+    if(P.ground&&Math.abs(P.y-f.y)<4)for(const dir of[1,-1]){const e=f.x-dir*(15+CL/2);if(dir*(px0-e)<0&&dir*(P.x-e)>=0){P.ride={f,dir,t:0,x0:P.x,y0:P.y};P.rollT=0;sfx.whoosh&&sfx.whoosh();break}}
   }
   // the ring before the door always puts you back on top
   // upside down at the very end of the line: you wrap round the end onto the top, facing the door
@@ -1118,6 +1123,7 @@ function drawChar(){
     return;
   }
   if(P.rollT>0&&state==='play'){drawBlob(true);return}
+  if(P.ride&&state==='play'){drawRide();return}
   let h,len=CL,base,sk=.85;
   const moving=Math.abs(P.vx)>15;
   if(state==='win'){const k=Math.min(1,P.win/.3);h=9*(1-k);len=CL*(1-k*.9);if(k>=1)return}
@@ -1225,6 +1231,18 @@ function drawRobot(r){
   // what it says, small, above its head
   if(r.talk>0&&r.text){ctx.globalAlpha=Math.min(1,r.talk*2);ctx.font='600 8px system-ui,sans-serif';ctx.textAlign='center';ctx.save();ctx.translate(0,hy-hr-16);if(r.g<0)ctx.scale(1,-1);ctx.fillText(r.text,0,0);ctx.restore();ctx.globalAlpha=1}
   ctx.restore();
+}
+
+// riding through a gravity switch: you become a little ring threaded on the line and run along the figure eight
+const RIDE=.42;
+function drawRide(){
+  // you run along the figure eight as a thick little bump in the line itself, then pop out on the other side
+  const r=P.ride,f=r.f,a=15,sy=2.3*Math.cos(t*2.6),k=r.t/RIDE,g=P.g,dir=r.dir;
+  const path=u=>{const d=1+Math.sin(u)**2;return[f.x+a*Math.cos(u)/d,f.y+sy*a*Math.sin(u)*Math.cos(u)/d]};
+  const u0=dir>0?Math.PI:2*Math.PI,q=Math.min(1,k),e=q*q*(3-2*q),u=u0+dir*Math.PI*e,L=.75*Math.sin(Math.PI*Math.min(1,k*1.3+.15))+.15;
+  const pts=[];for(let i=0;i<=10;i++)pts.push(path(u+dir*L*(i/10-.6)));
+  ctx.strokeStyle=FG;ctx.lineCap='round';ctx.lineWidth=LW+5;strokePts(pts,false);ctx.lineWidth=LW;
+  const hd=pts[8];ctx.fillStyle=BG;ctx.beginPath();ctx.arc(hd[0],hd[1],1.6,0,6.2832);ctx.fill();
 }
 function drawArrows(){
   // moving screen: little arrows at the left edge, they pulse and get stronger when it's about to catch you
