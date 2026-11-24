@@ -809,8 +809,8 @@ function update(dt){
   if(state==='rescue'){lvTime+=dt;updateRescue(dt);return}
   if(state!=='play')return;
   lvTime+=dt;
-  if(P.ride){const r=P.ride;r.t+=dt;P.vx=r.dir*SPEED*.5;P.face=r.dir;
-    if(r.t>=RIDE){const f=r.f;P.ride=null;P.x=f.x+r.dir*(15+CL/2);flipNow(P.x,f.y,f);P.ground=true;P.on=support(P.x,P.y)?.p||P.on;P.vx=r.dir*SPEED*.8}
+  if(P.ride){const r=P.ride;r.t+=dt;P.vx=r.dir*SPEED;P.face=r.dir;
+    if(r.t>=RIDE){const f=r.f;P.ride=null;P.x=f.x+r.dir*(15+CL/2);flipNow(P.x,f.y,f);P.ground=true;P.on=support(P.x,P.y)?.p||P.on;P.vx=r.dir*SPEED}
     else{P.x=r.x0+(r.f.x+r.dir*(15+CL/2)-r.x0)*(r.t/RIDE)}
     return}
   // the moving screen: once it catches you at its left edge, it pushes you along (if a wall is in the way, it waits)
@@ -1259,7 +1259,7 @@ function drawRobot(r){
 }
 
 // riding through a gravity switch: you become a little ring threaded on the line and run along the figure eight
-const RIDE=.42;
+const RIDE=.24;
 function drawRide(){
   // you run along the figure eight as a thick little bump in the line itself, then pop out on the other side
   const r=P.ride,f=r.f,a=15,sy=2.3*Math.cos(t*2.6),k=r.t/RIDE,g=P.g,dir=r.dir;
