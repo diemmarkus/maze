@@ -825,8 +825,11 @@ function update(dt){
       for(const p of plats){const f=floorAt(p,P.x);if(f===null)continue;if(g*(py-(f-p.dy))<=STEP&&g*(f-P.y)<=0&&(!best||g*f<g*best.y))best={y:f,p}}
       if(best){P.y=best.y;P.on=best.p;P.ground=true;P.squash=.18;P.dj=true;P.split=0;if(g*P.vy>250){sfx.land();ripples.push({p:best.p,x:P.x-best.p.ox,t:0,g,a:Math.min(5,g*P.vy/160)})}P.vy=0}}
   }
+  // sand or water from the wrong side (upside down): gravity turns round, you land in it the right way up
+  if(P.g<0&&P.ground&&P.on&&P.on.sand){flipNow(P.x,P.y);P.ground=true}
+  if(P.g<0&&!P.water)for(const W of pools)if(P.x>W.x0&&P.x<W.x1&&Math.abs(P.y-W.y)<40){flipNow(P.x,W.y+4);P.ground=false;P.on=null;break}
   // into the water?
-  if(!P.ground&&!P.water&&g>0)for(const W of pools)if(P.x>W.x0&&P.x<W.x1&&P.y>W.y){P.water=W;P.vy=Math.min(P.vy,160)*.35;pops.push({x:P.x,y:W.y,t:0});
+  if(!P.ground&&!P.water&&P.g>0)for(const W of pools)if(P.x>W.x0&&P.x<W.x1&&P.y>W.y){P.water=W;P.vy=Math.min(P.vy,160)*.35;pops.push({x:P.x,y:W.y,t:0});
     for(let i=0;i<6;i++)drops.push({x:P.x+(Math.random()-.5)*10,y:W.y-3,vx:(Math.random()-.5)*160,vy:-160-Math.random()*160,r:2+Math.random()*1.5,t:0,g:1});sfx.splash();break}
   if(P.buf>0&&P.water){const depth=P.y-P.water.y;P.buf=0;
     if(depth<12){P.vy=-JV*.9;P.water=null;P.air=0;sfx.jump()}else{P.vy=-235;sfx.swim();for(let i=0;i<3;i++)bubbles.push({x:P.x+(Math.random()-.5)*12,y:P.y-8,r:1+Math.random()*2,t:0,w:P.water})}}
