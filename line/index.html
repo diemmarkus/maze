@@ -482,11 +482,12 @@ function goLandscape(){
 }
 
 /* ---------- colours ---------- */
-let BG='#1E3440',FG='#9ED6F2';
+let BG='#1E3440',FG='#9ED6F2',DARK=false;
 function hslHex(h,s,l){s/=100;l/=100;const f=n=>{const k=(n+h/30)%12,c=l-s*Math.min(l,1-l)*Math.max(-1,Math.min(k-3,9-k,1));return Math.round(c*255).toString(16).padStart(2,'0')};return '#'+f(0)+f(8)+f(4)}
 function setTheme(n){
   const h=(200+(n-1)*47)%360;
   BG=hslHex(h,36,19);FG=hslHex(h,72,77);
+  DARK=n%8===0&&n>=16;if(DARK){BG='#161616';FG='#d2d2d2'}   // the end of each round of colours: grey, and dark
   if(n===42)[BG,FG]=[FG,BG];   // the answer: everything the other way round
   const r=document.documentElement.style;r.setProperty('--bg',BG);r.setProperty('--fg',FG);
   document.querySelector('meta[name=theme-color]').setAttribute('content',BG);
@@ -1166,6 +1167,29 @@ function drawShark(k){
     ctx.beginPath();ctx.ellipse(-12.8,V(21.5),1.5,1.5,0,0,6.2832);ctx.fill()}
   ctx.restore();
 }
+function drawArrows(){
+  // moving screen: little arrows at the left edge, they pulse and get stronger when it's about to catch you
+  if(scrollX!==null&&(state==='play'||state==='rescue')){const near=Math.max(0,Math.min(1,1-(P.x-camX)/(viewW*.35)));
+    ctx.strokeStyle=FG;ctx.lineWidth=3;
+    for(let i=0;i<3;i++){const y=camY+VIEW_H*(.3+.2*i),x=camX+12+((t*1.6+i*.33)%1)*8;
+      ctx.globalAlpha=(.18+.5*near)*(.75+.25*Math.sin(t*(4+8*near)));ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x+7,y);ctx.lineTo(x,y+7);ctx.stroke()}
+    ctx.globalAlpha=1}
+}
+// dark levels: everything is black except a small flickering light around you (the door glows through)
+const darkCv=document.createElement('canvas'),dctx=darkCv.getContext('2d');let lightX=0,lightY=0;
+function drawDark(){
+  if(state==='menu')return;
+  if(state==='play'||state==='rescue'||state==='win'){lightX=P.x;lightY=P.y-P.g*10}
+  if(darkCv.width!==cv.width||darkCv.height!==cv.height){darkCv.width=cv.width;darkCv.height=cv.height}
+  const a=state==='win'?Math.max(0,1-P.win/.5):1;if(a<=0)return;
+  dctx.setTransform(1,0,0,1,0,0);dctx.globalCompositeOperation='source-over';dctx.clearRect(0,0,darkCv.width,darkCv.height);
+  dctx.globalAlpha=a;dctx.fillStyle=BG;dctx.fillRect(0,0,darkCv.width,darkCv.height);dctx.globalAlpha=1;
+  dctx.setTransform(ctx.getTransform());dctx.globalCompositeOperation='destination-out';
+  const R=150*(1+.025*Math.sin(t*9)+.015*Math.sin(t*23)),gr=dctx.createRadialGradient(lightX,lightY,0,lightX,lightY,R);
+  gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(.55,'rgba(0,0,0,.95)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  dctx.fillStyle=gr;dctx.fillRect(lightX-R,lightY-R,R*2,R*2);
+  const m=ctx.getTransform();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(darkCv,0,0);ctx.setTransform(m);
+}
 function render(){
   const k=DPR*K;
   ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=BG;ctx.fillRect(0,0,cv.width,cv.height);
@@ -1180,12 +1204,7 @@ function render(){
   let sx=0,sy=0;if(shake>0){sx=(Math.random()-.5)*shake*30;sy=(Math.random()-.5)*shake*30}
   ctx.setTransform(k,0,0,k,-(camX+sx)*k,-(camY+sy)*k);
   ctx.lineCap='round';ctx.lineJoin='round';
-  // moving screen: little arrows at the left edge, they pulse and get stronger when it's about to catch you
-  if(scrollX!==null&&(state==='play'||state==='rescue')){const near=Math.max(0,Math.min(1,1-(P.x-camX)/(viewW*.35)));
-    ctx.strokeStyle=FG;ctx.lineWidth=3;
-    for(let i=0;i<3;i++){const y=camY+VIEW_H*(.3+.2*i),x=camX+12+((t*1.6+i*.33)%1)*8;
-      ctx.globalAlpha=(.18+.5*near)*(.75+.25*Math.sin(t*(4+8*near)));ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x+7,y);ctx.lineTo(x,y+7);ctx.stroke()}
-    ctx.globalAlpha=1}
+  if(!DARK)drawArrows();
   const vx0=camX-40,vx1=camX+viewW+40;
   // the line
   ctx.strokeStyle=FG;ctx.lineWidth=LW;
@@ -1241,6 +1260,7 @@ function render(){
   for(const s of sparks){if(s.x<vx0||s.x>vx1)continue;
     if(!s.got){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(s.x,s.y+Math.sin(t*2.6+s.x)*3,5,0,6.2832);ctx.fill()}
     else if(s.pop<.5){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-s.pop*2;ctx.beginPath();ctx.arc(s.x,s.y,5+s.pop*40,0,6.2832);ctx.stroke();ctx.globalAlpha=1}}
+  if(DARK){drawDark();drawArrows()}
   // the door at the end (and the secret one down in the abyss): walk in, it lights up and its colour floods the screen
   for(const D of[goal,secret]){if(!D||D.x<vx0-40||D.x>vx1+40)continue;
     const gx=D.x,gy=D.y,dw=13,dh=42,mine=state==='win'&&(winDoor||goal)===D,lit=mine?Math.min(1,P.win/.3):0;
@@ -1354,7 +1374,7 @@ function updateHud(){
 function parTime(){return goal.x/205*1.5+3*(plats.filter(p=>p.mv).length+eyes.length)+6}
 function totalStars(){let s=0;for(const k in bestStars)s+=bestStars[k];return s}
 function paintTotals(){const h=STAR.replace('class="st"','class="st on"')+' '+fmtStars(totalStars())+' / '+unlocked*3;$('totalStars').innerHTML=h;$('totalStars2').innerHTML=h}
-function levelColours(n){const h=(200+(n-1)*47)%360,c=[hslHex(h,36,19),hslHex(h,72,77)];return n===42?c.reverse():c}
+function levelColours(n){const h=(200+(n-1)*47)%360,c=n%8===0&&n>=16?['#161616','#d2d2d2']:[hslHex(h,36,19),hslHex(h,72,77)];return n===42?c.reverse():c}
 function showLevels(){
   state='menu';hud.hidden=true;startOv.hidden=pauseOv.hidden=doneOv.hidden=true;$('levelsOv').hidden=false;
   setTheme(levelN||1);paintTotals();
