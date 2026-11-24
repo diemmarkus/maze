@@ -1188,12 +1188,15 @@ function drawRobot(r){
   r.wave=state==='win'&&winDoor===goal?Math.min(1,r.wave+dt*2):0;
   // as a companion it floats along a little behind you, at the height of the line you last stood on
   if(r.follow&&(state==='play'||state==='rescue')){if(P.ground){r.ty=P.y;r.g=P.g}
-    const tx=P.x-P.face*34,k=Math.min(1,dt*2.6);r.x+=(tx-r.x)*k;
+    // lazy: it can't quite keep up with you running, drops back a bit and catches up when you stop
+    const tx=P.x-P.face*34,mx=SPEED*(Math.abs(tx-r.x)>130?1.15:.9),want=Math.max(-mx,Math.min(mx,(tx-r.x)*1.6));r.vx=r.vx||0;const v0=r.vx;r.vx+=Math.max(-420*dt,Math.min(420*dt,want-r.vx));r.x+=r.vx*dt;r.ax=dt>0?(r.vx-v0)/dt:0;
     let fy=null;const ref=r.ty??P.y;for(const dx of[-11,0,11])for(const p of plats){const f=floorAt(p,r.x+dx);if(f!==null&&Math.abs(f-ref)<90&&(fy===null||r.g*(f-fy)<0))fy=f}   // the highest bit of line under it, so it never sinks into a step
     r.y+=((fy??ref)-r.y)*Math.min(1,dt*5)}
   const sg=r.sigh>0&&r.sigh<1.8?Math.sin(Math.PI*Math.min(1,r.sigh/1.8)):0;   // a sigh: everything sinks together, then floats back up
   const sh=e(Math.min(1,r.shrug)),wv=Math.min(1,r.wave),tk=r.talk>0?1:0;
   const look=Math.max(-1,Math.min(1,(P.x-x)/160));
+  {const tgt=(r.vx||0)*.03-(r.ax||0)*.012;r.lv=(r.lv||0)+((tgt-(r.lean||0))*110-(r.lv||0)*4.5)*dt;r.lean=(r.lean||0)+r.lv*dt}
+  const ln=Math.max(-8,Math.min(8,r.lean||0));   // + leans to the right
   ctx.save();ctx.translate(r.x,r.y);if(r.g<0)ctx.scale(1,-1);ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=LW*.6;ctx.lineJoin='round';ctx.lineCap='round';
   // parts from the bottom up: [width, height]; each one bobs a little later than the one below (a slow wave up the stack)
   const parts=[[10,5],[14,6],[18,7]];const hov=12+Math.sin(t*1.7)*2.5-sg*5+(wv?3*wv:0);let py=-hov;
@@ -1202,13 +1205,13 @@ function drawRobot(r){
   const bob=i=>Math.sin(t*2.4-i*.7)*1.3*(1-sg*.6)+(wv?Math.max(0,Math.sin(t*9-i*.9))*-5*wv:0)+(tk?Math.sin(t*12-i)*.6:0);
   for(let i=0;i<3;i++){const [w,h]=parts[i],gap=3*(1-sg*.7)+sh*2.5*i,o=bob(i);
     const tilt=(sh?(i%2?-1:1)*.18*sh:0)+(wv?Math.sin(t*6-i)*.12*wv:0);
-    ctx.save();ctx.translate(look*.4*i,py+o-h/2);ctx.rotate(tilt);ctx.beginPath();ctx.roundRect(-w/2,-h/2,w,h,2);ctx.stroke();ctx.restore();py-=h+gap}
+    ctx.save();ctx.translate(look*.4*i-ln*(.2+.45*i),py+o-h/2);ctx.rotate(tilt-ln*.03*(1+i*.6));ctx.beginPath();ctx.roundRect(-w/2,-h/2,w,h,2);ctx.stroke();ctx.restore();py-=h+gap}
   // the head: a circle, floating above, a bit to the side you're on; tiny eyes that look at you and blink
-  const hr=7.5,hy=py-hr-1.5*(1-sg*.7)+bob(3)+sh*3,hx=look*2+(sh?Math.sin(t*5)*1.2*sh:0);
-  const ht=(sh?.25*sh:0)+(wv?Math.sin(t*6)*.25*wv:0)+sg*.25+look*.08;
+  const hr=7.5,hy=py-hr-1.5*(1-sg*.7)+bob(3)+sh*3,hx=look*2-ln*1.7+(sh?Math.sin(t*5)*1.2*sh:0);
+  const ht=-ln*.05+(sh?.25*sh:0)+(wv?Math.sin(t*6)*.25*wv:0)+sg*.25+look*.08;
   ctx.save();ctx.translate(hx,hy);ctx.rotate(ht);ctx.beginPath();ctx.arc(0,0,hr,0,6.2832);ctx.stroke();
   // antenna: a thin springy stalk with a little ball, it wobbles behind every move and flops over when it sighs; the ball blinks while it talks
-  {const sw=Math.sin(t*3.1+.8)*1.6+(wv?Math.sin(t*9-3.2)*3*wv:0)+(sh?Math.sin(t*7)*2*sh:0)-look*1.2,dr=sg*5;
+  {const sw=-ln*.9+Math.sin(t*3.1+.8)*1.6+(wv?Math.sin(t*9-3.2)*3*wv:0)+(sh?Math.sin(t*7)*2*sh:0)-look*1.2,dr=sg*5;
    const tx=sw+dr,ty=-hr-8+dr*.7+Math.abs(sw)*.15;ctx.lineWidth=LW*.45;ctx.beginPath();ctx.moveTo(0,-hr);ctx.quadraticCurveTo(sw*.2,-hr-5,tx,ty);ctx.stroke();
    const on=!(r.talk>0&&Math.sin(t*16)<0);ctx.beginPath();ctx.arc(tx,ty,1.9,0,6.2832);if(on)ctx.fill();else{ctx.lineWidth=1;ctx.stroke()}}
   ctx.lineWidth=LW*.6;
