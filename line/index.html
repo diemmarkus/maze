@@ -810,7 +810,9 @@ function update(dt){
   }
   if(state==='win'){const D=winDoor||goal;P.win+=dt;P.x+=(D.x-P.x)*Math.min(1,dt*7);if(P.win>1.25)levelDone();return}
   if(state==='rescue'){lvTime+=dt;updateRescue(dt);return}
-  if(state==='build'){BT+=dt;if(BT>=BUILD_LINE){   // the line is there: you jump up out of it and land, then it's your turn
+  if(BT<BUILD_LINE)BT+=dt;
+  if(state==='build'){if(BT>=BUILD_LINE/3){   // a third of the way through the line drawing in, you jump out of it
+   // the line is there: you jump up out of it and land, then it's your turn
       if(P.on){const sp=lineSpan(P.on,P.x,CL/2+1);holes.push({p:P.on,x:P.x-P.on.ox,l:sp.el-P.on.ox,r:sp.er-P.on.ox,t:0})}
       P.vy=-P.g*JV*.72;P.ground=false;P.on=null;P.air=0;P.coy=0;P.intro=true;sfx.jump();state='play'}return}   // you're in control from the jump on
   if(state!=='play')return;
@@ -1314,7 +1316,7 @@ function render(){
   ctx.setTransform(k,0,0,k,-(camX+sx)*k,-(camY+sy)*k);
   ctx.lineCap='round';ctx.lineJoin='round';
   // building up: the line draws itself in from the left
-  const building=state==='build';ctx.save();if(building){const q=Math.min(1,BT/BUILD_LINE),e=1-Math.pow(1-q,2.2);ctx.beginPath();ctx.rect(camX-60,camY-2000,(viewW+120)*e,4000);ctx.clip()}
+  const building=state!=='menu'&&BT<BUILD_LINE;ctx.save();if(building){const q=Math.min(1,BT/BUILD_LINE),e=1-Math.pow(1-q,2.2);ctx.beginPath();ctx.rect(camX-60,camY-2000,(viewW+120)*e,4000);ctx.clip()}
   if(!DARK)drawArrows();
   const vx0=camX-40,vx1=camX+viewW+40;
   // the line
