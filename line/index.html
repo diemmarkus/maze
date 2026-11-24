@@ -606,11 +606,11 @@ let secret=null,winDoor=null,robot=null;
 let pools=[],bubbles=[],zaps=[],flash=0,birds=[];
 function resetBirds(){for(const b of birds){b.x=b.hx;b.by=b.y;b.fly=0;b.alarm=0;b.vx=0;b.vy=0}}
 let drops=[],flips=[],sharks=[],eyes=[],ghosts=[],killTop=-400,endFlip=null;
-let INV=0,INVgo=false,invCss=false,NOCAM=false,skullFx=null,curtain=null,shake=0,dtFrame=0,ripples=[];
+let BT=0,INV=0,INVgo=false,invCss=false,NOCAM=false,skullFx=null,curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
 let camX=0,camY=0,scrollX=null,scrollV=0,scrollWait=0,hintMoved=false,hintJumped=false,touchedEarly=false;
 
-function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;P.ride=null;P.rollT=0;drops=[]}
+function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;P.ride=null;P.lock=false;P.rollT=0;drops=[]}
 function startLevel(n){
   ripples=[];winDoor=null;rescue=null;safeTrail.length=0;P.half=false;P.inv=0;levelN=n;INV=0;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];curtain=null;shake=0;
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
@@ -680,7 +680,7 @@ function die(){
     return}
   startCurtain();shake=.3;
 }
-const EAT_CURTAIN=1.05,ZAP_CURTAIN=.95,POP_CURTAIN=1.6;   // the monster gets about a second on screen before the blood comes down
+const BUILD_LINE=.6,EAT_CURTAIN=1.05,ZAP_CURTAIN=.95,POP_CURTAIN=1.6;   // the monster gets about a second on screen before the blood comes down
 function startCurtain(){
   // a few big, wide runs (like thick paint), one or two of them long, some dropping a round drop below them
   curtain={t:0,drips:[],ph:Math.random()*9};
@@ -699,7 +699,7 @@ function respawnEat(){P.eat=null}
 function respawn(){respawnEat();P.zapped=0;
   // the blood stays: you come back on a screen in the inverted colours, it fades back once you move
   if(curtain){curtain=null;INV=1;INVgo=false}
-  if(falls>=3){const c=curtain;startLevel(levelN);if(c){INV=1;INVgo=false}touchedEarly=true;state='play';return}
+  if(falls>=3){const c=curtain;startLevel(levelN);if(c){INV=1;INVgo=false}touchedEarly=true;state='build';BT=0;return}
   shards=[];holes=[];
   for(const p of plats)if(p.mv)p.dx=p.dy=0;
   resetGhosts();resetBirds();P.water=null;bubbles=[];
@@ -710,6 +710,7 @@ function respawn(){respawnEat();P.zapped=0;
   placeAt(spawn.x,spawn.y,spawn.g);camX=P.x-viewW*.38;camY=P.y-VIEW_H*(P.g>0?.6:.4);state='play';
   if(scrollX!==null){scrollX=camX;scrollWait=1.5}
   if(robot&&robot.follow){robot.x=P.x-34;robot.y=P.y;robot.g=P.g}
+  state='build';BT=0;
 }
 function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(_){}}
 
@@ -809,6 +810,9 @@ function update(dt){
   }
   if(state==='win'){const D=winDoor||goal;P.win+=dt;P.x+=(D.x-P.x)*Math.min(1,dt*7);if(P.win>1.25)levelDone();return}
   if(state==='rescue'){lvTime+=dt;updateRescue(dt);return}
+  if(state==='build'){BT+=dt;if(BT>=BUILD_LINE){   // the line is there: you jump up out of it and land, then it's your turn
+      if(P.on){const sp=lineSpan(P.on,P.x,CL/2+1);holes.push({p:P.on,x:P.x-P.on.ox,l:sp.el-P.on.ox,r:sp.er-P.on.ox,t:0})}
+      P.vy=-P.g*JV*.72;P.ground=false;P.on=null;P.air=0;P.coy=0;P.lock=true;sfx.jump();state='play'}return}
   if(state!=='play')return;
   lvTime+=dt;
   if(P.ride){const r=P.ride;r.t+=dt;P.vx=r.dir*SPEED;P.face=r.dir;
@@ -819,7 +823,8 @@ function update(dt){
   if(scrollX!==null){scrollWait-=dt;if(scrollWait<=0)scrollX=Math.min(scrollX+scrollV*dt,goal.x-viewW*.6);
     if(P.x<scrollX+12){const nx=scrollX+12;if(wallAt(nx,P.y))scrollX=P.x-12;else{P.x=nx;P.vx=Math.max(P.vx,0)}}}
   const g=P.g;
-  const dir=joy.id!==null?joyDir():keys.r-keys.l;
+  if(P.lock){P.buf=0;if(P.ground&&P.vy===0)P.lock=false}
+  const dir=P.lock?0:joy.id!==null?joyDir():keys.r-keys.l;
   if(dir!==0){P.face=dir>0?1:-1;hintMoved=true}
   const onSand=P.ground&&P.on&&P.on.sand,tgt=dir*SPEED*(onSand?.55:P.water?.42:1),acc=P.ground?ACC_G:ACC_A;
   P.vx+=Math.max(-acc*dt,Math.min(acc*dt,tgt-P.vx));
@@ -1308,6 +1313,8 @@ function render(){
   let sx=0,sy=0;if(shake>0){sx=(Math.random()-.5)*shake*30;sy=(Math.random()-.5)*shake*30}
   ctx.setTransform(k,0,0,k,-(camX+sx)*k,-(camY+sy)*k);
   ctx.lineCap='round';ctx.lineJoin='round';
+  // building up: the line draws itself in from the left
+  const building=state==='build';ctx.save();if(building){const q=Math.min(1,BT/BUILD_LINE),e=1-Math.pow(1-q,2.2);ctx.beginPath();ctx.rect(camX-60,camY-2000,(viewW+120)*e,4000);ctx.clip()}
   if(!DARK)drawArrows();
   const vx0=camX-40,vx1=camX+viewW+40;
   // the line
@@ -1388,8 +1395,9 @@ function render(){
     // a little cloud: bumps on top, flat underneath
     ctx.lineWidth=LW;ctx.save();ctx.translate(x,y);ctx.scale(1,gc>0?1:-1);ctx.beginPath();ctx.moveTo(-22,6);ctx.arc(-14,0,8,Math.PI*.75,Math.PI*1.5);ctx.arc(-2,-5,10,Math.PI*1.15,Math.PI*1.9);ctx.arc(12,-1,8,Math.PI*1.4,Math.PI*.2);ctx.lineTo(20,6);ctx.closePath();ctx.stroke();ctx.restore();
     ctx.lineWidth=2;for(let i=0;i<3;i++){const px=x-(r.t<.5?1:(r.to.x>r.fx?1:-1))*(26+i*9),pa=(t*3+i)%1;ctx.globalAlpha=a*(1-pa)*.6;ctx.beginPath();ctx.arc(px,y+3,2+pa*3,0,6.2832);ctx.stroke()}ctx.globalAlpha=1}
-  if(state!=='menu')drawChar();
+  if(state!=='menu'&&state!=='build')drawChar();
   if(DARK){ctx.setTransform(k,0,0,k,-(camX+sx)*k,-(camY+sy)*k);drawDark();drawArrows()}   // the dark covers everything, the door too
+  ctx.restore();
   // screen space: a white flash when you get zapped
   if(flash>0){ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=Math.min(.85,flash*3);ctx.fillStyle=FG;ctx.fillRect(0,0,cv.width,cv.height);ctx.globalAlpha=1}
   // screen space: joystick and first-level hints
@@ -1468,9 +1476,9 @@ function frame(now){
   if(curtain&&state!=='paused'){curtain.t+=dt;if(curtain.t>1.9)curtain=null}
   if(shake>0)shake=Math.max(0,shake-dt);
   if(skullFx&&state!=='paused'){skullFx.t+=dt;
-    if(state==='play'&&skullFx.t>0&&(Math.abs(P.vx)>8||!P.ground))skullFx.go=1;   // you start moving: it blurs and fades
+    if(state==='play'&&!P.lock&&skullFx.t>0&&(Math.abs(P.vx)>8||!P.ground))skullFx.go=1;   // you start moving: it blurs and fades
     if(skullFx.go){skullFx.gone+=dt/.9;if(skullFx.gone>=1)skullFx=null}}
-  if(INV>0&&state!=='paused'){if(state==='play'&&(Math.abs(P.vx)>8||!P.ground))INVgo=true;if(INVgo)INV=Math.max(0,INV-dt/.6)}
+  if(INV>0&&state!=='paused'){if(state==='play'&&!P.lock&&(Math.abs(P.vx)>8||!P.ground))INVgo=true;if(INVgo)INV=Math.max(0,INV-dt/.6)}
   if((INV>.5)!==invCss){invCss=INV>.5;const r=document.documentElement.style;r.setProperty('--bg',invCss?FG:BG);r.setProperty('--fg',invCss?BG:FG)}
   try{render();if(INV>0)renderInverted()}catch(e){console.error(e)}   // a drawing mistake must never freeze the game
   requestAnimationFrame(frame);
@@ -1505,7 +1513,7 @@ function showLevels(){
 }
 function preview(){setTheme(sel);gen(sel);levelN=sel;camX=-viewW*.3;camY=-VIEW_H*.6;t=0}
 function showMenu(){state='menu';hud.hidden=true;pauseOv.hidden=doneOv.hidden=true;$('levelsOv').hidden=true;startOv.hidden=false;sel=unlocked;paintTotals();preview()}
-function play(n){goLandscape();audio();store.set('line.last',n);startOv.hidden=doneOv.hidden=pauseOv.hidden=true;$('levelsOv').hidden=true;hud.hidden=false;joy.id=null;startLevel(n);state='play';lastT=performance.now();accT=0}
+function play(n){goLandscape();audio();store.set('line.last',n);startOv.hidden=doneOv.hidden=pauseOv.hidden=true;$('levelsOv').hidden=true;hud.hidden=false;joy.id=null;startLevel(n);state='build';BT=0;lastT=performance.now();accT=0}
 let toastT=0;function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2600)}
 function pause(){if(state!=='play'&&state!=='dead')return;state='paused';joy.id=null;pauseOv.hidden=false}
 function resume(){pauseOv.hidden=true;state='play';lastT=performance.now();accT=0}
