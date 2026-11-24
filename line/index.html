@@ -429,7 +429,10 @@ setInterval(()=>{
       if(++MUS.bars>MUS.quietIn&&s!=='soft'&&s!=='slow'&&s!=='blob'&&s!=='rise'&&s!=='line'&&!DROPS.includes(MUS.step>>4)){musQuiet(MUS.next);continue}}
     musStep(MUS.step,MUS.next);MUS.next+=SPS;MUS.step=(MUS.step+1)%SONG;if(MUS.step%16===0)store.set('line.musPos',MUS.step)}
 },25);
+const WIN_IN=.95;   // going through the door: a little hop in, a look back and a heart, then the door lights up
 const sfx={
+  hop(){tone(300,900,.14,.06,0,'triangle')},
+  pip(){tone(1319,1760,.07,.04,0,'triangle');tone(1760,2349,.09,.035,.09,'triangle')},
   sigh(){tone(300,140,.7,.05,0,'triangle')},
   grumble(){tone(150,120,.12,.06,0,'square');tone(130,95,.16,.06,.15,'square');tone(110,80,.28,.05,.34,'square')},
   jump(){tone(180,760,.15,.1);tone(360,1520,.15,.03,0,'square')},
@@ -572,7 +575,7 @@ function gen(n){
   const cpN=target>4200?2:1;
   for(let i=1;i<=cpN;i++){const want=target*i/(cpN+1);let b=null;for(const f of flats)if(f[0]>300&&(!b||Math.abs(f[0]-want)<Math.abs(b[0]-want)))b=f;if(b&&!cps.some(c=>c.x===b[0]))cps.push({x:b[0],y:b[1],g:b[2],p:{pts:b[3],ox:0,oy:0},on:false})}
   cps.sort((a,b)=>a.x-b.x);
-  robot=n===42?{x:goal.x-120,y:goal.y,sigh:0,every:3,shrug:0,shrugT:0,wave:0,said:false,talk:0}:null;   // level 42: a gloomy little robot sits by the door
+  robot=n===42||n===2?{x:goal.x-120,y:goal.y,sigh:0,every:3,shrug:0,shrugT:0,wave:0,said:false,talk:0,follow:true,g:1}:null;   // it comes along with you through the whole level   // level 42: a gloomy little robot sits by the door
   // three dots, spread out over the level
   cands.sort((a,b)=>a[0]-b[0]);
   const idx=cands.length>=3?[.15,.5,.85].map(f=>Math.floor(f*(cands.length-1))):cands.map((_,i)=>i);
@@ -610,7 +613,7 @@ let skullFx=null,curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
 let camX=0,camY=0,scrollX=null,scrollV=0,scrollWait=0,hintMoved=false,hintJumped=false,touchedEarly=false;
 
-function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;drops=[]}
+function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;P.slk=null;drops=[]}
 function startLevel(n){
   ripples=[];winDoor=null;rescue=null;safeTrail.length=0;P.half=false;P.inv=0;levelN=n;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];curtain=null;shake=0;
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
@@ -619,6 +622,7 @@ function startLevel(n){
   // every 10th level the screen keeps moving on: slowly, but it doesn't wait for you
   scrollX=n%10===0?camX:null;scrollV=Math.min(SPEED*.5,goal.x/parTime());scrollWait=1.5;
   hintMoved=hintJumped=false;touchedEarly=false;
+  if(robot&&robot.follow){robot.x=P.x-34;robot.y=P.y;robot.g=P.g}
   updateHud();
 }
 /* ---------- kids mode: every heart holds two hits; falling off is caught by a little cloud ---------- */
@@ -702,6 +706,8 @@ function respawn(){respawnEat();P.zapped=0;
   for(const k of sharks)k.rise=0;
   placeAt(spawn.x,spawn.y,spawn.g);camX=P.x-viewW*.38;camY=P.y-VIEW_H*(P.g>0?.6:.4);state='play';
   if(scrollX!==null){scrollX=camX;scrollWait=1.5}
+  if(robot&&robot.follow){robot.x=P.x-34;robot.y=P.y;robot.g=P.g}
+  P.form={t:0};state='form';   // you drip off the checkpoint ball and drop onto the line
 }
 function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(_){}}
 
@@ -788,8 +794,11 @@ function update(dt){
     if(P.kind==='zap'){const at=a=>pd<a&&P.dead>=a;for(const a of[.12,.24,.36,.48])if(at(a)){flash=.12;sfx.zap()}if(at(.58))sfx.fizzle();if(at(ZAP_CURTAIN)){startCurtain();shake=.2}if(P.dead<.55)shake=Math.max(shake,.08)}
     if(P.dead>P.endT)respawn();return;
   }
-  if(state==='win'){const D=winDoor||goal;P.win+=dt;P.x+=(D.x-P.x)*Math.min(1,dt*7);if(P.win>1.25)levelDone();return}
+  if(state==='win'){const D=winDoor||goal,w0=P.win;P.win+=dt;if(P.win>.18)P.x+=(D.x-P.x)*Math.min(1,dt*9);
+    const at=a=>w0<a&&P.win>=a;if(at(.18))sfx.hop();if(at(.5))sfx.land();if(at(.64))sfx.pip();if(at(WIN_IN))sfx.door();
+    if(P.win>WIN_IN+1.25)levelDone();return}
   if(state==='rescue'){lvTime+=dt;updateRescue(dt);return}
+  if(state==='form'){const f=P.form,t0=f.t;f.t+=dt;if(t0<.62&&f.t>=.62){sfx.land();if(P.on)ripples.push({p:P.on,x:P.x-P.on.ox,t:0,g:P.g,a:4})}if(f.t>=.8){state='play';P.form=null}return}
   if(state!=='play')return;
   lvTime+=dt;
   // the moving screen: once it catches you at its left edge, it pushes you along (if a wall is in the way, it waits)
@@ -801,6 +810,7 @@ function update(dt){
   const onSand=P.ground&&P.on&&P.on.sand,tgt=dir*SPEED*(onSand?.55:P.water?.42:1),acc=P.ground?ACC_G:ACC_A;
   P.vx+=Math.max(-acc*dt,Math.min(acc*dt,tgt-P.vx));
   if(!P.ground)P.air+=dt;
+  if(P.slk){const k=P.slk;k.t+=dt;if(P.ground&&k.landT<0)k.landT=k.t;if((k.landT>=0&&k.t-k.landT>.16)||k.t>.7||g*P.vy<-60||P.water||P.g!==g)P.slk=null}
   if(P.inv>0)P.inv-=dt;if(P.spin>0)P.spin-=dt;
   if(P.ground&&P.on&&P.on.solid&&P.inv<=0&&(!safeTrail.length||lvTime-safeTrail[safeTrail.length-1].t>.1)){safeTrail.push({x:P.x,y:P.y,g:P.g,t:lvTime});if(safeTrail.length>40)safeTrail.shift()}
   if(P.buf>0)P.buf-=dt;if(P.coy>0)P.coy-=dt;if(P.squash>0)P.squash-=dt;if(P.flipT>0)P.flipT-=dt;
@@ -817,7 +827,11 @@ function update(dt){
   if(P.ground){
     P.walk+=Math.abs(P.vx)*dt*.016;   // about three steps a second at full speed
     const s=support(P.x,P.y);
-    if(s){P.y=s.y;P.on=s.p}else{P.ground=false;P.on=null;P.coy=.1;P.vy=0}
+    if(s){P.y=s.y;P.on=s.p}else{
+      // walking off a step: if there's line a little lower right in front, you pour yourself down it like a slinky
+      let lo=null;for(const p of plats){const f=floorAt(p,P.x+P.face*8);if(f!==null){const d=g*(f-P.y);if(d>STEP&&d<=70&&(lo===null||d<lo))lo=d}}
+      if(lo!==null&&!P.water)P.slk={x0:P.x-P.face*2,y0:P.y,p0:P.on,t:0,landT:-1,face:P.face};
+      P.ground=false;P.on=null;P.coy=.1;P.vy=0}
   }else if(P.water){
     // swimming: you slowly sink; every tap is a stroke upwards, a tap right at the surface jumps you out
     const W=P.water;P.vy+=G*.16*dt;if(P.vy>70)P.vy=70;P.y+=P.vy*dt;P.air=1;P.dj=true;P.split=0;
@@ -898,9 +912,9 @@ function update(dt){
     if(low!==null&&P.g*(P.y-low)>110){if(KIDS&&!P.half)startRescue();else die();return}}
   if(P.y>killY||P.y<killTop){if(KIDS&&!P.half)startRescue();else die();return}
   for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-P.g*9-s.y)<20){s.got=true;s.pop=.001;buzz(12);sfx.dot();updateHud()}
-  for(const c of cps)if(!c.on&&P.x>=c.x&&P.ground&&P.g===c.g){c.on=true;spawn={x:c.x,y:c.y,g:c.g};sfx.check();pops.push({x:c.x,y:c.y-c.g*22,t:0})}
-  if(secret&&P.ground&&P.g>0&&Math.abs(P.x-secret.x)<6){winDoor=secret;state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door();toast(T.secret);return}
-  if(P.ground&&P.g>0&&(Math.abs(P.x-goal.x)<6||(px0-goal.x)*(P.x-goal.x)<0)){winDoor=goal;state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door()}
+  for(const c of cps)if(!c.on&&P.x>=c.x&&P.ground&&P.g===c.g){c.on=true;spawn={x:c.x,y:c.y,g:c.g,cp:true};sfx.check();pops.push({x:c.x,y:c.y-c.g*22,t:0})}
+  if(secret&&P.ground&&P.g>0&&Math.abs(P.x-secret.x)<6){winDoor=secret;state='win';P.win=0;P.vx=0;buzz([20,40,20]);toast(T.secret);return}
+  if(P.ground&&P.g>0&&(Math.abs(P.x-goal.x)<6||(px0-goal.x)*(P.x-goal.x)<0)){winDoor=goal;state='win';P.win=0;P.vx=0;buzz([20,40,20])}
 }
 
 /* ---------- drawing ---------- */
@@ -1111,9 +1125,12 @@ function drawChar(){
       if(s.stuck)ctx.ellipse(s.x,s.y,s.r*1.5,s.r*.6,0,0,6.2832);else ctx.ellipse(s.x,s.y,s.r,s.r*(1+Math.min(.8,Math.abs(s.vy)/900)),0,0,6.2832);ctx.fill()}
     return;
   }
+  if(state==='form'){drawForm();return}
+  if(P.slk&&state==='play'){drawSlink();return}
   let h,len=CL,base,sk=.85;
   const moving=Math.abs(P.vx)>15;
-  if(state==='win'){const k=Math.min(1,P.win/.3);h=9*(1-k);len=CL*(1-k*.9);if(k>=1)return}
+  if(state==='win'){const w=P.win;if(w>=.18){drawEnter();return}
+    const q=Math.sin(Math.PI*w/.18);h=9*(1-.45*q);len=CL*(1+.22*q)}   // gets ready: squashes down
   else if(P.ground){
     // walking like an inchworm: the hump bunches up and stretches out, its peak rolls from back to front, leaning into the run
     const ph=P.walk*6.2832,sp=Math.min(1,Math.abs(P.vx)/SPEED);
@@ -1199,10 +1216,16 @@ function drawRobot(r){
   if(r.talk>0)r.talk=Math.max(0,r.talk-dt);
   if(r.shrugT>0){r.shrugT=Math.max(0,r.shrugT-dt);r.shrug=Math.min(1,(1.8-r.shrugT)*4,r.shrugT*3)}else r.shrug=0;
   r.wave=state==='win'&&winDoor===goal?Math.min(1,r.wave+dt*2):0;
+  // as a companion it floats along a little behind you, at the height of the line you last stood on
+  if(r.follow&&(state==='play'||state==='rescue')){if(P.ground){r.ty=P.y;r.g=P.g}
+    const tx=P.x-P.face*34,k=Math.min(1,dt*2.6);r.x+=(tx-r.x)*k;
+    // hover over the line right below it (the one closest to where you last stood)
+    let fy=null;const ref=r.ty??P.y;for(const dx of[-11,0,11])for(const p of plats){const f=floorAt(p,r.x+dx);if(f!==null&&Math.abs(f-ref)<90&&(fy===null||r.g*(f-fy)<0))fy=f}   // the highest bit of line under it, so it never sinks into a step
+    r.y+=((fy??ref)-r.y)*Math.min(1,dt*5)}
   const sg=r.sigh>0&&r.sigh<1.8?Math.sin(Math.PI*Math.min(1,r.sigh/1.8)):0;   // a sigh: everything sinks together, then floats back up
   const sh=e(Math.min(1,r.shrug)),wv=Math.min(1,r.wave),tk=r.talk>0?1:0;
   const look=Math.max(-1,Math.min(1,(P.x-x)/160));
-  ctx.save();ctx.translate(x,y);ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=LW*.6;ctx.lineJoin='round';ctx.lineCap='round';
+  ctx.save();ctx.translate(r.x,r.y);if(r.g<0)ctx.scale(1,-1);ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=LW*.6;ctx.lineJoin='round';ctx.lineCap='round';
   // parts from the bottom up: [width, height]; each one bobs a little later than the one below (a slow wave up the stack)
   const parts=[[10,5],[14,6],[18,7]];const hov=12+Math.sin(t*1.7)*2.5-sg*5+(wv?3*wv:0);let py=-hov;
   // it floats: a soft shadow on the line below, smaller when it's higher up
@@ -1223,8 +1246,57 @@ function drawRobot(r){
   const bl=(t%3.7)<.12||((t+1.1)%7.3)<.12;for(const dx of[-2.6,2.6]){ctx.beginPath();if(bl)ctx.ellipse(dx+look*1.6,.5,1,.25,0,0,6.2832);else ctx.arc(dx+look*1.6,.5+sg*.8,.9,0,6.2832);ctx.fill()}
   ctx.restore();
   // what it says, small, above its head
-  if(r.talk>0&&r.text){ctx.globalAlpha=Math.min(1,r.talk*2);ctx.font='600 8px system-ui,sans-serif';ctx.textAlign='center';ctx.fillText(r.text,0,hy-hr-16);ctx.globalAlpha=1}
+  if(r.talk>0&&r.text){ctx.globalAlpha=Math.min(1,r.talk*2);ctx.font='600 8px system-ui,sans-serif';ctx.textAlign='center';ctx.save();ctx.translate(0,hy-hr-16);if(r.g<0)ctx.scale(1,-1);ctx.fillText(r.text,0,0);ctx.restore();ctx.globalAlpha=1}
   ctx.restore();
+}
+
+// walking through the door: a hop up into the doorway, a little bounce, it looks back at you, blinks, and a heart pops out
+function drawEnter(){
+  const D=winDoor||goal,gx=D.x,gy=D.y,w=P.win,dh=42;
+  ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=LW;ctx.lineJoin='round';ctx.lineCap='round';
+  const dome=(x,y,rw,rh,face,eye)=>{ctx.beginPath();ctx.moveTo(x-rw,y);ctx.bezierCurveTo(x-rw,y-rh*1.35,x+rw,y-rh*1.35,x+rw,y);ctx.closePath();ctx.stroke();
+    if(eye){ctx.beginPath();if(eye==='blink')ctx.ellipse(x+face*rw*.36,y-rh*.62,2.1,.5,0,0,6.2832);else ctx.arc(x+face*rw*.36,y-rh*.62,2,0,6.2832);ctx.fill()}};
+  if(w<.5){   // the hop: a round little blob in the air, stretched on the way up, round at the top
+    const k=(w-.18)/.32,x=P.x,y=gy-Math.sin(Math.PI*k)*17,st=Math.cos(Math.PI*k)*.25;
+    dome(x,y,9.5*(1-st*.5),11*(1+st*.6),P.face,1)}
+  else{   // in the doorway: lands with a squash, turns round to look at you, blinks; then the light comes up over it
+    const b=w<.62?Math.sin(Math.PI*(w-.5)/.12)*.3:0,face=w<.6?P.face:-1,bl=(w>.78&&w<.86)?'blink':1;
+    dome(gx,gy,9.5*(1+b*.5),11*(1-b),face,bl)}
+  // the heart, floating up out of the door and fading
+  if(w>.64&&w<1.5){const k=(w-.64)/.86,sc=Math.min(1,k*5)*(1-.2*k),x=gx+Math.sin(k*9)*2,y=gy-dh-6-k*22;
+    ctx.save();ctx.globalAlpha=1-k*k;ctx.translate(x,y);ctx.scale(sc,sc);ctx.beginPath();ctx.moveTo(0,4);ctx.bezierCurveTo(-7,-1,-4,-7,0,-3);ctx.bezierCurveTo(4,-7,7,-1,0,4);ctx.fill();ctx.restore()}
+}
+
+// down a step: the back end still holds on to the upper step while the front reaches down, then it pulls itself after
+function drawSlink(){
+  const s=P.slk,f=s.face,g=P.g,L=CL,k=Math.min(1,s.t/.18);
+  const fx=P.x+f*L*.3;let lw=null;for(const p of plats){const y=floorAt(p,fx);if(y===null)continue;const d=g*(y-P.y);if(d>=-3&&d<=70&&(!lw||d<g*(lw.y-P.y)))lw={y,p}}
+  const fy=lw?lw.y:P.y;   // the front already reaches down to the lower step
+  let bx=s.x0-f*L*.55*(1-k*.5),by=s.y0;
+  if(s.landT>=0){const q=Math.min(1,(s.t-s.landT)/.16);   // pulls itself after: the back slides to the edge, then drops down the step
+    if(q<.5){const e=q*2;bx+=(s.x0-bx)*e}else{const e=(q-.5)*2,ee=e*e*(3-2*e);bx=s.x0+((P.x-f*L*.5)-s.x0)*ee;by=s.y0+(P.y-s.y0)*ee}}
+  const a=Math.min(bx,fx),b=Math.max(bx,fx);
+  if(s.p0)strokeAlong(s.p0,a,b,BG,LW+3);if(lw&&lw.p!==s.p0)strokeAlong(lw.p,a,b,BG,LW+3);
+  const top=(g>0?Math.min(by,fy):Math.max(by,fy))-g*(9+3*Math.sin(Math.PI*k));
+  const c1x=bx+f*L*.22,c2x=fx-f*L*.12;
+  ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(bx,by);ctx.bezierCurveTo(c1x,top,c2x,top,fx,fy);ctx.stroke();
+  const u=.72,v=1-u,ex=v*v*v*bx+3*v*v*u*c1x+3*v*u*u*c2x+u*u*u*fx,ey=v*v*v*by+3*v*v*u*top+3*v*u*u*top+u*u*u*fy;
+  ctx.fillStyle=BG;ctx.beginPath();ctx.arc(ex,ey+3*g,1.7,0,6.2832);ctx.fill();
+}
+// after a fall: a drop swells under the checkpoint ball, lets go, falls onto the line and squashes into you
+function drawForm(){
+  const f=P.form,g=P.g,x=P.x,y=P.y,w=f.t,cp=cps.find(c=>c.on&&Math.abs(c.x-x)<2&&c.g===g);
+  const sw=cp?Math.sin(t*2.2+cp.x*.01)*1.6:0,hy=y-g*25;
+  ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=LW*.8;
+  if(w<.35){const k=w/.35,e=k*k,ry=2+e*6;   // hanging from the ball, getting heavier
+    ctx.globalAlpha=cp?1:Math.min(1,k*3);ctx.beginPath();ctx.ellipse(x+sw*(1-k*.5),hy+g*(4+ry),5+e*1.5,ry,0,0,6.2832);ctx.fillStyle=BG;ctx.fill();ctx.stroke();ctx.globalAlpha=1}
+  else if(w<.62){const k=(w-.35)/.27,e=k*k,cy=hy+g*12+(y-g*7-(hy+g*12))*e;   // falling, stretched
+    ctx.beginPath();ctx.ellipse(x,cy,6-e*1.2,7.5+e*2.5,0,0,6.2832);ctx.fillStyle=BG;ctx.fill();ctx.stroke()}
+  else{const k=(w-.62)/.18,q=Math.sin(Math.PI*Math.min(1,k));   // lands: squashes flat, then the hump comes up
+    const rw=CL/2*(1+q*.35),rh=9*(1-q*.55)*Math.min(1,.4+k);
+    const on=P.on;if(on)strokeAlong(on,x-rw,x+rw,BG,LW+3);
+    ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.moveTo(x-rw,y);ctx.bezierCurveTo(x-rw*.55,y-g*rh*1.3,x+rw*.55,y-g*rh*1.3,x+rw,y);ctx.stroke();
+    ctx.fillStyle=BG;ctx.beginPath();ctx.arc(x+P.face*rw*.3,y-g*rh*.75+3*g,1.7,0,6.2832);ctx.fill()}
 }
 function drawArrows(){
   // moving screen: little arrows at the left edge, they pulse and get stronger when it's about to catch you
@@ -1240,7 +1312,7 @@ function drawDark(){
   if(state==='menu')return;
   if(state==='play'||state==='rescue'||state==='win'){lightX=P.x;lightY=P.y-P.g*10}
   if(darkCv.width!==cv.width||darkCv.height!==cv.height){darkCv.width=cv.width;darkCv.height=cv.height}
-  const a=state==='win'?Math.max(0,1-P.win/.5):1;if(a<=0)return;
+  const a=state==='win'?Math.max(0,1-Math.max(0,P.win-WIN_IN)/.5):1;if(a<=0)return;
   dctx.setTransform(1,0,0,1,0,0);dctx.globalCompositeOperation='source-over';dctx.clearRect(0,0,darkCv.width,darkCv.height);
   dctx.globalAlpha=a;dctx.fillStyle=BG;dctx.fillRect(0,0,darkCv.width,darkCv.height);dctx.globalAlpha=1;
   dctx.setTransform(ctx.getTransform());dctx.globalCompositeOperation='destination-out';
@@ -1255,7 +1327,7 @@ function render(){
   if(!goal)return;
   if(state==='done'){ctx.fillStyle=FG;ctx.fillRect(0,0,cv.width,cv.height);return}
   // camera: a bit ahead of where you run
-  if(state==='play'||state==='win'||state==='rescue'){
+  if(state==='play'||state==='win'||state==='rescue'||state==='form'){
     const tx=P.x-viewW*.38+P.vx*.35,ty=P.y-VIEW_H*(P.g>0?.6:.4);
     camX+=(tx-camX)*.08;camY+=(ty-camY)*.06;
     if(scrollX!==null){scrollX=Math.max(scrollX,Math.min(camX,P.x-viewW*.38));camX=Math.max(camX,scrollX)}   // run ahead and it carries on from where you are
@@ -1322,12 +1394,12 @@ function render(){
   if(robot&&robot.x>vx0-60&&robot.x<vx1+60)drawRobot(robot);
   // the door at the end (and the secret one down in the abyss): walk in, it lights up and its colour floods the screen
   for(const D of[goal,secret]){if(!D||D.x<vx0-40||D.x>vx1+40)continue;
-    const gx=D.x,gy=D.y,dw=13,dh=42,mine=state==='win'&&(winDoor||goal)===D,lit=mine?Math.min(1,P.win/.3):0;
+    const gx=D.x,gy=D.y,dw=13,dh=42,mine=state==='win'&&(winDoor||goal)===D,lit=mine?Math.max(0,Math.min(1,(P.win-WIN_IN)/.3)):0;
     strokeAlong(D.p,gx-dw,gx+dw,BG,LW+3);   // no line under the door: it's an opening
     if(lit>0){ctx.fillStyle=FG;ctx.fillRect(gx-dw,gy-dh*lit,dw*2,dh*lit)}
     ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.moveTo(gx-dw,gy);ctx.lineTo(gx-dw,gy-dh);ctx.lineTo(gx+dw,gy-dh);ctx.lineTo(gx+dw,gy);ctx.stroke();
     if(lit<1){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(gx+dw-5,gy-dh*.45,2,0,6.2832);ctx.fill()}
-    if(mine&&P.win>.3){const k=Math.min(1,(P.win-.3)/.8),e=k*k*(3-2*k);
+    if(mine&&P.win>WIN_IN+.3){const k=Math.min(1,(P.win-WIN_IN-.3)/.8),e=k*k*(3-2*k);
       ctx.fillStyle=FG;ctx.beginPath();ctx.arc(gx,gy-dh/2,8+e*(viewW+VIEW_H)*1.3,0,6.2832);ctx.fill()}}
   for(const q of pops){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-q.t/.6;ctx.beginPath();if(q.ring)ctx.ellipse(q.x,q.y,6+q.t*55,1.5+q.t*9,0,0,6.2832);else ctx.arc(q.x,q.y,q.s?2+(q.t-.3)*30:8+q.t*70,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
   ctx.fillStyle=FG;for(const q of sandParts){if(q.x<vx0||q.x>vx1)continue;ctx.globalAlpha=1-q.t/.7;ctx.fillRect(q.x-.9,q.y-.9,1.8,1.8)}ctx.globalAlpha=1;
