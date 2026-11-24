@@ -597,7 +597,7 @@ function ledgeAt(x,y){const g=P.g;let b=null;for(const p of plats){if(!p.solid)c
 function wallAt(x,y){const g=P.g;for(const p of plats){if(!p.solid)continue;const f=floorAt(p,x);if(f!==null&&g*(y-f)>STEP)return true}return false}
 
 const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0,air:0,dj:true,split:0,g:1,flipT:0};
-let sandParts=[];
+let sandParts=[],sweat=[];const blink={at:-9,next:2,two:false};
 const START={x:-500,y:0,armed:true};
 let secret=null,winDoor=null;
 let pools=[],bubbles=[],zaps=[],flash=0,birds=[];
@@ -1127,9 +1127,24 @@ function drawChar(){
     base=px=>{const f=floorAt(on,Math.max(sp.el,Math.min(sp.er,px)));return (f===null?P.y:f)+sk*Math.sin(Math.PI*Math.max(0,Math.min(1,(px-x0)/(x1-x0))))};
     strokeAlong(on,Math.max(x0,sp.el),Math.min(x1,sp.er),BG,LW+3);
   }else base=()=>P.y;
-  const pts=humpPts(x0,x1,base,h,P.face,sk);
+  // little reactions: it looks at eyes nearby (and turns to them when it stands still), shivers next to water, sweats when the moving screen comes
+  let look=null;if(state==='play')for(const e of eyes){const [ex,ey]=eyePos(e),d=Math.hypot(ex-P.x,ey-P.y);if(d<260&&(!look||d<look.d))look={x:ex,y:ey,d}}
+  const face=look&&!moving&&P.ground?(look.x>P.x?1:-1):P.face;
+  const cold=state==='play'&&P.ground&&!P.water&&pools.some(w=>P.x>w.x0-70&&P.x<w.x1+70&&Math.abs(P.y-w.y)<40);
+  if(cold){const j=Math.sin(t*71)*.9;x0+=j;x1+=j;h+=Math.sin(t*53)*.7*Math.sign(h||1)}
+  const pts=humpPts(x0,x1,base,h,face,sk);
   ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts,false);
-  if(Math.abs(h)>4){const e=pts[P.face>0?8:4],bl=(t%3.3)<.13;ctx.fillStyle=BG;ctx.beginPath();if(bl)ctx.ellipse(e[0],e[1]+3*Math.sign(h),1.9,.5,0,0,6.2832);else ctx.arc(e[0],e[1]+3*Math.sign(h),1.7,0,6.2832);ctx.fill()}
+  if(Math.abs(h)>4){const e=pts[face>0?8:4],ey=e[1]+3*Math.sign(h);
+    if(t>blink.next){blink.at=t;blink.next=t+1.8+Math.random()*3.2;blink.two=Math.random()<.25}
+    const bt=t-blink.at,bl=bt<.11||(blink.two&&bt>.2&&bt<.31);
+    let ox=0,oy=0,r=1.7;if(look&&!bl){const dx=look.x-e[0],dy=look.y-ey,m=Math.hypot(dx,dy)||1;ox=dx/m*.9;oy=dy/m*.9;r=2.1}   // wide eyed
+    ctx.fillStyle=BG;ctx.beginPath();if(bl)ctx.ellipse(e[0],ey,1.9,.5,0,0,6.2832);else ctx.arc(e[0]+ox,ey+oy,r,0,6.2832);ctx.fill();
+    // sweat: drops fly off the top of the head when the moving screen is right behind you
+    if(scrollX!==null&&state==='play'){const near=1-(P.x-camX)/(viewW*.35);if(near>.3&&Math.random()<dtFrame*(4+10*near)){const top=pts[6];
+      sweat.push({x:top[0]+(Math.random()-.5)*6,y:top[1],vx:(Math.random()-.5)*60-P.face*25,vy:-P.g*(90+Math.random()*60),g:P.g,t:0})}}}
+  for(const q of sweat){q.t+=dtFrame;q.vy+=q.g*700*dtFrame;q.x+=q.vx*dtFrame;q.y+=q.vy*dtFrame;
+    ctx.fillStyle=FG;ctx.globalAlpha=Math.max(0,1-q.t/.5);ctx.beginPath();ctx.ellipse(q.x,q.y,1.3,2.1,Math.atan2(q.vy,q.vx)-Math.PI/2,0,6.2832);ctx.fill()}
+  ctx.globalAlpha=1;sweat=sweat.filter(q=>q.t<.5);
 }
 // a shark under the line: just the fin, or (when you fly over it) its head with the jaws wide open
 function drawShark(k){
@@ -1175,7 +1190,7 @@ function drawArrows(){
       ctx.globalAlpha=(.18+.5*near)*(.75+.25*Math.sin(t*(4+8*near)));ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x+7,y);ctx.lineTo(x,y+7);ctx.stroke()}
     ctx.globalAlpha=1}
 }
-// dark levels: everything is black except a small flickering light around you (the door glows through)
+// dark levels: everything is black except a small flickering light around you
 const darkCv=document.createElement('canvas'),dctx=darkCv.getContext('2d');let lightX=0,lightY=0;
 function drawDark(){
   if(state==='menu')return;
@@ -1260,7 +1275,6 @@ function render(){
   for(const s of sparks){if(s.x<vx0||s.x>vx1)continue;
     if(!s.got){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(s.x,s.y+Math.sin(t*2.6+s.x)*3,5,0,6.2832);ctx.fill()}
     else if(s.pop<.5){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-s.pop*2;ctx.beginPath();ctx.arc(s.x,s.y,5+s.pop*40,0,6.2832);ctx.stroke();ctx.globalAlpha=1}}
-  if(DARK){drawDark();drawArrows()}
   // the door at the end (and the secret one down in the abyss): walk in, it lights up and its colour floods the screen
   for(const D of[goal,secret]){if(!D||D.x<vx0-40||D.x>vx1+40)continue;
     const gx=D.x,gy=D.y,dw=13,dh=42,mine=state==='win'&&(winDoor||goal)===D,lit=mine?Math.min(1,P.win/.3):0;
@@ -1282,6 +1296,7 @@ function render(){
     ctx.lineWidth=LW;ctx.save();ctx.translate(x,y);ctx.scale(1,gc>0?1:-1);ctx.beginPath();ctx.moveTo(-22,6);ctx.arc(-14,0,8,Math.PI*.75,Math.PI*1.5);ctx.arc(-2,-5,10,Math.PI*1.15,Math.PI*1.9);ctx.arc(12,-1,8,Math.PI*1.4,Math.PI*.2);ctx.lineTo(20,6);ctx.closePath();ctx.stroke();ctx.restore();
     ctx.lineWidth=2;for(let i=0;i<3;i++){const px=x-(r.t<.5?1:(r.to.x>r.fx?1:-1))*(26+i*9),pa=(t*3+i)%1;ctx.globalAlpha=a*(1-pa)*.6;ctx.beginPath();ctx.arc(px,y+3,2+pa*3,0,6.2832);ctx.stroke()}ctx.globalAlpha=1}
   if(state!=='menu')drawChar();
+  if(DARK){ctx.setTransform(k,0,0,k,-(camX+sx)*k,-(camY+sy)*k);drawDark();drawArrows()}   // the dark covers everything, the door too
   // screen space: a white flash when you get zapped
   if(flash>0){ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=Math.min(.85,flash*3);ctx.fillStyle=FG;ctx.fillRect(0,0,cv.width,cv.height);ctx.globalAlpha=1}
   // screen space: joystick and first-level hints
