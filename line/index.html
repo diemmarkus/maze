@@ -610,7 +610,7 @@ let skullFx=null,curtain=null,shake=0,dtFrame=0,ripples=[];
 let holes=[],shards=[],pops=[],state='menu',t=0,lvTime=0,falls=0,spawn={x:40,y:0,g:1};
 let camX=0,camY=0,scrollX=null,scrollV=0,scrollWait=0,hintMoved=false,hintJumped=false,touchedEarly=false;
 
-function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;drops=[]}
+function placeAt(x,y,g){P.g=g||1;START.armed=true;const s=support(x,y)||support(x,y-P.g*60);P.x=x;P.y=s?s.y:y;P.on=s?s.p:null;P.ground=!!s;P.vx=P.vy=0;P.coy=P.buf=0;P.dead=0;P.squash=0;P.dj=true;P.split=0;P.flipT=0;P.rollT=0;drops=[]}
 function startLevel(n){
   ripples=[];winDoor=null;rescue=null;safeTrail.length=0;P.half=false;P.inv=0;levelN=n;setTheme(n);gen(n);t=0;lvTime=0;falls=0;holes=[];shards=[];pops=[];curtain=null;shake=0;
   for(const p of plats)if(p.mv){p.ox=p.mv.amp*Math.sin(p.mv.ph);p.dx=0}
@@ -803,6 +803,7 @@ function update(dt){
   const onSand=P.ground&&P.on&&P.on.sand,tgt=dir*SPEED*(onSand?.55:P.water?.42:1),acc=P.ground?ACC_G:ACC_A;
   P.vx+=Math.max(-acc*dt,Math.min(acc*dt,tgt-P.vx));
   if(!P.ground)P.air+=dt;
+  P.rollA=(P.rollA||0)+P.vx*dt/8.5*g;if(P.rollT>0&&P.ground)P.rollT-=dt;if(P.water)P.rollT=0;
   if(P.inv>0)P.inv-=dt;if(P.spin>0)P.spin-=dt;
   if(P.ground&&P.on&&P.on.solid&&P.inv<=0&&(!safeTrail.length||lvTime-safeTrail[safeTrail.length-1].t>.1)){safeTrail.push({x:P.x,y:P.y,g:P.g,t:lvTime});if(safeTrail.length>40)safeTrail.shift()}
   if(P.buf>0)P.buf-=dt;if(P.coy>0)P.coy-=dt;if(P.squash>0)P.squash-=dt;if(P.flipT>0)P.flipT-=dt;
@@ -819,7 +820,10 @@ function update(dt){
   if(P.ground){
     P.walk+=Math.abs(P.vx)*dt*.016;   // about three steps a second at full speed
     const s=support(P.x,P.y);
-    if(s){P.y=s.y;P.on=s.p}else{P.ground=false;P.on=null;P.coy=.1;P.vy=0}
+    if(s){P.y=s.y;P.on=s.p}else{
+      // walking off a step with more line a little lower right in front: curl up and roll down
+      for(const p of plats){const f=floorAt(p,P.x+P.face*8);if(f!==null){const d=g*(f-P.y);if(d>STEP&&d<=70&&!P.water){P.rollT=.35;break}}}
+      P.ground=false;P.on=null;P.coy=.1;P.vy=0}
   }else if(P.water){
     // swimming: you slowly sink; every tap is a stroke upwards, a tap right at the surface jumps you out
     const W=P.water;P.vy+=G*.16*dt;if(P.vy>70)P.vy=70;P.y+=P.vy*dt;P.air=1;P.dj=true;P.split=0;
@@ -840,7 +844,7 @@ function update(dt){
   if(P.buf>0&&P.water){const depth=P.y-P.water.y;P.buf=0;
     if(depth<12){P.vy=-JV*.9;P.water=null;P.air=0;sfx.jump()}else{P.vy=-235;sfx.swim();for(let i=0;i<3;i++)bubbles.push({x:P.x+(Math.random()-.5)*12,y:P.y-8,r:1+Math.random()*2,t:0,w:P.water})}}
   // jump: the piece lifts out of the line and leaves a hole that closes again
-  else if(P.buf>0&&(P.ground||P.coy>0)){
+  else if(P.buf>0&&(P.ground||P.coy>0)){P.rollT=0;
     if(P.ground&&P.on){const sp=lineSpan(P.on,P.x,CL/2+1);holes.push({p:P.on,x:P.x-P.on.ox,l:sp.el-P.on.ox,r:sp.er-P.on.ox,t:0})}
     if(P.on)ripples.push({p:P.on,x:P.x-P.on.ox,t:0,g,a:2.5});
     P.vy=-g*JV;P.ground=false;P.on=null;P.coy=0;P.buf=0;P.air=0;sfx.jump();musJump();
@@ -936,8 +940,8 @@ function humpPts(x0,x1,baseFn,h,face,sk){
 }
 function strokePts(pts,close){ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));if(close)ctx.closePath();ctx.stroke()}
 // in the air the piece of line curls up: both ends swing round and meet, and it's a round outline (a blob)
-function drawBlob(){
-  const g=P.g,k0=Math.min(1,P.air/.16),k=1-Math.pow(1-k0,2.2);
+function drawBlob(roll){
+  const g=P.g,k0=roll?1:Math.min(1,P.air/.16),k=1-Math.pow(1-k0,2.2);
   const Rf=8.5;
   ctx.strokeStyle=FG;ctx.lineWidth=LW;
   if(k<1){
@@ -947,10 +951,10 @@ function drawBlob(){
     for(let i=0;i<=20;i++){const a=a0+(i/20-.5)*A;pts.push([P.x+Math.cos(a)*R,cy+Math.sin(a)*R])}
     strokePts(pts,false);return;
   }
-  const st=Math.max(-.3,Math.min(.3,-g*P.vy/1500)),wob=Math.min(1,(P.air-.16)/.15);
+  const st=roll&&P.ground?0:Math.max(-.3,Math.min(.3,-g*P.vy/1500)),wob=roll?0:Math.min(1,(P.air-.16)/.15);
   const ry=Rf*(1+st),rx=Rf*(1-st*.7),cx=P.x,cy=P.y-g*(ry+1),pts=[];
   // somersault on the second jump: the whole blob turns once, squashing a little, with swoosh arcs behind it
-  const sp=P.spin>0?1-P.spin/.42:0,ang=sp>0?(sp*sp*(3-2*sp))*6.2832*P.face*g:0,sq=sp>0?Math.sin(sp*Math.PI)*.18:0;
+  const sp=P.spin>0?1-P.spin/.42:0,ang=sp>0?(sp*sp*(3-2*sp))*6.2832*P.face*g:roll?P.rollA:0,sq=sp>0?Math.sin(sp*Math.PI)*.18:0;
   const ca=Math.cos(ang),sa=Math.sin(ang),rot=(dx,dy)=>[cx+dx*ca-dy*sa,cy+dx*sa+dy*ca];
   for(let i=0;i<24;i++){const a=i/24*6.2832,w=1+wob*(.07*Math.sin(3*a+t*15)+.05*Math.sin(5*a-t*11));pts.push(rot(Math.cos(a)*rx*w*(1+sq),Math.sin(a)*ry*w*(1-sq)))}
   strokePts(pts,true);
@@ -1113,6 +1117,7 @@ function drawChar(){
       if(s.stuck)ctx.ellipse(s.x,s.y,s.r*1.5,s.r*.6,0,0,6.2832);else ctx.ellipse(s.x,s.y,s.r,s.r*(1+Math.min(.8,Math.abs(s.vy)/900)),0,0,6.2832);ctx.fill()}
     return;
   }
+  if(P.rollT>0&&state==='play'){drawBlob(true);return}
   let h,len=CL,base,sk=.85;
   const moving=Math.abs(P.vx)>15;
   if(state==='win'){const k=Math.min(1,P.win/.3);h=9*(1-k);len=CL*(1-k*.9);if(k>=1)return}
@@ -1299,15 +1304,18 @@ function render(){
   for(const e of eyes){if(state==='dead'&&P.kind==='eaten'&&P.eat===e)continue;const [ex,ey]=eyePos(e);if(ex<vx0||ex>vx1)continue;
     drawEyes(ex,ey,e.g,1,[P.x,P.y-P.g*9],((t+e.blink)%4.1)<.12?1:0)}
   // ripples running along the line away from where you landed
-  for(const r of ripples){const life=r.life||.6,amp=r.a*(1-r.t/life),w=r.w||16;if(amp<.3)continue;
-    for(const s of[-1,1]){const xc=r.x+r.p.ox+s*(18+r.t*(r.sp||170)),x0=xc-w/2,x1=xc+w/2,f0=floorAt(r.p,x0),f1=floorAt(r.p,x1),fm=floorAt(r.p,xc);
-      if(f0===null||f1===null||fm===null||Math.abs(fm-(f0+f1)/2)>1.5)continue;
-      strokeAlong(r.p,x0,x1,BG,LW+3);const pts=[];for(let i=0;i<=8;i++){const u=i/8,x=x0+u*w;pts.push([x,f0+(f1-f0)*u-r.g*amp*Math.sin(Math.PI*u)**2])}
-      ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts,false)}}
+  for(const r of ripples){const life=r.life||.6,amp=r.a*(1-r.t/life),w=r.w||16;if(amp<.3)continue;r.gone=r.gone||{};
+    for(const sd of[-1,1]){if(r.gone[sd])continue;const xc=r.x+r.p.ox+sd*(18+r.t*(r.sp||170)),x0=xc-w/2,pts=[];let ok=true;
+      for(let i=0;i<=10;i++){const u=i/10,x=x0+u*w,f=floorAt(r.p,x);if(f===null||(i&&Math.abs(f-pts[i-1][2])>4)){ok=false;break}pts.push([x,f-r.g*amp*Math.sin(Math.PI*u)**2,f])}
+      if(!ok){r.gone[sd]=1;continue}   // a step, a corner or the end of the line: this side of the wave runs out there
+      strokeAlong(r.p,x0,x0+w,BG,LW+3);ctx.strokeStyle=FG;ctx.lineWidth=LW;strokePts(pts.map(q=>[q[0],q[1]]),false)}}
   // holes left behind by a jump, closing up
   for(const h of holes){const w=CL*(1-Math.pow(h.t/.5,2));if(w<1)continue;const o=h.p.ox,x=h.x+o;strokeAlong(h.p,Math.max(x-w/2,h.l+o),Math.min(x+w/2,h.r+o),BG,LW+3)}
   // checkpoints: a pole growing out of the line with a ball on top; the ball fills when you pass
-  for(const c of cps){if(c.x<vx0||c.x>vx1)continue;const g=c.g,x=c.x,y=c.y,r=5.5,sw=Math.sin(t*2.2+c.x*.01)*1.6,hy=y-g*25;
+  for(const c of cps){if(c.x<vx0||c.x>vx1)continue;const g=c.g,x=c.x,r=5.5;
+    // the pole stands on the line, so when you (part of the line) walk through it, it rides up over your back
+    let lift=0,lean=0;if(state==='play'&&P.ground&&P.g===g&&!(P.rollT>0)){const d=(x-P.x)/CL+.5;if(d>0&&d<1){lift=9*Math.pow(Math.sin(Math.PI*d),1.4);lean=-Math.cos(Math.PI*d)*.5}}
+    const y=c.y-g*lift,sw=Math.sin(t*2.2+c.x*.01)*1.6+lean*12*g,hy=y-g*25;
     ctx.strokeStyle=FG;ctx.lineWidth=LW;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x,y-g*12,x+sw,y-g*(25-r));ctx.stroke();
     ctx.beginPath();ctx.arc(x+sw,hy,r,0,6.2832);if(c.on){ctx.fillStyle=FG;ctx.fill()}ctx.lineWidth=LW*.75;ctx.stroke()}
   // the three dots to collect
