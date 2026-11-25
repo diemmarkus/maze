@@ -519,8 +519,8 @@ function gen(n){
   const pick=last=>{let tot=0;for(const k in W)if(k!==last)tot+=W[k];let r=R()*tot;for(const k in W){if(k===last)continue;if((r-=W[k])<0)return k}return 'flat'};
   let last='';
   // level 33: all water. Three long swims with a small rock to catch your breath (and a checkpoint) in between
-  if(n===33){for(let i=0;i<5;i++){end();const L=ri(760,880);pools.push({x0:cx,x1:cx+L,y:cy,ph:R()*6});
-      for(const f of[.25,.55,.85])cands.push([cx+L*f,cy+ri(26,52)]);cx+=L;cur=[[cx,cy]];if(i<4)flat(ri(90,110))}}
+  if(n===33){end();const L=ri(4300,4600);pools.push({x0:cx,x1:cx+L,y:cy,ph:R()*6});   // one long swim, from the shore at the start to the shore at the door
+    for(let i=0;i<9;i++)cands.push([cx+L*(i+.5)/9,cy+ri(26,52)]);cx+=L;cur=[[cx,cy]]}
   // level 55: one giant staircase all the way down, with a shark waiting at the bottom
   if(n===55){while(cx<4200){const dy=ri(18,30);cur.push([cx,cy+dy]);cy+=dy;const w=ri(50,72);if(R()<.12)cands.push([cx+w/2,cy-48]);flat(w)}
     flat(60);const L=ri(220,260);sharks.push({p:{pts:cur,ox:0,oy:0},x0:cx,x1:cx+L,y:cy,g:1,pos:cx+L*R(),dir:R()<.5?-1:1,sp:ri(80,110),rise:0});cands.push([cx+L/2,cy-90]);cx+=L;cur.push([cx,cy]);flat(110)}
