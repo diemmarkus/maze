@@ -694,7 +694,7 @@ function die(){
     return}
   startCurtain();shake=.3;
 }
-const BUILD_LINE=.6,EAT_CURTAIN=1.05,ZAP_CURTAIN=.95,POP_CURTAIN=1.6;   // the monster gets about a second on screen before the blood comes down
+const HEART_DOOR=[16,18,82],BUILD_LINE=.6,EAT_CURTAIN=1.05,ZAP_CURTAIN=.95,POP_CURTAIN=1.6;   // the monster gets about a second on screen before the blood comes down
 function startCurtain(){
   // a few big, wide runs (like thick paint), one or two of them long, some dropping a round drop below them
   curtain={t:0,drips:[],ph:Math.random()*9};
@@ -1448,7 +1448,10 @@ function render(){
     if(soul&&D===goal){const sx=gx-38;ctx.lineWidth=LW*.75;ctx.beginPath();ctx.moveTo(sx,gy);ctx.lineTo(sx,gy-22);ctx.stroke();ctx.lineWidth=1.6;ctx.strokeRect(sx-14,gy-40,28,18);
       ctx.fillStyle=FG;ctx.textAlign='center';ctx.font='800 9px system-ui,sans-serif';ctx.fillText('21',sx,gy-30);ctx.font='700 5.5px system-ui,sans-serif';ctx.fillText('grams',sx,gy-24.5)}
     if(mine&&P.win>.3){const k=Math.min(1,(P.win-.3)/.8),e=k*k*(3-2*k);
-      ctx.fillStyle=FG;ctx.beginPath();ctx.arc(gx,gy-dh/2,8+e*(viewW+VIEW_H)*1.3,0,6.2832);ctx.fill()}}
+      const rr=8+e*(viewW+VIEW_H)*1.3;ctx.fillStyle=FG;ctx.beginPath();
+      if(HEART_DOOR.includes(levelN)){const r=rr*1.5,x=gx,y=gy-dh/2;   // a heart instead of a circle
+        ctx.moveTo(x,y+r*.75);ctx.bezierCurveTo(x-r*1.05,y+r*.05,x-r*.75,y-r*.8,x,y-r*.35);ctx.bezierCurveTo(x+r*.75,y-r*.8,x+r*1.05,y+r*.05,x,y+r*.75)}
+      else ctx.arc(gx,gy-dh/2,rr,0,6.2832);ctx.fill()}}
   if(soul)drawSoul();
   for(const q of pops){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-q.t/.6;ctx.beginPath();if(q.ring)ctx.ellipse(q.x,q.y,6+q.t*55,1.5+q.t*9,0,0,6.2832);else ctx.arc(q.x,q.y,q.s?2+(q.t-.3)*30:8+q.t*70,0,6.2832);ctx.stroke();ctx.globalAlpha=1}
   ctx.fillStyle=FG;for(const q of sandParts){if(q.x<vx0||q.x>vx1)continue;ctx.globalAlpha=1-q.t/.7;ctx.fillRect(q.x-.9,q.y-.9,1.8,1.8)}ctx.globalAlpha=1;
