@@ -519,10 +519,13 @@ function gen(n){
   const pick=last=>{let tot=0;for(const k in W)if(k!==last)tot+=W[k];let r=R()*tot;for(const k in W){if(k===last)continue;if((r-=W[k])<0)return k}return 'flat'};
   let last='';
   // level 33: all water. Three long swims with a small rock to catch your breath (and a checkpoint) in between
-  if(n===33){for(let i=0;i<3;i++){end();const L=ri(720,860);pools.push({x0:cx,x1:cx+L,y:cy,ph:R()*6});
-      for(const f of[.25,.55,.85])cands.push([cx+L*f,cy+ri(26,52)]);cx+=L;cur=[[cx,cy]];if(i<2)flat(ri(90,110))}}
+  if(n===33){for(let i=0;i<5;i++){end();const L=ri(760,880);pools.push({x0:cx,x1:cx+L,y:cy,ph:R()*6});
+      for(const f of[.25,.55,.85])cands.push([cx+L*f,cy+ri(26,52)]);cx+=L;cur=[[cx,cy]];if(i<4)flat(ri(90,110))}}
+  // level 55: one giant staircase all the way down, with a shark waiting at the bottom
+  if(n===55){while(cx<4200){const dy=ri(18,30);cur.push([cx,cy+dy]);cy+=dy;const w=ri(50,72);if(R()<.12)cands.push([cx+w/2,cy-48]);flat(w)}
+    flat(60);const L=ri(220,260);sharks.push({p:{pts:cur,ox:0,oy:0},x0:cx,x1:cx+L,y:cy,g:1,pos:cx+L*R(),dir:R()<.5?-1:1,sp:ri(80,110),rise:0});cands.push([cx+L/2,cy-90]);cx+=L;cur.push([cx,cy]);flat(110)}
   // everything is built in "gravity frame": -g*… is away from the line on your side
-  while(n!==33&&cx<target){
+  while(n!==33&&n!==55&&cx<target){
     let k=pick(last);if(fresh&&freshN<freshAt.length&&cx>target*freshAt[freshN]&&last!==fresh){k=fresh;freshN++}else if(k===fresh)freshN++;last=k;
     if(k==='flat')flat(ri(90,200));
     else if(k==='flip')flip();
@@ -570,10 +573,13 @@ function gen(n){
     }
   }
   // the last stretch: a small ring on the line puts you back on top (if you're upside down), then the door
+  route66=null;if(n===66){if(g<0)flip();flat(120);route66={x:160,y:0,px:cx,py:cy};flat(260)}   // level 66: the road ends on the pier
   flat(230);goal={x:cx,y:cy,p:{pts:cur,ox:0,oy:0}};flat(150);endFlip={x:cx,y:cy};end();
   // checkpoints: one in the middle, two on long levels
   const cpN=n===33?2:target>4200?2:1;
   for(let i=1;i<=cpN;i++){const want=(n===33?goal.x:target)*i/(cpN+1);let b=null;for(const f of flats)if(f[0]>300&&(!b||Math.abs(f[0]-want)<Math.abs(b[0]-want)))b=f;if(b&&!cps.some(c=>c.x===b[0]))cps.push({x:b[0],y:b[1],g:b[2],p:{pts:b[3],ox:0,oy:0},on:false})}
+  if(n===55||n===33){cps=[];const ys=n===55?goal.y:0,xs=n===55?[goal.x-150,goal.x-95]:[-150,-80];
+    for(const x of xs){const p=plats.find(q=>floorAt(q,x)!==null);if(p)cps.push({x,y:floorAt(p,x),g:1,p:{pts:p.pts,ox:0,oy:0},on:false,deco:n===33})}}
   cps.sort((a,b)=>a.x-b.x);
   robot=n===42||n===2?{x:goal.x-120,y:goal.y,sigh:0,every:3,shrug:0,shrugT:0,wave:0,said:false,talk:0,follow:true,g:1}:null;   // it comes along with you through the whole level   // level 42: a gloomy little robot sits by the door
   // three dots, spread out over the level
@@ -605,7 +611,7 @@ function wallAt(x,y){const g=P.g;for(const p of plats){if(!p.solid)continue;cons
 const P={x:0,y:0,vx:0,vy:0,ground:true,on:null,coy:0,buf:0,face:1,walk:0,squash:0,dead:0,win:0,air:0,dj:true,split:0,g:1,flipT:0};
 let sandParts=[];
 const START={x:-500,y:0,armed:true};
-let secret=null,winDoor=null,robot=null;
+let secret=null,winDoor=null,robot=null,route66=null;
 let pools=[],bubbles=[],zaps=[],flash=0,birds=[];
 function resetBirds(){for(const b of birds){b.x=b.hx;b.by=b.y;b.fly=0;b.alarm=0;b.vx=0;b.vy=0}}
 let drops=[],flips=[],sharks=[],eyes=[],ghosts=[],killTop=-400,endFlip=null;
@@ -937,7 +943,7 @@ function update(dt){
     if(low!==null&&P.g*(P.y-low)>110){if(KIDS)startRescue();else die();return}}
   if(P.y>killY||P.y<killTop){if(KIDS)startRescue();else die();return}
   for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-P.g*9-s.y)<22){s.got=true;s.pop=.001;buzz(12);sfx.dot();updateHud()}
-  for(const c of cps)if(!c.on&&P.x>=c.x&&P.ground&&P.g===c.g){c.on=true;spawn={x:c.x,y:c.y,g:c.g};sfx.check();pops.push({x:c.x,y:c.y-c.g*22,t:0})}
+  for(const c of cps)if(!c.on&&!c.deco&&P.x>=c.x&&P.ground&&P.g===c.g){c.on=true;spawn={x:c.x,y:c.y,g:c.g};sfx.check();pops.push({x:c.x,y:c.y-c.g*22,t:0})}
   if(secret&&P.ground&&P.g>0&&Math.abs(P.x-secret.x)<6){winDoor=secret;state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door();toast(T.secret);return}
   if(P.ground&&P.g>0&&(Math.abs(P.x-goal.x)<6||(px0-goal.x)*(P.x-goal.x)<0)){winDoor=goal;state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door()}
 }
@@ -1282,6 +1288,32 @@ function drawRide(){
   ctx.strokeStyle=FG;ctx.lineCap='round';ctx.lineWidth=LW+5;strokePts(pts,false);ctx.lineWidth=LW;
   const hd=pts[8];ctx.fillStyle=BG;ctx.beginPath();ctx.arc(hd[0],hd[1],1.6,0,6.2832);ctx.fill();
 }
+
+// level 66: a Route 66 sign at the start, and the line ends on a pier by the sea, with a big wheel and an arch over the way in
+function drawRoute66(){
+  const r=route66;ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=LW*.75;ctx.lineJoin='round';ctx.lineCap='round';
+  // the sign: a post and a shield
+  {const x=r.x,y=0;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-46);ctx.stroke();
+    const w=15,top=y-84;ctx.beginPath();ctx.moveTo(x-w,top+4);ctx.quadraticCurveTo(x-w*.5,top-1,x,top+3);ctx.quadraticCurveTo(x+w*.5,top-1,x+w,top+4);
+    ctx.lineTo(x+w,top+20);ctx.quadraticCurveTo(x+w,top+33,x,top+40);ctx.quadraticCurveTo(x-w,top+33,x-w,top+20);ctx.closePath();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x-w,top+11);ctx.lineTo(x+w,top+11);ctx.lineWidth=1.5;ctx.stroke();
+    ctx.textAlign='center';ctx.font='700 6px system-ui,sans-serif';ctx.fillText('US',x,top+9);ctx.font='700 5px system-ui,sans-serif';ctx.fillText('ROUTE',x,top+18);
+    ctx.font='800 13px system-ui,sans-serif';ctx.fillText('66',x,top+31)}
+  // the pier: from the arch to the end of the line, on stilts over the sea
+  const x0=r.px,y=r.py,x1=endFlip.x+10;ctx.lineWidth=LW*.75;
+  for(let x=x0+12;x<x1;x+=34){if(Math.abs(x-goal.x)<18)continue;ctx.beginPath();ctx.moveTo(x,y+2);ctx.lineTo(x,y+70);ctx.stroke()}
+  ctx.lineWidth=1.6;for(const [dd,al] of[[0,.9],[12,.4],[24,.2]]){ctx.globalAlpha=al;ctx.beginPath();for(let x=x0-60;x<=x1+200;x+=4){const yy=y+52+dd+2*Math.sin(x*.05+t*2+dd);x===x0-60?ctx.moveTo(x,yy):ctx.lineTo(x,yy)}ctx.stroke()}ctx.globalAlpha=1;
+  // the arch over the way in, with the name on it
+  {const ax=x0+40,aw=34;ctx.lineWidth=LW*.75;ctx.beginPath();ctx.moveTo(ax-aw,y);ctx.lineTo(ax-aw,y-48);ctx.moveTo(ax+aw,y);ctx.lineTo(ax+aw,y-48);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ax-aw-4,y-46);ctx.quadraticCurveTo(ax,y-74,ax+aw+4,y-46);ctx.lineTo(ax+aw+4,y-38);ctx.quadraticCurveTo(ax,y-64,ax-aw-4,y-38);ctx.closePath();ctx.stroke();
+    ctx.save();ctx.translate(ax,y-52);ctx.font='700 5px system-ui,sans-serif';ctx.textAlign='center';ctx.fillText('SANTA MONICA',0,0);ctx.restore()}
+  // the big wheel, slowly turning, behind the door
+  {const cx=goal.x+75,cy=y-62,R=48;ctx.lineWidth=LW*.6;ctx.beginPath();ctx.arc(cx,cy,R,0,6.2832);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-22,y);ctx.lineTo(cx,cy);ctx.lineTo(cx+22,y);ctx.stroke();
+    ctx.lineWidth=1.2;const a0=t*.35;for(let i=0;i<12;i++){const a=a0+i*Math.PI/6,ex=cx+Math.cos(a)*R,ey=cy+Math.sin(a)*R;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ex,ey+4);ctx.stroke();ctx.beginPath();ctx.roundRect(ex-3.5,ey+4,7,6,1.5);ctx.fill()}
+    ctx.beginPath();ctx.arc(cx,cy,3,0,6.2832);ctx.fill()}
+}
 function drawArrows(){
   // moving screen: little arrows at the left edge, they pulse and get stronger when it's about to catch you
   if(scrollX!==null&&(state==='play'||state==='rescue')){const near=Math.max(0,Math.min(1,1-(P.x-camX)/(viewW*.35)));
@@ -1384,6 +1416,7 @@ function render(){
   for(const s of sparks){if(s.x<vx0||s.x>vx1)continue;
     if(!s.got){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(s.x,s.y+Math.sin(t*2.6+s.x)*3,7,0,6.2832);ctx.fill()}
     else if(s.pop<.5){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-s.pop*2;ctx.beginPath();ctx.arc(s.x,s.y,7+s.pop*40,0,6.2832);ctx.stroke();ctx.globalAlpha=1}}
+  if(route66)drawRoute66();
   if(robot&&robot.x>vx0-60&&robot.x<vx1+60)drawRobot(robot);
   // the door at the end (and the secret one down in the abyss): walk in, it lights up and its colour floods the screen
   for(const D of[goal,secret]){if(!D||D.x<vx0-40||D.x>vx1+40)continue;
