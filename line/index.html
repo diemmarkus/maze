@@ -113,7 +113,7 @@ a.ib{text-decoration:none}
 <div id="stage">
   <canvas id="c" aria-label="The Line"></canvas>
   <div class="hud" id="hud" hidden>
-    <span id="lvChip">LEVEL 1</span>
+    <span id="lvChip" hidden>LEVEL 1</span>
     <span class="dots" id="dots"><i></i><i></i><i></i></span>
     <span class="lives" id="lives"></span>
     <button type="button" id="musBtn" aria-label="Music" aria-pressed="true"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M6.5 13.5V3.5l8-1.8v10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="4.6" cy="13.8" rx="2.4" ry="1.9" fill="currentColor"/><ellipse cx="12.6" cy="12" rx="2.4" ry="1.9" fill="currentColor"/><path class="x" d="M2 2l14 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
@@ -936,7 +936,7 @@ function update(dt){
   if(!P.ground&&!P.water){let low=null;for(const p of plats){if(p.x1<P.x-320||p.x0>P.x+320)continue;const v=P.g>0?p.lo:p.hi;if(low===null||P.g*(v-low)>0)low=v}
     if(low!==null&&P.g*(P.y-low)>110){if(KIDS)startRescue();else die();return}}
   if(P.y>killY||P.y<killTop){if(KIDS)startRescue();else die();return}
-  for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-P.g*9-s.y)<20){s.got=true;s.pop=.001;buzz(12);sfx.dot();updateHud()}
+  for(const s of sparks)if(!s.got&&Math.hypot(P.x-s.x,P.y-P.g*9-s.y)<22){s.got=true;s.pop=.001;buzz(12);sfx.dot();updateHud()}
   for(const c of cps)if(!c.on&&P.x>=c.x&&P.ground&&P.g===c.g){c.on=true;spawn={x:c.x,y:c.y,g:c.g};sfx.check();pops.push({x:c.x,y:c.y-c.g*22,t:0})}
   if(secret&&P.ground&&P.g>0&&Math.abs(P.x-secret.x)<6){winDoor=secret;state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door();toast(T.secret);return}
   if(P.ground&&P.g>0&&(Math.abs(P.x-goal.x)<6||(px0-goal.x)*(P.x-goal.x)<0)){winDoor=goal;state='win';P.win=0;P.vx=0;buzz([20,40,20]);sfx.door()}
@@ -1382,8 +1382,8 @@ function render(){
     ctx.beginPath();ctx.arc(x+sw,hy,r,0,6.2832);if(c.on){ctx.fillStyle=FG;ctx.fill()}ctx.lineWidth=LW*.75;ctx.stroke()}
   // the three dots to collect
   for(const s of sparks){if(s.x<vx0||s.x>vx1)continue;
-    if(!s.got){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(s.x,s.y+Math.sin(t*2.6+s.x)*3,5,0,6.2832);ctx.fill()}
-    else if(s.pop<.5){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-s.pop*2;ctx.beginPath();ctx.arc(s.x,s.y,5+s.pop*40,0,6.2832);ctx.stroke();ctx.globalAlpha=1}}
+    if(!s.got){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(s.x,s.y+Math.sin(t*2.6+s.x)*3,7,0,6.2832);ctx.fill()}
+    else if(s.pop<.5){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-s.pop*2;ctx.beginPath();ctx.arc(s.x,s.y,7+s.pop*40,0,6.2832);ctx.stroke();ctx.globalAlpha=1}}
   if(robot&&robot.x>vx0-60&&robot.x<vx1+60)drawRobot(robot);
   // the door at the end (and the secret one down in the abyss): walk in, it lights up and its colour floods the screen
   for(const D of[goal,secret]){if(!D||D.x<vx0-40||D.x>vx1+40)continue;
