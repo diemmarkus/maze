@@ -1355,6 +1355,9 @@ function drawDark(){
   const R=150*(1+.025*Math.sin(t*9)+.015*Math.sin(t*23)),gr=dctx.createRadialGradient(lightX,lightY,0,lightX,lightY,R);
   gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(.55,'rgba(0,0,0,.95)');gr.addColorStop(1,'rgba(0,0,0,0)');
   dctx.fillStyle=gr;dctx.fillRect(lightX-R,lightY-R,R*2,R*2);
+  // live wires: the spark lights up its bit of line as it races along (flickering)
+  for(const z of zaps){if(z.pos<camX-120||z.pos>camX+viewW+120)continue;const r=48*(1+.25*Math.sin(t*41+z.x0)+.15*Math.sin(t*67)),
+    g3=dctx.createRadialGradient(z.pos,z.y,0,z.pos,z.y,r);g3.addColorStop(0,'rgba(0,0,0,1)');g3.addColorStop(.45,'rgba(0,0,0,.7)');g3.addColorStop(1,'rgba(0,0,0,0)');dctx.fillStyle=g3;dctx.fillRect(z.pos-r,z.y-r,r*2,r*2)}
   // checkpoint lamps: a faint glow until you pass, then the ball lights up and throws a pool of light
   for(const c of cps){const lx=c.x+Math.sin(t*2.2+c.x*.01)*1.6,ly=c.y-c.g*25;if(lx<camX-200||lx>camX+viewW+200)continue;
     c.glow=Math.min(1,(c.glow||0)+(c.on?dtFrame*2.5:0));const r=28+92*c.glow*(1+.03*Math.sin(t*7+c.x)),g2=dctx.createRadialGradient(lx,ly,0,lx,ly,r);
