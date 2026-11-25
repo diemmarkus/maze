@@ -137,7 +137,7 @@ a.ib{text-decoration:none}
 
   <div class="overlay" id="levelsOv" hidden>
     <div class="card">
-      <div class="head"><button type="button" class="ib sm" id="backBtn" data-i18n-label="back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1 data-i18n="levels">LEVELS</h1><div class="total" id="totalStars2"></div></div>
+      <div class="head"><button type="button" class="ib sm" id="backBtn" data-i18n-label="back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button><h1 data-i18n="levels">LEVELS</h1><div class="total" id="totalStars2"></div><button type="button" class="ib sm" id="reloadBtn" aria-label="Reload"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95"/><path d="M19 4.5v4.5h-4.5"/></svg></button></div>
       <div class="grid" id="grid"></div>
     </div>
   </div>
@@ -1580,6 +1580,7 @@ function levelDone(){
   hud.hidden=true;doneOv.hidden=false;$('nextBtn').focus({preventScroll:true});
 }
 $('playBtn').onclick=()=>play(unlocked);
+$('reloadBtn').onclick=()=>{location.replace(location.pathname+'?r='+Date.now()+location.hash)};   // a fresh load of the newest version (handy for testing)
 $('levelsBtn').onclick=$('levelsBtn2').onclick=$('levelsBtn3').onclick=showLevels;
 $('backBtn').onclick=showMenu;
 $('homeBtn2').onclick=showMenu;
