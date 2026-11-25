@@ -1305,8 +1305,7 @@ function drawRoute66(){
   ctx.lineWidth=1.6;for(const [dd,al] of[[0,.9],[12,.4],[24,.2]]){ctx.globalAlpha=al;ctx.beginPath();for(let x=x0-60;x<=x1+200;x+=4){const yy=y+52+dd+2*Math.sin(x*.05+t*2+dd);x===x0-60?ctx.moveTo(x,yy):ctx.lineTo(x,yy)}ctx.stroke()}ctx.globalAlpha=1;
   // the arch over the way in, with the name on it
   {const ax=x0+40,aw=34;ctx.lineWidth=LW*.75;ctx.beginPath();ctx.moveTo(ax-aw,y);ctx.lineTo(ax-aw,y-48);ctx.moveTo(ax+aw,y);ctx.lineTo(ax+aw,y-48);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(ax-aw-4,y-46);ctx.quadraticCurveTo(ax,y-74,ax+aw+4,y-46);ctx.lineTo(ax+aw+4,y-38);ctx.quadraticCurveTo(ax,y-64,ax-aw-4,y-38);ctx.closePath();ctx.stroke();
-    ctx.save();ctx.translate(ax,y-52);ctx.font='700 5px system-ui,sans-serif';ctx.textAlign='center';ctx.fillText('SANTA MONICA',0,0);ctx.restore()}
+    ctx.beginPath();ctx.moveTo(ax-aw-4,y-46);ctx.quadraticCurveTo(ax,y-74,ax+aw+4,y-46);ctx.lineTo(ax+aw+4,y-38);ctx.quadraticCurveTo(ax,y-64,ax-aw-4,y-38);ctx.closePath();ctx.stroke();}
   // the big wheel, slowly turning, behind the door
   {const cx=goal.x+75,cy=y-62,R=48;ctx.lineWidth=LW*.6;ctx.beginPath();ctx.arc(cx,cy,R,0,6.2832);ctx.stroke();
     ctx.beginPath();ctx.moveTo(cx-22,y);ctx.lineTo(cx,cy);ctx.lineTo(cx+22,y);ctx.stroke();
