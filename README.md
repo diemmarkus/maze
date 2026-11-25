@@ -60,6 +60,7 @@ A minimal jump and run. The background is one colour, the level is a single ligh
 - **Every 10th level** (10, 20, 30, …) the screen moves on by itself: slowly (about half your running speed) but steadily towards the door. If you're faster it follows you; if it catches you, its left edge pushes you along (off a ledge too, if you're not careful). Small arrows at the left edge pulse harder when it gets close.
 - **Dark levels:** the colours go round in steps of 8 levels (blue, purple, pink, orange, yellow, green, teal, …), and the 8th of each round is grey and dark (from level 16 on, so 16, 24, 32, …): you only see a small flickering light around the blob.
 - **Level 21:** at the start the blob's soul slips out and floats straight up out of the screen (its eye goes empty); once you've walked through the door (a "21 grams" sign stands next to it) it comes back down into it.
+- **Level 83:** you play a tiny baby version of the blob, with squeakier sounds.
 - **Level 33** is all water: one long swim from the shore at the start to the shore at the door (dots under water); its checkpoints stand to the left of the start, so a drowning always sends you back to the beginning.
 - **Level 55** is one giant staircase down, with a shark at the bottom; both checkpoints are right before the door.
 - **Level 66** starts at a Route 66 sign and ends on the Santa Monica pier, with an arch, stilts over the sea and a big wheel turning behind the door.
