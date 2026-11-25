@@ -518,8 +518,11 @@ function gen(n){
   const fresh=Object.keys(INTRO).find(k=>INTRO[k]===n),freshAt=[.18,.45,.72];let freshN=0;
   const pick=last=>{let tot=0;for(const k in W)if(k!==last)tot+=W[k];let r=R()*tot;for(const k in W){if(k===last)continue;if((r-=W[k])<0)return k}return 'flat'};
   let last='';
+  // level 33: all water. Three long swims with a small rock to catch your breath (and a checkpoint) in between
+  if(n===33){for(let i=0;i<3;i++){end();const L=ri(720,860);pools.push({x0:cx,x1:cx+L,y:cy,ph:R()*6});
+      for(const f of[.25,.55,.85])cands.push([cx+L*f,cy+ri(26,52)]);cx+=L;cur=[[cx,cy]];if(i<2)flat(ri(90,110))}}
   // everything is built in "gravity frame": -g*… is away from the line on your side
-  while(cx<target){
+  while(n!==33&&cx<target){
     let k=pick(last);if(fresh&&freshN<freshAt.length&&cx>target*freshAt[freshN]&&last!==fresh){k=fresh;freshN++}else if(k===fresh)freshN++;last=k;
     if(k==='flat')flat(ri(90,200));
     else if(k==='flip')flip();
@@ -569,8 +572,8 @@ function gen(n){
   // the last stretch: a small ring on the line puts you back on top (if you're upside down), then the door
   flat(230);goal={x:cx,y:cy,p:{pts:cur,ox:0,oy:0}};flat(150);endFlip={x:cx,y:cy};end();
   // checkpoints: one in the middle, two on long levels
-  const cpN=target>4200?2:1;
-  for(let i=1;i<=cpN;i++){const want=target*i/(cpN+1);let b=null;for(const f of flats)if(f[0]>300&&(!b||Math.abs(f[0]-want)<Math.abs(b[0]-want)))b=f;if(b&&!cps.some(c=>c.x===b[0]))cps.push({x:b[0],y:b[1],g:b[2],p:{pts:b[3],ox:0,oy:0},on:false})}
+  const cpN=n===33?2:target>4200?2:1;
+  for(let i=1;i<=cpN;i++){const want=(n===33?goal.x:target)*i/(cpN+1);let b=null;for(const f of flats)if(f[0]>300&&(!b||Math.abs(f[0]-want)<Math.abs(b[0]-want)))b=f;if(b&&!cps.some(c=>c.x===b[0]))cps.push({x:b[0],y:b[1],g:b[2],p:{pts:b[3],ox:0,oy:0},on:false})}
   cps.sort((a,b)=>a.x-b.x);
   robot=n===42||n===2?{x:goal.x-120,y:goal.y,sigh:0,every:3,shrug:0,shrugT:0,wave:0,said:false,talk:0,follow:true,g:1}:null;   // it comes along with you through the whole level   // level 42: a gloomy little robot sits by the door
   // three dots, spread out over the level
