@@ -505,8 +505,8 @@ function mkPlat(pts,solid,mv){return{pts,solid,mv:mv||null,ox:0,oy:0,dx:0,dy:0}}
 const isFib=n=>{let a=1,b=2;while(a<n)[a,b]=[b,a+b];return a===n};   // 1 2 3 5 8 13 21 34 55 … get the secret door
 function gen(n){
   const R=rng(n*7919+13),ri=(a,b)=>a+R()*(b-a);
-  const d=Math.min(1,(n-1)/16);
-  const target=Math.min(7200,1900+n*380);
+  const d=n===16?.3:Math.min(1,(n-1)/16);   // level 16 (the first dark one) is kept gentle
+  const target=n===16?3600:Math.min(7200,1900+n*380);
   plats=[];spikes=[];sparks=[];cps=[];flips=[];sharks=[];eyes=[];ghosts=[];pools=[];zaps=[];birds=[];
   let cx=0,cy=0,cur=[[-500,0]],g=1;   // g: which side of the line you're on (1 = on top, -1 = underneath)
   const cands=[],flats=[];
