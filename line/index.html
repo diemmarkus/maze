@@ -1440,6 +1440,9 @@ function render(){
     if(!s.got){ctx.fillStyle=FG;ctx.beginPath();ctx.arc(s.x,s.y+Math.sin(t*2.6+s.x)*3,7,0,6.2832);ctx.fill()}
     else if(s.pop<.5){ctx.strokeStyle=FG;ctx.lineWidth=2;ctx.globalAlpha=1-s.pop*2;ctx.beginPath();ctx.arc(s.x,s.y,7+s.pop*40,0,6.2832);ctx.stroke();ctx.globalAlpha=1}}
   if(route66)drawRoute66();
+  if(levelN===83&&state!=='menu'){const x=150,y=0;   // the baby's first words, on a little sign at the start
+    ctx.strokeStyle=FG;ctx.fillStyle=FG;ctx.lineWidth=LW*.75;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-22);ctx.stroke();
+    ctx.lineWidth=1.6;ctx.beginPath();ctx.roundRect(x-25,y-38,50,16,2);ctx.stroke();ctx.font='700 7px system-ui,sans-serif';ctx.textAlign='center';ctx.fillText('hello world',x,y-27.5)}
   if(robot&&robot.x>vx0-60&&robot.x<vx1+60)drawRobot(robot);
   // the door at the end (and the secret one down in the abyss): walk in, it lights up and its colour floods the screen
   for(const D of[goal,secret]){if(!D||D.x<vx0-40||D.x>vx1+40)continue;
