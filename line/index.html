@@ -1372,7 +1372,10 @@ function render(){
   if(state==='done'){ctx.fillStyle=FG;ctx.fillRect(0,0,cv.width,cv.height);return}
   // camera: a bit ahead of where you run
   if(!NOCAM&&(state==='play'||state==='win'||state==='rescue')){
-    const tx=P.x-viewW*.38+P.vx*.35,ty=P.y-VIEW_H*(P.g>0?.6:.4);
+    // jumping up: the camera only goes up about a third as far, so more of the line stays in view (falling it follows fully)
+    if(P.ground||P.gy===undefined||P.gg!==P.g){P.gy=P.y;P.gg=P.g}
+    const up=P.g*(P.y-P.gy)<0,cy=up?P.gy+(P.y-P.gy)*.35:P.y;
+    const tx=P.x-viewW*.38+P.vx*.35,ty=cy-VIEW_H*(P.g>0?.6:.4);
     camX+=(tx-camX)*.08;camY+=(ty-camY)*.06;
     if(scrollX!==null){scrollX=Math.max(scrollX,Math.min(camX,P.x-viewW*.38));camX=Math.max(camX,scrollX)}   // run ahead and it carries on from where you are
   }
